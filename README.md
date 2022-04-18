@@ -37,10 +37,14 @@ A- Before making any changes make sure you are in the secondary branch, to do so
 
 1- Open the directory where you clone this repo
 2- Open git bash there.
-3- switch to the secondary branch
+3- add a new branch and name with the feature you are working on
 
 ```bash
-git checkout secondary
+git branch <your branch name>
+```
+
+```bash
+git checkout <your branch name>
 ```
 
 4- Now you can modify freely.
@@ -64,7 +68,7 @@ git commit -m "title of the commit"
 5- Push the changes to the secondary branch
 
 ```bash
-git push origin secondary
+git push origin <your branch name>
 ```
 
 6- Done!
