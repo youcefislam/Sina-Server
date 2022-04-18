@@ -1,3 +1,6 @@
+drop database sina;
+create schema if not exists sina;
+use sina;
 Create table Wilaya (
     idWilaya INT NOT NULL AUTO_INCREMENT, 
     nomWilaya VARCHAR(50),
