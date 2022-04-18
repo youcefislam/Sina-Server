@@ -24,7 +24,7 @@ npm install
 2- Create the sina admin user for our database
 
 ```mysql
-CREATE USER 'sina' IDENTIFIED BY 'password';
+CREATE USER 'sina' IDENTIFIED WITH mysql_native_password BY 'password';
 GRANT ALL PRIVILEGES ON Sina.* TO 'sina';
 ```
 

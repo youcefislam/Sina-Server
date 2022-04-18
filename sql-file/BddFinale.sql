@@ -27,11 +27,11 @@ Create table Hopital (
      idHoptial INT NOT NULL AUTO_INCREMENT, 
      nomHoptial VARCHAR(50), 
      adressHopital VARCHAR(255), 
-     numTlfHopital INT, 
+     numTlfHopital VARCHAR(10), 
      idCommune INT,
      primary key(idHoptial),
      Constraint FK_idCommun FOREIGN KEY (idCommune) references Commune (idCommune),
-     UNIQUE(numTlfHopital)
+     Constraint Unq_hopital_num UNIQUE(numTlfHopital)
 );
 
 Create table TypeMaladie (
@@ -50,47 +50,50 @@ Create table Proche (
      idProche INT NOT NULL AUTO_INCREMENT,
      nomProche VARCHAR(50),
      prenomProche VARCHAR(50), 
-     NumTlfProche INT, 
-     mailProche VARCHAR(50), 
+     NumTlfProche VARCHAR(10), 
+     mailProche VARCHAR(255), 
      primary key(idProche),
-     Constraint Unq_Proche UNIQUE (NumTlfProche,mailProche)
+     Constraint Unq_Proche_Num UNIQUE (NumTlfProche),
+     Constraint Unq_Proche_Mail UNIQUE (mailProche)
 );
 
 Create table Medecin(
      idMedecin INT NOT NULL AUTO_INCREMENT, 
      userNameMedecin VARCHAR(50), 
-     passwordMedecin VARCHAR(50), 
-     mailMedecin VARCHAR(50), 
+     passwordMedecin VARCHAR(255), 
+     mailMedecin VARCHAR(255), 
      nomMedecin VARCHAR(50), 
      prenomMedecin VARCHAR(50), 
      sexeMedecin TINYINT, 
-     photoMedecin VARCHAR(200), 
+     photoMedecin VARCHAR(255), 
      dateInscriptientMedecin DATETIME, 
-     NumTlfMedecin INT, 
-     autoAccept TINYINT,
+     NumTlfMedecin VARCHAR(10), 
+     autoAccept TINYINT default 0,
      idDaira INT,
      primary key (idMedecin),
      Constraint Fk_IdDaira FOREIGN KEY (idDaira) references Daira (idDaira),
-     Constraint Unq_Med UNIQUE (userNameMedecin,mailMedecin,NumTlfMedecin)
+     Constraint Unq_Med_user UNIQUE (userNameMedecin),
+     Constraint Unq_Med_mail UNIQUE (mailMedecin),
+     Constraint Unq_Med_Num UNIQUE (NumTlfMedecin)
 );
 
 Create table Patient (
      idPatient int NOT NULL AUTO_INCREMENT, 
      userNamePatient VARCHAR(50), 
-     passwordPatient VARCHAR(50), 
-     mailPatient VARCHAR(50),
+     passwordPatient VARCHAR(255), 
+     mailPatient VARCHAR(255),
      nomPatient VARCHAR(50), 
      prenomPatient VARCHAR(50), 
      sexePatient TINYINT, 
      dateNaisPatient DATETIME,
      adressPatient VARCHAR(255),
-     photoPatient VARCHAR(200), 
+     photoPatient VARCHAR(255), 
      degreGravite TINYINT, 
      dateInscriptionPatient DATETIME, 
      statusPatient TINYINT, 
      lienJournalMedicament VARCHAR(255), 
      lienHistoriqueRV VARCHAR(255), 
-     NumTlfPatient int , 
+     NumTlfPatient VARCHAR(10), 
      idTypeMaladie INT,
      idCommune INT,
      idMedecin INT,
@@ -100,12 +103,14 @@ Create table Patient (
      Constraint FK_idCommune FOREIGN KEY (idCommune) references Commune(idCommune),
      Constraint FK_idMed FOREIGN KEY (idMedecin) references Medecin (idMedecin),
      Constraint FK_idProche FOREIGN KEY (idProche) references Proche (idProche),
-     Constraint Unq_Pat UNIQUE (userNamePatient,mailPatient,NumTlfPatient)
+     Constraint Unq_Pat_user UNIQUE (userNamePatient),
+     Constraint Unq_Pat_mail UNIQUE (mailPatient),
+     Constraint Unq_Pat_Num UNIQUE (NumTlfPatient)
 );
 
 Create table FichierECG (
      idFichierECG INT NOT NULL AUTO_INCREMENT, 
-     lienFichier VARCHAR(200), 
+     lienFichier VARCHAR(255), 
      dateCreation DATETIME,
      idPatient INT,
      primary key(idFichierECG),
