@@ -299,7 +299,7 @@ app.post("/confirmation/:token", (req, res) => {
   });
 });
 
-// Delete doctor's account api
+// Delete doctor's account API
 app.post("/medecin/delete", verifiToken, (req, res) => {
   const statement = "DELETE FROM medecin WHERE idMedecin=?";
   dbConnection.query(statement, req.autData.id, (err, result) => {
@@ -310,6 +310,27 @@ app.post("/medecin/delete", verifiToken, (req, res) => {
       res.end();
     }
   });
+});
+
+// Modify doctor's mail API
+app.post("/medecin/modifyMail", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({ email: joi.string().email().required() })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    const statement = "UPDATE medecin SET mailMedecin=? WHERE idMedecin=?";
+    dbConnection.query(
+      statement,
+      [value.email, req.autData.id],
+      (err, result) => {
+        if (err) {
+          console.log(err);
+          res.sendStatus(500);
+        } else res.end();
+      }
+    );
+  }
 });
 
 app.listen(3000, () => {
