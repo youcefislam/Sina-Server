@@ -8,7 +8,6 @@ var jwt = require("jsonwebtoken"); // Used to create/verify tokens. For more det
 const joi = require("joi"); // Used to validate the form of the received data. For more detail check: https://joi.dev/api/?v=17.6.0
 const nodemailer = require("nodemailer"); // Used to send mails. For more detail check: https://nodemailer.com/about/
 const moment = require("moment"); // for better date and time treatment For more detail check:https://momentjs.com/
-const { json } = require("express/lib/response");
 
 // ### initialization of express ###
 var app = express();
@@ -89,6 +88,22 @@ const medecinSignIn = joi.object({
 // Getting the secret key for jwt (to be changed later)
 const mySecretKey =
   "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNzkwMTUwMDY0IiwibmFtZSI6IllvdWNlZiIsImFkbWluIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjJ9.BZN25sqbB_Qm7KQq7GyeFjYoWo2J_XvuWZw-2ocFGVWBXHc7v5-UHbYB7xmTvI_NBG8RaFh7wOfs4PNUJ7anlI8nHQQ5QF10kU-CLDO-18dG52uepkTX1vUqbUvNLG4QqLhidj-IcLgpHgfUPjiBq5YHyXyzEkRtyZZKOvDTRQtBBLqqoSxvgKq6FBQJZz47UbacVXOkPFyXC74u28QOZdA5vrQip7Gdex_rt2HNCzs977kTf4lhHJYF5UQcXLrLbo2vQ6V-5wupYLlmF2CCyG9dLxRzxbNY2oBOdqQy2DyRWqONtsnP3Z9s_KrbIgLfhPQLDB4x24UYUu9le7Q_A";
+// verify token function with jwt
+const verifiToken = (req, res, next) => {
+  const brearerHeader = req.header["authorization"];
+  if (brearerHeader) {
+    // we split the bearerHeader and take the bearer token
+    req.token = bearerHeader.split(" ")[1];
+    jwt.verify(req.token, MySecretKey, (err, autData) => {
+      // verify the token
+      if (err) res.sendStatus(403);
+      else {
+        req.autData = autData;
+        next();
+      }
+    });
+  } else res.sendStatus(403);
+};
 
 //int nodemailer (to be added later)
 let transporter = nodemailer.createTransport({
@@ -281,6 +296,16 @@ app.post("/confirmation/:token", (req, res) => {
     if (err) res.sendStatus(403); // invalid token
     else res.sendStatus(200); //valid token
   });
+});
+
+// Delete doctor's account api
+app.post("/medecin/delete", verifiToken, (req, res) => {
+  console.log(req.autData);
+  res.end();
+});
+
+app.listen(3000, () => {
+  console.log("Server connected on port 3000!");
 });
 
 app.listen(3000, () => {
