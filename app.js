@@ -8,6 +8,7 @@ var jwt = require("jsonwebtoken"); // Used to create/verify tokens. For more det
 const joi = require("joi"); // Used to validate the form of the received data. For more detail check: https://joi.dev/api/?v=17.6.0
 const nodemailer = require("nodemailer"); // Used to send mails. For more detail check: https://nodemailer.com/about/
 const moment = require("moment"); // for better date and time treatment For more detail check:https://momentjs.com/
+const Joi = require("joi");
 
 // ### initialization of express ###
 var app = express();
@@ -72,8 +73,8 @@ const medecinSignUp = joi.object({
   password: joi.string().alphanum().min(8).required(),
   repeat_password: joi.ref("password"),
   email: joi.string().email().required(),
-  nom: joi.string().max(20).required(),
-  prenom: joi.ref("nom"),
+  nom: joi.string().max(50).required(),
+  prenom: joi.string().max(50).required(),
   numeroTlf: joi.string().max(10).required(),
   sex: joi.number().max(1).required(),
   address: joi.string().max(400).required(),
@@ -83,6 +84,12 @@ const medecinSignUp = joi.object({
 const medecinSignIn = joi.object({
   username: joi.string().alphanum().min(6).required(),
   password: joi.string().alphanum().min(8).required(),
+});
+const procheInfo = joi.object({
+  email: joi.string().email().required(),
+  nom: joi.string().max(50).required(),
+  prenom: joi.string().max(50).required(),
+  numeroTlf: joi.string().max(10).required(),
 });
 
 // Getting the secret key for jwt (to be changed later)
@@ -310,6 +317,71 @@ app.post("/medecin/delete", verifiToken, (req, res) => {
       res.end();
     }
   });
+});
+
+// Modify the relative's mail API
+app.post("/proche/modifyAddress", verifiToken, (req, res) => {
+  const { error, value } = Joi.object({
+    email: joi.string().email().required(),
+  }).validate(req.body);
+  if (error) res.status(403).send(error.details);
+  else {
+    sql =
+      "UPDATE proche SET mailProche = ? WHERE idProche=(SELECT idProche FROM patient WHERE idPatient=?);";
+    dbConnection.query(sql, [value.email, req.autData.id], (err, result) => {
+      if (err) {
+        console.log(err);
+        res.sendStatus(500);
+      } else {
+        res.end();
+      }
+    });
+  }
+});
+
+// Modify the relative's phone number API
+app.post("/proche/modifyPhone", verifiToken, (req, res) => {
+  const { error, value } = Joi.object({
+    number: joi.string().min(10).required(),
+  }).validate(req.body);
+  if (error) res.status(403).send(error.details);
+  else {
+    sql =
+      "UPDATE proche SET NumTlfProche = ? WHERE idProche=(SELECT idProche FROM patient WHERE idPatient=?);";
+    dbConnection.query(sql, [value.number, req.autData.id], (err, result) => {
+      if (err) {
+        console.log(err);
+        res.sendStatus(500);
+      } else {
+        res.end();
+      }
+    });
+  }
+});
+
+// Modify the relative's name API
+app.post("/proche/modifyName", verifiToken, (req, res) => {
+  const { error, value } = Joi.object({
+    nom: joi.string().max(50).required(),
+    prenom: joi.string().max(50).required(),
+  }).validate(req.body);
+  if (error) res.status(403).send(error.details);
+  else {
+    sql =
+      "UPDATE proche SET nomProche = ?,nomProche = ? WHERE idProche=(SELECT idProche FROM patient WHERE idPatient=?);";
+    dbConnection.query(
+      sql,
+      [value.nom, value.prenom, req.autData.id],
+      (err, result) => {
+        if (err) {
+          console.log(err);
+          res.sendStatus(500);
+        } else {
+          res.end();
+        }
+      }
+    );
+  }
 });
 
 app.listen(3000, () => {
