@@ -8,6 +8,7 @@ var jwt = require("jsonwebtoken"); // Used to create/verify tokens. For more det
 const joi = require("joi"); // Used to validate the form of the received data. For more detail check: https://joi.dev/api/?v=17.6.0
 const nodemailer = require("nodemailer"); // Used to send mails. For more detail check: https://nodemailer.com/about/
 const moment = require("moment"); // for better date and time treatment For more detail check:https://momentjs.com/
+const { json } = require("express/lib/response");
 
 // ### initialization of express ###
 var app = express();
@@ -80,6 +81,10 @@ const medecinSignUp = joi.object({
   wilaya: joi.number().required(),
   daira: joi.number().required(),
 });
+const medecinSignIn = joi.object({
+  username: joi.string().alphanum().min(6).required(),
+  password: joi.string().alphanum().min(8).required(),
+});
 
 // Getting the secret key for jwt (to be changed later)
 const mySecretKey =
@@ -95,6 +100,7 @@ let transporter = nodemailer.createTransport({
 });
 
 // Here goes the API
+// Sign up API for doctors
 app.post("/medecin/signup", upload.single("photo"), (req, res) => {
   // Check the data form and verify it
   const { error, value } = medecinSignUp.validate(req.body);
@@ -104,8 +110,7 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
       fs.unlink(path.normalize(req.file.path), (err) => {
         if (err) console.log("##fs error##", err);
       });
-    console.log(error.details);
-    res.send(error.details);
+    res.status(403).send(error.details);
   } else {
     // Hashing the password using the bcrypt module
     const saltRounds = 10;
@@ -113,6 +118,7 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
       .hash(value.password, saltRounds)
       .then((hash) => {
         const date = moment().format().slice(0, 19).replace("T", " ");
+        // SQL statement we dont use the data here to prevent SQL injections so we replace the fields with a ? and add them when we execute the statement
         const sql = `INSERT INTO medecin(userNameMedecin,passwordMedecin,mailMedecin,nomMedecin,prenomMedecin,sexeMedecin,photoMedecin,dateInscriptientMedecin,NumTlfMedecin,idDaira)
         VALUES(?,?,?,?,?,?,?,?,?,?);`;
         // Add the doctor to our database
@@ -141,9 +147,12 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
               // if we have double entry error
               if (dbErr.errno == 1062)
                 res.send(
-                  JSON.stringify({ error: 1062, message: dbErr.sqlMessage })
+                  JSON.status(403).stringify({
+                    error: 1062,
+                    message: dbErr.sqlMessage,
+                  })
                 );
-              else res.sendStatus(500);
+              else res.sendStatus(500); // Internal server ERROR
             } else {
               // Everything is good we move on
               // Create a token for the user
@@ -206,8 +215,64 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
   }
 });
 
-app.get("/", (req, res) => {
-  res.send("test");
+// Sign in a doctor API
+app.get("/medecin/signin", (req, res) => {
+  // we validate the form of data we receive
+
+  const { error, value } = medecinSignIn.validate(req.body);
+  if (error) {
+    // data not valid
+    res.status(403).send(error.details);
+  } else {
+    // valid data .. next
+    // select the user information from the database and compare it to the received data
+    const statement =
+      "SELECT idMedecin,passwordMedecin FROM medecin WHERE usernameMedecin=?";
+    dbConnection.query(statement, value.username, (err, result) => {
+      if (err) {
+        console.log(err);
+        res.sendStatus(500);
+      } else {
+        if (result[0]) {
+          // Account exist
+          bcrypt.compare(
+            value.password,
+            result[0].passwordMedecin,
+            (err, correct) => {
+              if (err) {
+                console.log(err);
+                res.sendStatus(500);
+              } else {
+                if (correct) {
+                  // Correct password
+                  // Token generation
+                  jwt.sign(
+                    { id: result[0].idMedecin, username: result[0].username },
+                    mySecretKey,
+                    (err, token) => {
+                      if (err) {
+                        console.log(err);
+                        res.sendStatus(500);
+                      } else {
+                        // token generated we send it back to the user
+                        res.send(JSON.stringify({ token }));
+                      }
+                    }
+                  );
+                } else {
+                  // Wrong password
+                  res.status(403).send(JSON.stringify({ error: "password" }));
+                }
+              }
+            }
+          );
+        } else {
+          // No account exist with that username
+          res.status(403).send(JSON.stringify({ error: "username" }));
+        }
+      }
+    });
+  }
 });
 
 app.listen(3000, () => {
