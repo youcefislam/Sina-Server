@@ -275,6 +275,14 @@ app.get("/medecin/signin", (req, res) => {
   }
 });
 
+// Account validation API
+app.post("/confirmation/:token", (req, res) => {
+  jwt.verify(req.params.token, mySecretKey, (err, autData) => {
+    if (err) res.sendStatus(403); // invalid token
+    else res.sendStatus(200); //valid token
+  });
+});
+
 app.listen(3000, () => {
   console.log("Server connected on port 3000!");
 });
