@@ -90,11 +90,12 @@ const mySecretKey =
   "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNzkwMTUwMDY0IiwibmFtZSI6IllvdWNlZiIsImFkbWluIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjJ9.BZN25sqbB_Qm7KQq7GyeFjYoWo2J_XvuWZw-2ocFGVWBXHc7v5-UHbYB7xmTvI_NBG8RaFh7wOfs4PNUJ7anlI8nHQQ5QF10kU-CLDO-18dG52uepkTX1vUqbUvNLG4QqLhidj-IcLgpHgfUPjiBq5YHyXyzEkRtyZZKOvDTRQtBBLqqoSxvgKq6FBQJZz47UbacVXOkPFyXC74u28QOZdA5vrQip7Gdex_rt2HNCzs977kTf4lhHJYF5UQcXLrLbo2vQ6V-5wupYLlmF2CCyG9dLxRzxbNY2oBOdqQy2DyRWqONtsnP3Z9s_KrbIgLfhPQLDB4x24UYUu9le7Q_A";
 // verify token function with jwt
 const verifiToken = (req, res, next) => {
-  const brearerHeader = req.header["authorization"];
-  if (brearerHeader) {
+  // console.log(req.headers);
+  const bearerHeader = req.headers["authorization"];
+  if (bearerHeader) {
     // we split the bearerHeader and take the bearer token
     req.token = bearerHeader.split(" ")[1];
-    jwt.verify(req.token, MySecretKey, (err, autData) => {
+    jwt.verify(req.token, mySecretKey, (err, autData) => {
       // verify the token
       if (err) res.sendStatus(403);
       else {
@@ -300,12 +301,16 @@ app.post("/confirmation/:token", (req, res) => {
 
 // Delete doctor's account api
 app.post("/medecin/delete", verifiToken, (req, res) => {
-  console.log(req.autData);
-  res.end();
-});
-
-app.listen(3000, () => {
-  console.log("Server connected on port 3000!");
+  const statement = "DELETE FROM medecin WHERE idMedecin=?";
+  dbConnection.query(statement, req.autData.id, (err, result) => {
+    if (err) {
+      console.log(err);
+      res.sendStatus(500);
+    } else {
+      console.log(result);
+      res.end();
+    }
+  });
 });
 
 app.listen(3000, () => {
