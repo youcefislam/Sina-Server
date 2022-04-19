@@ -99,15 +99,13 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
   // Check the data form and verify it
   const { error, value } = medecinSignUp.validate(req.body);
   if (error) {
-    fs.unlink(path.normalize(req.file.path), (err) => {
-      if (err) {
-        console.log(err);
-        res.sendStatus(500);
-      } else {
-        console.log(error.details);
-        res.send(error.details);
-      }
-    });
+    // if errors occurs we delete the image from the file system if exist
+    if (req.file)
+      fs.unlink(path.normalize(req.file.path), (err) => {
+        if (err) console.log("##fs error##", err);
+      });
+    console.log(error.details);
+    res.send(error.details);
   } else {
     // Hashing the password using the bcrypt module
     const saltRounds = 10;
@@ -135,16 +133,17 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
           (dbErr, result) => {
             // If any database error occure
             if (dbErr) {
-              fs.unlink(path.normalize(req.file.path), (err) => {
-                if (err) console.log("##fs error##", err);
-                console.log("##db error##", dbErr);
-                // if we have double entry error
-                if (dbErr.errno == 1062)
-                  res.send(
-                    JSON.stringify({ error: 1062, message: dbErr.sqlMessage })
-                  );
-                else res.sendStatus(500);
-              });
+              if (req.file)
+                fs.unlink(path.normalize(req.file.path), (err) => {
+                  if (err) console.log("##fs error##", err);
+                });
+              console.log("##db error##", dbErr);
+              // if we have double entry error
+              if (dbErr.errno == 1062)
+                res.send(
+                  JSON.stringify({ error: 1062, message: dbErr.sqlMessage })
+                );
+              else res.sendStatus(500);
             } else {
               // Everything is good we move on
               // Create a token for the user
@@ -153,11 +152,12 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
                 mySecretKey,
                 (jwtErr, token) => {
                   if (jwtErr) {
-                    fs.unlink(path.normalize(req.file.path), (err) => {
-                      if (err) console.log(err);
-                      console.log(jwtErr);
-                      res.sendStatus(500);
-                    });
+                    if (req.file)
+                      fs.unlink(path.normalize(req.file.path), (err) => {
+                        if (err) console.log(err);
+                      });
+                    console.log(jwtErr);
+                    res.sendStatus(500);
                   } else {
                     const url = `http://localhost:3000/confirmation/${token}`;
                     const emailBody = `
@@ -176,13 +176,14 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
                         html: emailBody, // html body
                       },
                       (MailerErr, data) => {
-                        if (MailerErr)
-                          fs.unlink(path.normalize(req.file.path), (err) => {
-                            if (err) console.log(err);
-                            console.log(MailerErr);
-                            res.sendStatus(500);
-                          });
-                        else {
+                        if (MailerErr) {
+                          if (req.file)
+                            fs.unlink(path.normalize(req.file.path), (err) => {
+                              if (err) console.log(err);
+                            });
+                          console.log(MailerErr);
+                          res.sendStatus(500);
+                        } else {
                           res.send(JSON.stringify({ token }));
                         }
                       }
@@ -195,11 +196,12 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
         );
       })
       .catch((bcrypterr) => {
-        fs.unlink(path.normalize(req.file.path), (err) => {
-          if (err) console.log("##fs error##", err);
-          console.log(bcrypterr);
-          res.sendStatus(500);
-        });
+        if (req.file)
+          fs.unlink(path.normalize(req.file.path), (err) => {
+            if (err) console.log("##fs error##", err);
+          });
+        console.log(bcrypterr);
+        res.sendStatus(500);
       });
   }
 });
