@@ -72,8 +72,8 @@ const medecinSignUp = joi.object({
   password: joi.string().alphanum().min(8).required(),
   repeat_password: joi.ref("password"),
   email: joi.string().email().required(),
-  nom: joi.string().max(20).required(),
-  prenom: joi.ref("nom"),
+  nom: joi.string().max(50).required(),
+  prenom: joi.string().max(50).required(),
   numeroTlf: joi.string().max(10).required(),
   sex: joi.number().max(1).required(),
   address: joi.string().max(400).required(),
@@ -162,8 +162,8 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
               console.log("##db error##", dbErr);
               // if we have double entry error
               if (dbErr.errno == 1062)
-                res.send(
-                  JSON.status(403).stringify({
+                res.status(403).send(
+                  JSON.stringify({
                     error: 1062,
                     message: dbErr.sqlMessage,
                   })
@@ -323,15 +323,220 @@ app.post("/medecin/modifyMail", verifiToken, (req, res) => {
     dbConnection.query(
       statement,
       [value.email, req.autData.id],
-      (err, result) => {
-        if (err) {
-          console.log(err);
-          res.sendStatus(500);
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          // if we have double entry error
+          if (dbErr.errno == 1062)
+            res.status(403).send(
+              JSON.stringify({
+                error: 1062,
+                message: dbErr.sqlMessage,
+              })
+            );
+          else res.sendStatus(500); // Internal server ERROR
         } else res.end();
       }
     );
   }
 });
+
+// Modify doctor's username API
+app.post("/medecin/modifyUsername", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({ username: joi.string().min(6).required() })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    const statement = "UPDATE medecin SET userNameMedecin=? WHERE idMedecin=?";
+    dbConnection.query(
+      statement,
+      [value.username, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          // if we have double entry error
+          if (dbErr.errno == 1062)
+            res.status(403).send(
+              JSON.stringify({
+                error: 1062,
+                message: dbErr.sqlMessage,
+              })
+            );
+          else res.sendStatus(500); // Internal server ERROR
+        } else
+          jwt.sign(
+            { id: req.autData.id, username: value.username },
+            mySecretKey,
+            (err, token) => {
+              if (err) {
+                console.log(err);
+                res.sendStatus(500);
+              } else {
+                // token generated we send it back to the user
+                res.send(JSON.stringify({ token }));
+              }
+            }
+          );
+      }
+    );
+  }
+});
+
+// Modify doctor's password API
+app.post("/medecin/modifyPassword", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      password: joi.string().alphanum().min(8).required(),
+      repeat_password: joi.ref("password"),
+    })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    const saltRounds = 10;
+    bcrypt
+      .hash(value.password, saltRounds)
+      .then((hash) => {
+        const statement =
+          "UPDATE medecin SET passwordMedecin=? WHERE idMedecin=?";
+        dbConnection.query(
+          statement,
+          [hash, req.autData.id],
+          (dbErr, result) => {
+            if (dbErr) {
+              console.log("##db error##", dbErr);
+              res.sendStatus(500); // Internal server ERROR
+            } else res.end();
+          }
+        );
+      })
+      .catch((bcrypterr) => {
+        console.log(bcrypterr);
+        res.sendStatus(500);
+      });
+  }
+});
+
+// Modify doctor's first and last name API
+app.post("/medecin/modifyName", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      nom: joi.string().max(50).required(),
+      prenom: joi.string().max(50).required(),
+    })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    const statement =
+      "UPDATE medecin SET nomMedecin=?,prenomMedecin=? WHERE idMedecin=?";
+    dbConnection.query(
+      statement,
+      [value.nom, value.prenom, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          res.sendStatus(500); // Internal server ERROR
+        } else res.end();
+      }
+    );
+  }
+});
+
+// Modify doctor's phone number API
+app.post("/medecin/modifyNumber", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      numeroTlf: joi.string().max(10).required(),
+    })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    const statement = "UPDATE medecin SET NumTlfMedecin=? WHERE idMedecin=?";
+    dbConnection.query(
+      statement,
+      [value.numeroTlf, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          // if we have double entry error
+          if (dbErr.errno == 1062)
+            res.status(403).send(
+              JSON.stringify({
+                error: 1062,
+                message: dbErr.sqlMessage,
+              })
+            );
+          else res.sendStatus(500); // Internal server ERROR
+        } else res.end();
+      }
+    );
+  }
+});
+
+// Modify doctor's auto accept API
+app.post("/medecin/modifyAccept", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({ auto: joi.number().max(1).required() })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    const statement = "UPDATE medecin SET autoAccept=? WHERE idMedecin=?";
+    dbConnection.query(
+      statement,
+      [value.auto, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          res.sendStatus(500); // Internal server ERROR
+        } else res.end();
+      }
+    );
+  }
+});
+
+// Modify doctor's daira API
+app.post("/medecin/modifyDaira", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      daira: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    const statement =
+      "UPDATE medecin SET idDaira=(SELECT idDaira FROM daira WHERE idDaira=?) WHERE idMedecin=?;";
+    dbConnection.query(
+      statement,
+      [value.daira, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          res.sendStatus(500); // Internal server ERROR
+        } else res.end();
+      }
+    );
+  }
+});
+
+// Modify doctor's photo API
+app.post(
+  "/medecin/modifyPhoto",
+  verifiToken,
+  upload.single("photo"),
+  (req, res) => {
+    const statement = "UPDATE medecin SET photoMedecin=? WHERE idMedecin=?";
+    dbConnection.query(
+      statement,
+      [req.file ? req.file.path : null, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          res.sendStatus(500); // Internal server ERROR
+        } else res.end();
+      }
+    );
+  }
+);
 
 app.listen(3000, () => {
   console.log("Server connected on port 3000!");
