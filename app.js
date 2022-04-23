@@ -8,7 +8,6 @@ var jwt = require("jsonwebtoken"); // Used to create/verify tokens. For more det
 const joi = require("joi"); // Used to validate the form of the received data. For more detail check: https://joi.dev/api/?v=17.6.0
 const nodemailer = require("nodemailer"); // Used to send mails. For more detail check: https://nodemailer.com/about/
 const moment = require("moment"); // for better date and time treatment For more detail check:https://momentjs.com/
-const Joi = require("joi");
 
 // ### initialization of express ###
 var app = express();
