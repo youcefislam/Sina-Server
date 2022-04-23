@@ -165,7 +165,7 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
       .hash(value.password, saltRounds)
       .then((hash) => {
         // SQL statement we dont use the data here to prevent SQL injections so we replace the fields with a ? and add them when we execute the statement
-        let sql = `INSERT INTO medecin(userNameMedecin,passwordMedecin,mailMedecin,nomMedecin,prenomMedecin,sexeMedecin,photoMedecin,dateInscriptientMedecin,NumTlfMedecin,idDaira)
+        let statement = `INSERT INTO medecin(userNameMedecin,passwordMedecin,mailMedecin,nomMedecin,prenomMedecin,sexeMedecin,photoMedecin,dateInscriptientMedecin,NumTlfMedecin,idDaira)
         VALUES(?,?,?,?,?,?,?,curdate(),?,?);`;
         // Add the doctor to our database
         dbPool.query(
@@ -200,51 +200,64 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
               else res.sendStatus(500); // Internal server ERROR
             } else {
               // Everything is good we move on
-              // Create a token for the user
-              jwt.sign(
-                { id: result.insertId, username: value.username },
-                mySecretKey,
-                (jwtErr, token) => {
-                  if (jwtErr) {
-                    if (req.file)
-                      fs.unlink(path.normalize(req.file.path), (err) => {
-                        if (err) console.log(err);
-                      });
-                    console.log(jwtErr);
-                    res.sendStatus(500);
-                  } else {
-                    const url = `http://localhost:3000/confirmation/${token}`;
-                    const emailBody = `
-                            <h3>Cher ${value.username}!</h3>
-                            <p>TVeuillez cliquer sur le lien de confirmation ci-dessous pour vérifier votre adresse e-mail et créer votre compte:</p>
-                            <a href='${url}'>${url}</a>
-                            <p>Cordialement,</p>
-                            <p>L'équipe de Sina.</p>`;
-                    // We send a confirmation mail to the user here
-                    transporter.sendMail(
-                      {
-                        from: '"Sina" sina.app.pfe@gmail.com', // sender address
-                        to: value.email, // list of receivers
-                        subject: "Vérifiez votre adresse e-mail ✔", // Subject line
-                        text: "Sina support team", // plain text body
-                        html: emailBody, // html body
-                      },
-                      (MailerErr, data) => {
-                        if (MailerErr) {
-                          if (req.file)
-                            fs.unlink(path.normalize(req.file.path), (err) => {
-                              if (err) console.log(err);
-                            });
-                          console.log(MailerErr);
-                          res.sendStatus(500);
-                        } else {
-                          res.send(JSON.stringify({ token }));
-                        }
+              // we add the doctor to the not verified accounts table
+              statement = "INSERT INTO medecinNonVerifie VALUES(?);";
+              dbPool(statement, result.insertId, (dbEerr, result2) => {
+                if (dbEerr) {
+                  // database error
+                  console.log("## db error ## ", dbErr);
+                  res.sendStatus(500);
+                } else {
+                  // Create a token for the user
+                  jwt.sign(
+                    { id: result.insertId, username: value.username },
+                    mySecretKey,
+                    (jwtErr, token) => {
+                      if (jwtErr) {
+                        if (req.file)
+                          fs.unlink(path.normalize(req.file.path), (err) => {
+                            if (err) console.log(err);
+                          });
+                        console.log(jwtErr);
+                        res.sendStatus(500);
+                      } else {
+                        const url = `http://localhost:3000/confirmation/${token}`;
+                        const emailBody = `
+                                <h3>Cher ${value.username}!</h3>
+                                <p>TVeuillez cliquer sur le lien de confirmation ci-dessous pour vérifier votre adresse e-mail et créer votre compte:</p>
+                                <a href='${url}'>${url}</a>
+                                <p>Cordialement,</p>
+                                <p>L'équipe de Sina.</p>`;
+                        // We send a confirmation mail to the user here
+                        transporter.sendMail(
+                          {
+                            from: '"Sina" sina.app.pfe@gmail.com', // sender address
+                            to: value.email, // list of receivers
+                            subject: "Vérifiez votre adresse e-mail ✔", // Subject line
+                            text: "Sina support team", // plain text body
+                            html: emailBody, // html body
+                          },
+                          (MailerErr, data) => {
+                            if (MailerErr) {
+                              if (req.file)
+                                fs.unlink(
+                                  path.normalize(req.file.path),
+                                  (err) => {
+                                    if (err) console.log(err);
+                                  }
+                                );
+                              console.log(MailerErr);
+                              res.sendStatus(500);
+                            } else {
+                              res.send(JSON.stringify({ token }));
+                            }
+                          }
+                        );
                       }
-                    );
-                  }
+                    }
+                  );
                 }
-              );
+              });
             }
           }
         );
