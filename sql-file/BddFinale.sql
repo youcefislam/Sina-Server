@@ -12,7 +12,7 @@ Create table Daira (
      nomDaira VARCHAR(50),
      idWilaya INT,
      primary key (idDaira),
-     Constraint FK_IdWil FOREIGN KEY (idWilaya) references Wilaya(idWilaya)
+     Constraint FK_daira_IdWil FOREIGN KEY (idWilaya) references Wilaya(idWilaya)
      ON DELETE CASCADE
 );
 
@@ -21,7 +21,7 @@ Create table Commune (
      nomCommune VARCHAR(50), 
      idDaira INT,
      primary key(idCommune),
-     Constraint FK_IdDa FOREIGN KEY (idDaira) references Daira (idDaira)
+     Constraint FK_com_IdDa FOREIGN KEY (idDaira) references Daira (idDaira)
      ON DELETE CASCADE
 );
 
@@ -32,7 +32,7 @@ Create table Hopital (
      numTlfHopital VARCHAR(10), 
      idCommune INT,
      primary key(idHoptial),
-     Constraint FK_idCommun FOREIGN KEY (idCommune) references Commune (idCommune) ON DELETE CASCADE,
+     Constraint FK_hopital_idCommun FOREIGN KEY (idCommune) references Commune (idCommune) ON DELETE CASCADE,
      Constraint Unq_hopital_num UNIQUE(numTlfHopital)
 );
 
@@ -73,7 +73,7 @@ Create table Medecin(
      autoAccept TINYINT default 0,
      idDaira INT,
      primary key (idMedecin),
-     Constraint Fk_IdDaira FOREIGN KEY (idDaira) references Daira(idDaira) ON DELETE SET NULL,
+     Constraint Fk_Med_IdDaira FOREIGN KEY (idDaira) references Daira(idDaira) ON DELETE SET NULL,
      Constraint Unq_Med_user UNIQUE (userNameMedecin),
      Constraint Unq_Med_mail UNIQUE (mailMedecin),
      Constraint Unq_Med_Num UNIQUE (NumTlfMedecin)
@@ -87,24 +87,24 @@ Create table Patient (
      nomPatient VARCHAR(50), 
      prenomPatient VARCHAR(50), 
      sexePatient TINYINT, 
-     dateNaisPatient DATETIME,
+     dateNaisPatient DATE,
      adressPatient VARCHAR(255),
      photoPatient VARCHAR(255), 
      degreGravite TINYINT, 
      dateInscriptionPatient DATETIME, 
-     statusPatient TINYINT, 
+     statusPatient TINYINT default 0, 
      lienJournalMedicament VARCHAR(255), 
      lienHistoriqueRV VARCHAR(255), 
-     NumTlfPatient VARCHAR(10) NOT NULL, 
+     NumTlfPatient VARCHAR(10), 
      idTypeMaladie INT,
      idCommune INT,
      idMedecin INT,
      idProche INT,
      Primary key (idPatient),
-     Constraint FK_PatTypeMal FOREIGN KEY (idTypeMaladie) references TypeMaladie(idTypeMaladie) ON DELETE SET NULL,
-     Constraint FK_idCommune FOREIGN KEY (idCommune) references Commune(idCommune) ON DELETE SET NULL,
-     Constraint FK_idMed FOREIGN KEY (idMedecin) references Medecin (idMedecin) ON DELETE SET NULL,
-     Constraint FK_idProche FOREIGN KEY (idProche) references Proche (idProche) ON DELETE SET NULL,
+     Constraint FK_pat_PatTypeMal FOREIGN KEY (idTypeMaladie) references TypeMaladie(idTypeMaladie) ON DELETE SET NULL,
+     Constraint FK_pat_idCommune FOREIGN KEY (idCommune) references Commune(idCommune) ON DELETE SET NULL,
+     Constraint FK_pat_idMed FOREIGN KEY (idMedecin) references Medecin (idMedecin) ON DELETE SET NULL,
+     Constraint FK_pat_idProche FOREIGN KEY (idProche) references Proche (idProche) ON DELETE SET NULL,
      Constraint Unq_Pat_user UNIQUE (userNamePatient),
      Constraint Unq_Pat_mail UNIQUE (mailPatient),
      Constraint Unq_Pat_Num UNIQUE (NumTlfPatient)
@@ -116,7 +116,7 @@ Create table FichierECG (
      dateCreation DATETIME,
      idPatient INT,
      primary key(idFichierECG),
-     Constraint FK_IdPa FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
+     Constraint FK_FichEcg_IdPa FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
 );
 
 Create table Rendezvous (
@@ -125,14 +125,14 @@ Create table Rendezvous (
      lieuRV VARCHAR(255), 
      idPatient int NOT NULL,
      primary key(idRendezVous),
-     Constraint FK_IdPaa FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
+     Constraint FK_RDV_IdPaa FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
 );
 
 Create table ListAtt(
      idMedecin INT primary key,
      idPatient INT NOT NULL,
-     Constraint FK_IdPatient FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE,
-     Constraint FK_IdMede FOREIGN KEY (idMedecin) references Medecin (idMedecin) ON DELETE CASCADE
+     Constraint FK_listAtt_IdPatient FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE,
+     Constraint FK_listAtt_IdMede FOREIGN KEY (idMedecin) references Medecin (idMedecin) ON DELETE CASCADE
 );
 
 Create table ListMedicament (
@@ -140,8 +140,8 @@ Create table ListMedicament (
      posologie INT,
      idPatient INT NOT NULL,
      idMedicament int NOT NULL,
-     Constraint FK_IdPatie FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE,
-     Constraint FK_IdMedicament FOREIGN KEY (idMedicament) references medicament (idMedicament) ON DELETE CASCADE,
+     Constraint FK_listMed_IdPatie FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE,
+     Constraint FK_listMed_IdMedicament FOREIGN KEY (idMedicament) references medicament (idMedicament) ON DELETE CASCADE,
      Primary KEY (idPatient,idMedicament)
 );
 
@@ -151,7 +151,7 @@ Create table Rapport (
      dateRapport DATETIME,
      idPatient int NOT NULL,
      primary key (idRapport),
-     Constraint FK_IdPati FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
+     Constraint FK_Rap_IdPati FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
 );
 
 Create table NoteMedecin (
@@ -160,6 +160,18 @@ Create table NoteMedecin (
      NoteMedecin VARCHAR(1000), 
      idPatient int NOT NULL,
      primary key (idNote),
-     Constraint FK_IdP FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
+     Constraint FK_Note_IdP FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
 );
 
+CREATE TABLE patientNonVerifie(
+     idPatient INT NOT NULL,
+     validationCode INT NOT NULL,
+     PRIMARY KEY (idPatient),
+     CONSTRAINT FK_patNonVerif_IdP FOREIGN KEY (idPatient) REFERENCES patient (idPatient) ON DELETE CASCADE
+);
+
+CREATE TABLE medecinNonVerifie(
+     idMedecin INT NOT NULL,
+     PRIMARY KEY (idMedecin),
+     CONSTRAINT FK_medNonVerif_IdP FOREIGN KEY (idMedecin) REFERENCES medecin (idMedecin) ON DELETE CASCADE
+);
