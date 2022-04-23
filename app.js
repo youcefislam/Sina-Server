@@ -8,6 +8,7 @@ var jwt = require("jsonwebtoken"); // Used to create/verify tokens. For more det
 const joi = require("joi"); // Used to validate the form of the received data. For more detail check: https://joi.dev/api/?v=17.6.0
 const nodemailer = require("nodemailer"); // Used to send mails. For more detail check: https://nodemailer.com/about/
 const moment = require("moment"); // for better date and time treatment For more detail check:https://momentjs.com/
+const { hash } = require("bcrypt");
 
 // ### initialization of express ###
 var app = express();
@@ -95,6 +96,24 @@ const medecinSignUp = joi.object({
 const medecinSignIn = joi.object({
   username: joi.string().alphanum().min(6).required(),
   password: joi.string().alphanum().min(8).required(),
+});
+const patientSignUp = joi.object({
+  username: joi.string().alphanum().min(6).required(),
+  password: joi.string().alphanum().min(8).required(),
+  repeat_password: joi.ref("password"),
+  email: joi.string().email().required(),
+});
+const patientInfo = joi.object({
+  nom: joi.string().max(50).required(),
+  prenom: joi.string().max(50).required(),
+  sex: joi.number().max(1).required(),
+  dateNaiss: joi.date().required(),
+});
+const relativeInfo = joi.object({
+  nom: joi.string().max(50).required(),
+  prenom: joi.string().max(50).required(),
+  numeroTlf: joi.string().max(10).required(),
+  email: joi.string().email().required(),
 });
 
 // Getting the secret key for jwt (to be changed later)
@@ -751,6 +770,396 @@ app.post("/medecin/patientlist/remove", verifiToken, (req, res) => {
           // the doctor id is not the same as the patient's doctor id
           res.sendStatus(403);
         }
+      }
+    });
+  }
+});
+
+// Patient sign up API -- tested
+app.post("/patient/signUp", (req, res) => {
+  // verifying the form of data
+  const { error, value } = patientSignUp.validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // valid data
+    // hash the password
+    const saltRounds = 10;
+    bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+      if (err) {
+        // bcrypt error
+        console.log("## bcrypt err ## ", err);
+        res.sendStatus(500);
+      } else {
+        // password hashed successfully
+        // insert the patient to our database
+        let statement =
+          "INSERT INTO patient(userNamePatient,passwordPatient,mailPatient,dateInscriptionPatient) VALUES(?,?,?,CURDATE());";
+        dbPool.query(
+          statement,
+          [value.username, hash, value.email],
+          (dbErr, result1) => {
+            if (dbErr) {
+              // database error
+              console.log("##db error##", dbErr);
+              // if we have double entry error
+              if (dbErr.errno == 1062)
+                res.status(403).send(
+                  JSON.stringify({
+                    error: 1062,
+                    message: dbErr.sqlMessage,
+                  })
+                );
+              else res.sendStatus(500); // Internal server ERROR
+            } else {
+              // no database errors
+              // insert the patient to the notVerified table
+              statement = "INSERT INTO patientNonVerifie values (?,?);";
+              const validationCode = Math.floor(
+                Math.random() * 899999 + 100000
+              );
+              dbPool.query(
+                statement,
+                [result1.insertId, validationCode],
+                (dbErr, result2) => {
+                  if (dbErr) {
+                    // database error
+                    console.log("##db error##", dbErr);
+                    res.sendStatus(500);
+                  } else {
+                    // no database errors
+                    // generate a validation code
+                    const emailBody = `
+                            <h3>Cher ${value.username}!</h3>
+                            <p>Voici le code de validation ci-dessous pour vérifier votre compte:</p>
+                            <p style="font-weight: bold;color: #0DBDA5;">${validationCode}</p>
+                            <p>Cordialement,</p>
+                            <p>L'équipe de Sina.</p>`;
+                    // We send a confirmation mail to the patient here
+                    transporter.sendMail(
+                      {
+                        from: '"Sina" sina.app.pfe@gmail.com', // sender address
+                        to: value.email, // list of receivers
+                        subject: "Vérifiez votre adresse e-mail ✔", // Subject line
+                        text: "Sina support team", // plain text body
+                        html: emailBody, // html body
+                      },
+                      (MailerErr, data) => {
+                        if (MailerErr) {
+                          console.log("## nodemail error ## ", MailerErr);
+                          res.sendStatus(500);
+                        } else {
+                          // Generate a token
+                          jwt.sign(
+                            { id: result1.insertId, username: value.username },
+                            mySecretKey,
+                            (jwtErr, token) => {
+                              if (jwtErr) {
+                                // jwt error
+                                console.log("## jwt error ## ", jwtErr);
+                                res.sendStatus(500);
+                              } else {
+                                // Token generated we send it to patient
+                                res.send(
+                                  JSON.stringify({ validationCode, token })
+                                );
+                              }
+                            }
+                          );
+                        }
+                      }
+                    );
+                  }
+                }
+              );
+            }
+          }
+        );
+      }
+    });
+  }
+});
+
+// Resend validation code to patient API -- tested
+app.get("/patient/signup/resendvalidation", verifiToken, (req, res) => {
+  let statement = "SELECT idPatient FROM patientNonVerifie WHERE idPatient=?;";
+  dbPool.query(statement, req.autData.id, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      if (result[0] && result[0].idPatient == req.autData.id) {
+        // the user exist and his account is not verified yet
+        // generate and send verifcation code
+        // get the user email
+        statement = "SELECT mailPatient FROM patient WHERE idPatient=?;";
+        dbPool.query(statement, result[0].idPatient, (dbErr, result2) => {
+          if (dbErr) {
+            // database error
+            console.log("## db error ## ", dbErr);
+            res.sendStatus(500);
+          } else {
+            // found the user
+            // generate a new validation code and update the one stored in the database
+            const validationCode = Math.floor(Math.random() * 899999 + 100000);
+            statement =
+              "UPDATE patientNonVerifie SET validationCode=? WHERE idPatient=?;";
+            dbPool.query(
+              statement,
+              [validationCode, req.autData.id],
+              (dbErr, result3) => {
+                if (dbErr) {
+                  // database error
+                  console.log("## db error ## ", dbErr);
+                  res.sendStatus(500);
+                } else {
+                  const emailBody = `
+                      <h3>Cher ${req.autData.username}!</h3>
+                      <p>Voici le code de validation ci-dessous pour vérifier votre compte:</p>
+                      <p style="font-weight: bold;color: #0DBDA5;">${validationCode}</p>
+                      <p>Cordialement,</p>
+                      <p>L'équipe de Sina.</p>`;
+                  // We send a confirmation mail to the patient here
+                  transporter.sendMail(
+                    {
+                      from: '"Sina" sina.app.pfe@gmail.com', // sender address
+                      to: result2[0].mailPatient, // list of receivers
+                      subject: "Vérifiez votre adresse e-mail ✔", // Subject line
+                      text: "Sina support team", // plain text body
+                      html: emailBody, // html body
+                    },
+                    (MailerErr, data) => {
+                      if (MailerErr) {
+                        // node mail error
+                        console.log("## nodemail error ## ", MailerErr);
+                        res.sendStatus(500);
+                      } else {
+                        // no errors
+                        // send the verification code back
+                        res.send({ validationCode });
+                      }
+                    }
+                  );
+                }
+              }
+            );
+          }
+        });
+      } else {
+        // no such a user exit (account already verified or dosen't exist)
+        res.sendStatus(403);
+      }
+    }
+  });
+});
+
+// validate a patient account API -- tested
+app.post("/patient/validateaccount", verifiToken, (req, res) => {
+  // verify the data form
+  const { error, value } = joi
+    .object({ validationCode: joi.number().max(9999999).required() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // we delete the patient from
+    // verify the code validation is correct
+    let statement =
+      "SELECT validationCode FROM patientNonVerifie WHERE idPatient=?;";
+    dbPool.query(statement, [req.autData.id], (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+      } else {
+        if (result[0] && result[0].validationCode == value.validationCode) {
+          // validate the user (delete him from the patientNonVerifie table)
+          statement = "DELETE FROM patientNonVerifie WHERE idPatient=?;";
+          dbPool.query(statement, req.autData.id, (dbErr, result2) => {
+            if (dbErr) {
+              // database error
+              console.log("## db error ## ", dbErr);
+            } else {
+              // user validated
+              res.end();
+            }
+          });
+        } else {
+          // validation code doesn't exist or user alredy validated
+          res.sendStatus(403);
+        }
+      }
+    });
+  }
+});
+
+// Add patient's information and adress API -- tested
+app.post("/patient/information/add", verifiToken, (req, res) => {
+  const { error, value } = patientInfo.validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // we add the inforamtion to the patient
+    let statement =
+      "UPDATE patient SET nomPatient=?,prenomPatient=?,sexePatient=?,dateNaisPatient=? WHERE idPatient=?;";
+    dbPool.query(
+      statement,
+      [value.nom, value.prenom, value.sex, value.dateNaiss, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // user information added successfully
+          res.end();
+        }
+      }
+    );
+  }
+});
+
+// Add patient's relative API -- tested
+app.post("/patient/relative/add", verifiToken, (req, res) => {
+  const { error, value } = relativeInfo.validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // We add his relatve's info
+    let statement =
+      "INSERT INTO proche(nomProche,prenomProche,NumTlfProche,mailProche) VALUES(?,?,?,?);";
+    dbPool.query(
+      statement,
+      [value.nom, value.prenom, value.numeroTlf, value.email],
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## database error ## ", dbErr);
+          // if we have double entry error
+          if (dbErr.errno == 1062)
+            res.status(403).send(
+              JSON.stringify({
+                error: 1062,
+                message: dbErr.sqlMessage,
+              })
+            );
+          else res.sendStatus(500); // Internal server ERROR
+        } else {
+          // relative info add
+          // we affect the relative's id to the patient
+          statement = "UPDATE patient SET idProche=? WHERE idPatient=?;";
+          dbPool.query(
+            statement,
+            [result.insertId, req.autData.id],
+            (dbErr, result2) => {
+              if (dbErr) {
+                // database error
+                console.log("## db error ## ", dbErr);
+                res.sendStatus(500);
+              } else {
+                // success
+                res.end();
+              }
+            }
+          );
+        }
+      }
+    );
+  }
+});
+
+// Get doctor's list API -- tested
+app.get("/medecin/list", verifiToken, (req, res) => {
+  let statement =
+    "SELECT idMedecin,nomMedecin,prenomMedecin,nomDaira,photoMedecin,nomWilaya FROM medecin m,wilaya w,daira d WHERE d.idWilaya=w.idWilaya AND d.idDaira=m.idDaira;";
+  dbPool.query(statement, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // send the doctor's list back
+      res.send(JSON.stringify(result));
+    }
+  });
+});
+
+// Send a request to doctor API -- tested
+app.post("/medecin/request", verifiToken, (req, res) => {
+  // validate the data form
+  const { error, value } = joi
+    .object({ idMedecin: joi.number().required() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // send the request to the doctor
+    let statement = "INSERT INTO listAtt VALUES (?,?);";
+    dbPool.query(
+      statement,
+      [value.idMedecin, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // request has been sent to the doctor
+          // notify the doctor ?
+          res.end();
+        }
+      }
+    );
+  }
+});
+
+// Get the list of wilaya API -- tested
+app.get("/wilaya", verifiToken, (req, res) => {
+  let statement = "SELECT idWilaya,nomWilaya FROM wilaya;";
+  dbPool.query(statement, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // got the list of wilaya we send it back
+      res.send(JSON.stringify(result));
+    }
+  });
+});
+
+// Get the list of daira API -- tested
+app.get("/daira", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({ idWilaya: joi.number().required() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement = "SELECT idDaira,nomDaira FROM daira WHERE idWilaya=?;";
+    dbPool.query(statement, value.idWilaya, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // got the list of daira we send it back
+        res.send(JSON.stringify(result));
+      }
+    });
+  }
+});
+
+// Get the list of commune API -- tested
+app.get("/commune", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({ idDaira: joi.number().required() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement = "SELECT idCommune,nomCommune FROM commune WHERE idDaira=?;";
+    dbPool.query(statement, value.idDaira, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // got the list of commune we send it back
+        res.send(JSON.stringify(result));
       }
     });
   }
