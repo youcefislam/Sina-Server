@@ -1277,6 +1277,111 @@ app.post("/patient/delete", verifiToken, (req, res) => {
   });
 });
 
+// Send restore patient password link API -- tested
+app.get("/patient/restorelink", (req, res) => {
+  const { error, value } = joi
+    .object({ email: joi.string().email().required() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // we verify if the email is linked to a patient account in our database
+    let statement =
+      "SELECT idPatient,userNamePatient FROM patient WHERE mailPatient = ?;";
+    dbPool.query(statement, value.email, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        if (result[0]) {
+          // the mail is linked to an account in our database
+          // we generate a token for the user
+          jwt.sign(
+            { id: result[0].idPatient, username: result[0].userNamePatient },
+            mySecretKey,
+            {
+              expiresIn: "2h",
+            },
+            (jwtErr, token) => {
+              if (jwtErr) {
+                console.log(jwtErr);
+                res.sendStatus(500);
+              } else {
+                // we send the link to restore the password
+                const url = `http://localhost:3000/patient/restorepassword/${token}`;
+                const emailBody = `
+                                      <h3>Cher ${result[0].userNamePatient}!</h3>
+                                      <p>nous sommes désolés que vous rencontriez des problèmes pour utiliser votre compte, entrez ce lien pour réinitialiser votre mot de passe:</p>
+                                      <a href='${url}'>${url}</a>
+                                      <p> ce lien ne fonctionne que pendant les 2 prochaines heures </p>
+                                      <p>Cordialement,</p>
+                                      <p>L'équipe de Sina.</p>`;
+                transporter.sendMail(
+                  {
+                    from: '"Sina" sina.app.pfe@gmail.com', // sender address
+                    to: value.email, // list of receivers
+                    subject: "Restaurer votre mot de passe ✔", // Subject line
+                    text: "Sina support team", // plain text body
+                    html: emailBody, // html body
+                  },
+                  (MailerErr, data) => {
+                    if (MailerErr) {
+                      console.log(MailerErr);
+                      res.sendStatus(500);
+                    } else {
+                      res.end();
+                    }
+                  }
+                );
+              }
+            }
+          );
+        } else {
+          // the mail is not linked to any account in our database
+          res.sendStatus(403);
+        }
+      }
+    });
+  }
+});
+
+// reset password patient API -- tested
+app.post("/patient/resetpassword", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      password: joi.string().min(8).required(),
+      repeatPassword: joi.ref("password"),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // hash the password
+    const saltRounds = 10;
+    bcrypt
+      .hash(value.password, saltRounds)
+      .then((hash) => {
+        // Change the password
+        let statement =
+          "UPDATE patient SET passwordPatient = ? WHERE idPatient = ?;";
+        dbPool.query(statement, [hash, req.autData.id], (dbErr, result) => {
+          if (dbErr) {
+            // database error
+            console.log("## db error ## ", dbErr);
+            res.sendStatus(500);
+          } else {
+            // password changed
+            res.end();
+          }
+        });
+      })
+      .catch((err) => {
+        // bcrypt error
+        console.log("## bcrypt error ## ", err);
+        res.sendStatus(500);
+      });
+  }
+});
+
 app.listen(3000, () => {
   console.log("Server connected on port 3000!");
 });
