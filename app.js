@@ -1550,6 +1550,219 @@ app.get("/patient/signin", (req, res) => {
   }
 });
 
+// =====================
+// Modify patient's mail API -- tested
+app.post("/patient/modifyMail", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({ email: joi.string().email().required() })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    let statement = "UPDATE patient SET mailPatient=? WHERE idPatient=?";
+    dbPool.query(statement, [value.email, req.autData.id], (dbErr, result) => {
+      if (dbErr) {
+        console.log("##db error##", dbErr);
+        // if we have double entry error
+        if (dbErr.errno == 1062)
+          res.status(403).send(
+            JSON.stringify({
+              error: 1062,
+              message: dbErr.sqlMessage,
+            })
+          );
+        else res.sendStatus(500); // Internal server ERROR
+      } else res.end();
+    });
+  }
+});
+
+// Modify patient's username API -- tested
+app.post("/patient/modifyUsername", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({ username: joi.string().min(6).required() })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    let statement = "UPDATE patient SET userNamePatient=? WHERE idPatient=?";
+    dbPool.query(
+      statement,
+      [value.username, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          // if we have double entry error
+          if (dbErr.errno == 1062)
+            res.status(403).send(
+              JSON.stringify({
+                error: 1062,
+                message: dbErr.sqlMessage,
+              })
+            );
+          else res.sendStatus(500); // Internal server ERROR
+        } else
+          jwt.sign(
+            { id: req.autData.id, username: value.username },
+            mySecretKey,
+            (err, token) => {
+              if (err) {
+                console.log(err);
+                res.sendStatus(500);
+              } else {
+                // token generated we send it back to the user
+                res.send(JSON.stringify({ token }));
+              }
+            }
+          );
+      }
+    );
+  }
+});
+
+// Modify patient's password API -- tested
+app.post("/patient/modifyPassword", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      password: joi.string().alphanum().min(8).required(),
+      repeat_password: joi.ref("password"),
+    })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    const saltRounds = 10;
+    bcrypt
+      .hash(value.password, saltRounds)
+      .then((hash) => {
+        let statement =
+          "UPDATE patient SET passwordPatient=? WHERE idPatient=?";
+        dbPool.query(statement, [hash, req.autData.id], (dbErr, result) => {
+          if (dbErr) {
+            console.log("##db error##", dbErr);
+            res.sendStatus(500); // Internal server ERROR
+          } else res.end();
+        });
+      })
+      .catch((bcrypterr) => {
+        console.log(bcrypterr);
+        res.sendStatus(500);
+      });
+  }
+});
+
+// Modify patient's first and last name API -- tested
+app.post("/patient/modifyName", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      nom: joi.string().max(50).required(),
+      prenom: joi.string().max(50).required(),
+    })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    let statement =
+      "UPDATE patient SET nomPatient=?,prenomPatient=? WHERE idPatient=?";
+    dbPool.query(
+      statement,
+      [value.nom, value.prenom, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          res.sendStatus(500); // Internal server ERROR
+        } else res.end();
+      }
+    );
+  }
+});
+
+// Modify patient's phone number API -- tested
+app.post("/patient/modifyNumber", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      numeroTlf: joi.string().max(10).required(),
+    })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    let statement = "UPDATE patient SET NumTlfPatient=? WHERE idPatient=?";
+    dbPool.query(
+      statement,
+      [value.numeroTlf, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          // if we have double entry error
+          if (dbErr.errno == 1062)
+            res.status(403).send(
+              JSON.stringify({
+                error: 1062,
+                message: dbErr.sqlMessage,
+              })
+            );
+          else res.sendStatus(500); // Internal server ERROR
+        } else res.end();
+      }
+    );
+  }
+});
+
+// Modify patient's adress API -- tested
+app.post("/patient/modifyadress", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      commune: joi.number().required(),
+      adress: joi.string().max(255).required(),
+    })
+    .validate(req.body);
+  if (error) res.send(error.details);
+  else {
+    console.log(req.autData.id);
+    let statement =
+      "UPDATE patient SET idCommune=(SELECT idCommune FROM commune WHERE idCommune=?),adressPatient=? WHERE idPatient=?;";
+    dbPool.query(
+      statement,
+      [value.commune, value.adress, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          res.sendStatus(500); // Internal server ERROR
+        } else res.end();
+      }
+    );
+  }
+});
+
+// Modify patient's photo API -- tested
+app.post(
+  "/patient/modifyPhoto",
+  verifiToken,
+  upload.single("photo"),
+  (req, res) => {
+    let statement = "UPDATE patient SET photoPatient=? WHERE idPatient=?";
+    dbPool.query(
+      statement,
+      [req.file ? req.file.path : null, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          res.sendStatus(500); // Internal server ERROR
+        } else res.end();
+      }
+    );
+  }
+);
+
+// Delete patient's account API -- tested
+app.post("/patient/delete", verifiToken, (req, res) => {
+  let statement = "DELETE FROM patient WHERE idPatient=?";
+  dbPool.query(statement, req.autData.id, (err, result) => {
+    if (err) {
+      console.log(err);
+      res.sendStatus(500);
+    } else {
+      res.end();
+    }
+  });
+});
+
 app.listen(3000, () => {
   console.log("Server connected on port 3000!");
 });
