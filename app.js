@@ -107,6 +107,8 @@ const patientInfo = joi.object({
   prenom: joi.string().max(50).required(),
   sex: joi.number().max(1).required(),
   dateNaiss: joi.date().required(),
+  adress: joi.string().max(255).required(),
+  idCommune: joi.number().required(),
 });
 const relativeInfo = joi.object({
   nom: joi.string().max(50).required(),
@@ -1098,10 +1100,18 @@ app.post("/patient/information/add", verifiToken, (req, res) => {
   else {
     // we add the inforamtion to the patient
     let statement =
-      "UPDATE patient SET nomPatient=?,prenomPatient=?,sexePatient=?,dateNaisPatient=? WHERE idPatient=?;";
+      "UPDATE patient SET nomPatient=?,prenomPatient=?,sexePatient=?,dateNaisPatient=?,adressPatient=?,idCommune=(SELECT idCommune FROM commune WHERE idCommune=?) WHERE idPatient=?;";
     dbPool.query(
       statement,
-      [value.nom, value.prenom, value.sex, value.dateNaiss, req.autData.id],
+      [
+        value.nom,
+        value.prenom,
+        value.sex,
+        value.dateNaiss,
+        value.adress,
+        value.idCommune,
+        req.autData.id,
+      ],
       (dbErr, result) => {
         if (dbErr) {
           // database error

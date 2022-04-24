@@ -1,0 +1,169 @@
+[33mcommit d70b70ce1d8de0f114e6970f03c2859a030961fa[m[33m ([m[1;36mHEAD -> [m[1;32mnouvPatient[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/ModifyPatientInfo[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m, [m[1;32mModifyPatientInfo[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Sun Apr 24 13:18:28 2022 +0100
+
+    Done with modifying patient Info v1.1 (tested)
+
+[33mcommit 219863a6930085a79a6f5d2ad02adc7182139a49[m[33m ([m[1;31morigin/signinPat[m[33m, [m[1;32msigninPat[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Sun Apr 24 12:45:46 2022 +0100
+
+    Done with sign in for patients v1.1 (tested)
+
+[33mcommit d1a4fa23e86705d463f5b5b7d443d3ebbd0a6119[m[33m ([m[1;31morigin/restoreMdpMed[m[33m, [m[1;32mrestoreMdpMed[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Sun Apr 24 12:24:02 2022 +0100
+
+    done with reseting passworf for doctors v1.1(tested)
+
+[33mcommit 5e0bc85171e09d2a185fb0a5c0a78e2388ba8c94[m[33m ([m[1;31morigin/restoreMdpPat[m[33m, [m[1;32mrestoreMdpPat[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Sun Apr 24 12:00:14 2022 +0100
+
+    Done with reseting password for patient v1.1
+
+[33mcommit bb65e89d87658b7b31c72192c006ef2820e1465c[m[33m ([m[1;31morigin/deletepat[m[33m, [m[1;32mdeletepat[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Sun Apr 24 10:51:45 2022 +0100
+
+    Delete patient account done and tested v1.1
+
+[33mcommit 3138859cdfa7fb92ca9b9f277956bd32cbb71993[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Sat Apr 23 14:19:44 2022 +0100
+
+    merge with nouvmed
+
+[33mcommit 794e4196d012e144e7208593529a7b19fcf36f28[m[33m ([m[1;31morigin/nouvmed[m[33m, [m[1;32mnouvmed[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Sat Apr 23 14:18:19 2022 +0100
+
+    add the not verified functionality v1.3
+
+[33mcommit 6338bfdb3d690cef1284b3868c6b1a9d5d4d89e7[m[33m ([m[1;31morigin/modifyRelative[m[33m, [m[1;32mmodifyRelative[m[33m)[m
+Merge: 1695f0f 30f4a3e
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Sat Apr 23 13:59:35 2022 +0100
+
+    Done and tested v1.3
+
+[33mcommit 30f4a3e88b3e3f514f603ce00e4d3a5b9baec359[m[33m ([m[1;31morigin/nouvPatient[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Sat Apr 23 13:33:39 2022 +0100
+
+    Done with patient sign up v1.1 (tested)
+
+[33mcommit 9db9699d73f74aa5e684f46c8a94d79719eac254[m[33m ([m[1;31morigin/modifyPatientAndWaitingList[m[33m, [m[1;32mmodifyPatientAndWaitingList[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Fri Apr 22 12:01:47 2022 +0100
+
+    done with modifying patient/waiting list v1.2
+
+[33mcommit 3b57461fc83f004fe4d1450ac7c56e94061b68c1[m[33m ([m[1;31morigin/modifyMed[m[33m, [m[1;32mmodifyMed[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Wed Apr 20 05:39:11 2022 +0100
+
+    Done with modifying doctors info v1.2
+
+[33mcommit d90ab4d731cf256ef06587dcd1026b57f7b548f7[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 16:48:56 2022 +0100
+
+    modify mail add v1.1
+
+[33mcommit 1695f0fa7bef1349372749d0d0a3838c2968c274[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 16:25:02 2022 +0100
+
+    Done with modifying relative info v1.1 waiting for tests
+
+[33mcommit 24aaf49c9ebecd7a0ff2cec2a0ebea0b3aced898[m[33m ([m[1;31morigin/deleteMed[m[33m, [m[1;32mdeleteMed[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 10:32:52 2022 +0100
+
+    Important BD changes
+
+[33mcommit 1fab5e8d64a27daaeeb4ffba2e9ca864996a7579[m
+Merge: 89f1a74 65f9442
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 10:31:30 2022 +0100
+
+    not really important commit
+
+[33mcommit 65f94427a885e33dc216555619e452621c1bbe1f[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 10:23:52 2022 +0100
+
+    Done with delete doctor account v1.2
+
+[33mcommit ce82821d055fc379e1768875065a3b43948447c5[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 09:29:10 2022 +0100
+
+    Deleteing doctor v1.1
+
+[33mcommit 4e72dd0114809ce86e9d0d96328d209c7b604a54[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 08:18:10 2022 +0100
+
+    delete account v1.0
+
+[33mcommit 89f1a7481905991ee67c0e4a1783e0a43c5912b2[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 07:58:05 2022 +0100
+
+    Adding the account confirmation rout v1.3
+
+[33mcommit cc9b2a329964878d3c51f6eed15c461da161f9a3[m[33m ([m[1;31morigin/signinMed[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 07:38:08 2022 +0100
+
+    Done with the signin for dorctors v1.1
+
+[33mcommit 8fcbfb5cc86f3600c59913898c17cebd0bda284c[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 05:04:25 2022 +0100
+
+    performance improvement v1.21
+
+[33mcommit 4fc09e988700c2c5a75cf8cf53a8aca7224ef9f3[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Tue Apr 19 04:44:48 2022 +0100
+
+    Sign up api done v1.2
+
+[33mcommit 7a2c182fd838cd5e2afbfb34679e1e4ba0aef378[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Mon Apr 18 16:28:56 2022 +0100
+
+    init the public folder
+
+[33mcommit 7fd0157a691ebf2d50c45849c511d2fac194b742[m[33m ([m[1;31morigin/NouvMed[m[33m)[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Mon Apr 18 15:06:00 2022 +0100
+
+    Adding the api of signing a doctor v1.0
+
+[33mcommit bd38192818d8812541b103d7445a65889ea51d2f[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Mon Apr 18 07:11:38 2022 +0100
+
+    readme v1.3
+
+[33mcommit 49db848c95f0886f088ce8f4c6b1ae6b451a04c6[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Mon Apr 18 06:03:40 2022 +0100
+
+    ReadMe v1.1 && some DB changes
+
+[33mcommit 081c50064535bea57530380f594255f1ccb95c40[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Mon Apr 18 05:14:10 2022 +0100
+
+    Add a readme v1.0
+
+[33mcommit 8dfdc130d5cbd563cb668330d0bb1c408edba533[m
+Author: Hamaidi Youcef <youcefislam534@gmail.com>
+Date:   Mon Apr 18 05:10:13 2022 +0100
+
+    Repository initialization
