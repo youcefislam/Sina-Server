@@ -114,6 +114,10 @@ const relativeInfo = joi.object({
   numeroTlf: joi.string().max(10).required(),
   email: joi.string().email().required(),
 });
+const patientSignIn = joi.object({
+  username: joi.string().alphanum().min(6).required(),
+  password: joi.string().alphanum().min(8).required(),
+});
 
 // Getting the secret key for jwt (to be changed later)
 const mySecretKey =
@@ -304,7 +308,7 @@ app.get("/medecin/signin", (req, res) => {
                   // Correct password
                   // Token generation
                   jwt.sign(
-                    { id: result[0].idMedecin, username: result[0].username },
+                    { id: result[0].idMedecin, username: value.username },
                     mySecretKey,
                     (err, token) => {
                       if (err) {
@@ -1484,6 +1488,65 @@ app.post("/medecin/resetpassword", verifiToken, (req, res) => {
         console.log("## bcrypt error ## ", err);
         res.sendStatus(500);
       });
+  }
+});
+
+// sign in patient API
+app.get("/patient/signin", (req, res) => {
+  // we validate the form of data we receive
+  const { error, value } = patientSignIn.validate(req.body);
+  if (error) {
+    // data not valid
+    res.status(403).send(error.details);
+  } else {
+    // valid data .. next
+    // select the user information from the database and compare it to the received data
+    let statement =
+      "SELECT idPatient,passwordPatient FROM patient WHERE usernamePatient=?";
+    dbPool.query(statement, value.username, (err, result) => {
+      if (err) {
+        console.log(err);
+        res.sendStatus(500);
+      } else {
+        if (result[0]) {
+          // Account exist
+          bcrypt.compare(
+            value.password,
+            result[0].passwordPatient,
+            (err, correct) => {
+              if (err) {
+                console.log(err);
+                res.sendStatus(500);
+              } else {
+                if (correct) {
+                  // Correct password
+                  // Token generation
+                  jwt.sign(
+                    { id: result[0].idPatient, username: value.username },
+                    mySecretKey,
+                    (err, token) => {
+                      if (err) {
+                        console.log(err);
+                        res.sendStatus(500);
+                      } else {
+                        // token generated we send it back to the user
+                        res.send(JSON.stringify({ token }));
+                      }
+                    }
+                  );
+                } else {
+                  // Wrong password
+                  res.status(403).send(JSON.stringify({ error: "password" }));
+                }
+              }
+            }
+          );
+        } else {
+          // No account exist with that username
+          res.status(403).send(JSON.stringify({ error: "username" }));
+        }
+      }
+    });
   }
 });
 
