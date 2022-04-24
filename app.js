@@ -1261,6 +1261,22 @@ app.get("/commune", verifiToken, (req, res) => {
   }
 });
 
+// Delete patient account API -- tested
+app.post("/patient/delete", verifiToken, (req, res) => {
+  // delte the patient account from the database
+  let statement = "DELETE FROM patient WHERE idPatient=?;";
+  dbPool.query(statement, req.autData.id, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // patient deleted
+      res.end();
+    }
+  });
+});
+
 app.listen(3000, () => {
   console.log("Server connected on port 3000!");
 });
