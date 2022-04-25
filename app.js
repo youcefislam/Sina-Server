@@ -8,6 +8,7 @@ var jwt = require("jsonwebtoken"); // Used to create/verify tokens. For more det
 const joi = require("joi"); // Used to validate the form of the received data. For more detail check: https://joi.dev/api/?v=17.6.0
 const nodemailer = require("nodemailer"); // Used to send mails. For more detail check: https://nodemailer.com/about/
 const moment = require("moment"); // for better date and time treatment For more detail check:https://momentjs.com/
+const res = require("express/lib/response");
 
 // ### initialization of express ###
 var app = express();
@@ -1797,6 +1798,140 @@ app.get("/patient", verifiToken, (req, res) => {
         }
       }
     );
+  }
+});
+
+// Add an appointement -- tested
+app.post("/rdv/add", verifiToken, (req, res) => {
+  // validate the form of the data
+  const { error, value } = joi
+    .object({
+      idPatient: joi.number().required(),
+      date: joi.date().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement = "INSERT INTO rendezvous(idPatient,dateRV) VALUES(?,?,?);";
+    dbPool.query(statement, [value.idPatient, value.date], (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // appointement added
+        // notify the patient ??
+        res.end();
+      }
+    });
+  }
+});
+
+// update an appointement -- tested
+app.post("/rdv/update", verifiToken, (req, res) => {
+  // validate the form of the data
+  const { error, value } = joi
+    .object({
+      idRendezVous: joi.number().required(),
+      date: joi.date().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement = "UPDATE rendezvous SET dateRV=? WHERE idRendezVous=?;";
+    dbPool.query(
+      statement,
+      [value.date, value.idRendezVous],
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // appointement updated
+          // notify patient ?
+          res.end();
+        }
+      }
+    );
+  }
+});
+
+// Cancel an appointement -- tested
+app.post("/rdv/cancel", verifiToken, (req, res) => {
+  // validate the form of the data
+  const { error, value } = joi
+    .object({ idRendezVous: joi.number().required() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement = "DELETE FROM  rendezvous WHERE idRendezVous=?;";
+    dbPool.query(statement, value.idRendezVous, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // appointement deleted
+        // notify patient ?
+        res.end();
+      }
+    });
+  }
+});
+
+// Archive an appointement -- tested
+app.post("/rdv/archive", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      idRendezVous: joi.number().required(),
+      date: joi.date().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // check wether the patient have already an appointement archive file or not
+    let statement =
+      "SELECT lienHistoriqueRV,idPatient,dateInscriptionPatient FROM patient WHERE idPatient = (SELECT idPatient FROM rendezvous WHERE idRendezVous=?);";
+    dbPool.query(statement, value.idRendezVous, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // write on the file
+        fs.appendFile(
+          result[0].lienHistoriqueRV
+            ? result[0].lienHistoriqueRV
+            : "./Public/uploads/ECGFiles/" +
+                result[0].idPatient +
+                "-" +
+                result[0].dateInscriptionPatient.getTime() / 1000 +
+                ".txt",
+          `${value.date}\n`,
+          (err) => {
+            if (err) {
+              // fs module error
+              console.log("## fs module error ## ", err);
+              res.sendStatus(500);
+            } else {
+              // we delete the appointement from the database
+              statement = "DELETE FROM rendezvous WHERE idRendezVous=?;";
+              dbPool.query(statement, value.idRendezVous, (dbErr, result2) => {
+                if (dbErr) {
+                  // database error
+                  console.log("## db error ## ", dbErr);
+                  res.sendStatus(500);
+                } else {
+                  // appointement deleted
+                  res.end();
+                }
+              });
+            }
+          }
+        );
+      }
+    });
   }
 });
 

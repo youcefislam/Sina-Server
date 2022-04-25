@@ -122,7 +122,6 @@ Create table FichierECG (
 Create table Rendezvous (
      idRendezVous INT NOT NULL AUTO_INCREMENT,
      dateRV DATETIME, 
-     lieuRV VARCHAR(255), 
      idPatient int NOT NULL,
      primary key(idRendezVous),
      Constraint FK_RDV_IdPaa FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
