@@ -58,5 +58,5 @@ INSERT INTO `sina`.`medicament`(`idMedicament`,`nomMedicament`)VALUES
 (25,"Medicament 25"),(26,"Medicament 26"),(27,"Medicament 27"),
 (28,"Medicament 28"),(29,"Medicament 29"),(30,"Medicament 30");
 
-
-
+-- Fichier Ecg
+insert into fichierecg(lienFichier,dateCreation,idPatient) values ("lient 1","2021-01-26 12:30",1),("lient 2","2021-01-27 12:30",1),("lient 3","2021-01-28 12:30",1);

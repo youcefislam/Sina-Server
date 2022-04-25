@@ -20,6 +20,7 @@ var dbPool = mysql.createPool({
   user: "sina",
   password: "password",
   database: "sina",
+  multipleStatements: true,
 });
 // dbPool.on("acquire", function (connection) {
 //   console.log("Connection %d acquired", connection.threadId);
@@ -1771,6 +1772,32 @@ app.post("/patient/delete", verifiToken, (req, res) => {
       res.end();
     }
   });
+});
+
+// Get patient profile API -- tested
+app.get("/patient", verifiToken, (req, res) => {
+  // validate the for of the received data
+  const { error, value } = joi
+    .object({ idPatient: joi.number().required() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement =
+      "SELECT idPatient,nomPatient,prenomPatient,sexePatient,dateNaisPatient,adressPatient,photoPatient,degreGravite,statusPatient,TypeMaladie,nomProche,prenomProche,NumTlfProche,mailProche,nomCommune,nomDaira,nomWilaya FROM patient p,typemaladie t,proche r,commune c,daira d, wilaya w WHERE p.idPatient=? and p.idProche=r.idProche and p.idTypeMaladie=t.idTypeMaladie and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya;SELECT idFichierECG,lienFichier,dateCreation FROM fichierecg WHERE idPatient=?;SELECT idRapport,lienRapport,dateRapport FROM rapport WHERE idPatient=?; SELECT idRendezVous,dateRV,lieuRV FROM  rendezvous WHERE idPatient=?;";
+    dbPool.query(
+      statement,
+      [value.idPatient, value.idPatient, value.idPatient, value.idPatient],
+      (dbErr, results, fields) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          res.send(JSON.stringify({ results, fields }));
+        }
+      }
+    );
+  }
 });
 
 app.listen(3000, () => {
