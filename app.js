@@ -5,7 +5,7 @@ const mysql = require("mysql");
 const multer = require("multer"); // Used for handling multipart/form-data, which is primarily used for uploading files. For more detail check: https://www.npmjs.com/package/multer
 const bcrypt = require("bcrypt"); // Library to hash password. For more detail check: https://www.npmjs.com/package/bcrypt
 var jwt = require("jsonwebtoken"); // Used to create/verify tokens. For more detail check: https://www.npmjs.com/package/jsonwebtoken
-const joi = require("joi"); // Used to validate the form of the received data. For more detail check: https://joi.dev/api/?v=17.6.0
+const joi = require("joi"); // Used to validate the form of the received data. For more detail check: https://joi.dev/Route/?v=17.6.0
 const nodemailer = require("nodemailer"); // Used to send mails. For more detail check: https://nodemailer.com/about/
 const moment = require("moment"); // for better date and time treatment For more detail check:https://momentjs.com/
 const res = require("express/lib/response");
@@ -153,8 +153,8 @@ let transporter = nodemailer.createTransport({
   },
 });
 
-// Here goes the API
-// Sign up API for doctors -- tested
+// Here goes the Route
+// Sign up Route for doctors -- tested
 app.post("/medecin/signup", upload.single("photo"), (req, res) => {
   // Check the data form and verify it
   const { error, value } = medecinSignUp.validate(req.body);
@@ -280,7 +280,7 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
   }
 });
 
-// Sign in a doctor API -- tested
+// Sign in a doctor Route -- tested
 app.get("/medecin/signin", (req, res) => {
   // we validate the form of data we receive
 
@@ -340,7 +340,7 @@ app.get("/medecin/signin", (req, res) => {
   }
 });
 
-// Account validation API -- tested
+// Account validation Route -- tested
 app.post("/confirmation/:token", (req, res) => {
   jwt.verify(req.params.token, mySecretKey, (err, autData) => {
     if (err) res.sendStatus(403); // invalid token
@@ -348,7 +348,7 @@ app.post("/confirmation/:token", (req, res) => {
   });
 });
 
-// Delete doctor's account API -- tested
+// Delete doctor's account Route -- tested
 app.post("/medecin/delete", verifiToken, (req, res) => {
   let statement = "DELETE FROM medecin WHERE idMedecin=?";
   dbPool.query(statement, req.autData.id, (err, result) => {
@@ -361,7 +361,7 @@ app.post("/medecin/delete", verifiToken, (req, res) => {
   });
 });
 
-// Modify the relative's mail API -- tested
+// Modify the relative's mail Route -- tested
 app.post("/patient/relative/modify/email", verifiToken, (req, res) => {
   const { error, value } = Joi.object({
     email: joi.string().email().required(),
@@ -390,7 +390,7 @@ app.post("/patient/relative/modify/email", verifiToken, (req, res) => {
     });
   }
 });
-// Modify doctor's mail API -- tested
+// Modify doctor's mail Route -- tested
 app.post("/medecin/modifyMail", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({ email: joi.string().email().required() })
@@ -415,7 +415,7 @@ app.post("/medecin/modifyMail", verifiToken, (req, res) => {
   }
 });
 
-// Modify doctor's username API -- tested
+// Modify doctor's username Route -- tested
 app.post("/medecin/modifyUsername", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({ username: joi.string().min(6).required() })
@@ -457,7 +457,7 @@ app.post("/medecin/modifyUsername", verifiToken, (req, res) => {
   }
 });
 
-// Modify doctor's password API -- tested
+// Modify doctor's password Route -- tested
 app.post("/medecin/modifyPassword", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({
@@ -487,7 +487,7 @@ app.post("/medecin/modifyPassword", verifiToken, (req, res) => {
   }
 });
 
-// Modify doctor's first and last name API -- tested
+// Modify doctor's first and last name Route -- tested
 app.post("/medecin/modifyName", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({
@@ -512,7 +512,7 @@ app.post("/medecin/modifyName", verifiToken, (req, res) => {
   }
 });
 
-// Modify doctor's phone number API -- tested
+// Modify doctor's phone number Route -- tested
 app.post("/medecin/modifyNumber", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({
@@ -543,7 +543,7 @@ app.post("/medecin/modifyNumber", verifiToken, (req, res) => {
   }
 });
 
-// Modify doctor's auto accept API -- tested
+// Modify doctor's auto accept Route -- tested
 app.post("/medecin/modifyAccept", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({ auto: joi.number().max(1).required() })
@@ -560,7 +560,7 @@ app.post("/medecin/modifyAccept", verifiToken, (req, res) => {
   }
 });
 
-// Modify doctor's daira API -- tested
+// Modify doctor's daira Route -- tested
 app.post("/medecin/modifyDaira", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({
@@ -580,7 +580,7 @@ app.post("/medecin/modifyDaira", verifiToken, (req, res) => {
   }
 });
 
-// Modify doctor's photo API -- tested
+// Modify doctor's photo Route -- tested
 app.post(
   "/medecin/modifyPhoto",
   verifiToken,
@@ -617,7 +617,7 @@ app.get("/medecin/waitinglist", verifiToken, (req, res) => {
   });
 });
 
-// Accept patient from waiting list API -- tested
+// Accept patient from waiting list Route -- tested
 app.post("/medecin/waitinglist/accept", verifiToken, (req, res) => {
   // received data form validation
   const { error, value } = joi
@@ -687,7 +687,7 @@ app.post("/medecin/waitinglist/accept", verifiToken, (req, res) => {
   }
 });
 
-// Modify the relative's phone number API -- tested
+// Modify the relative's phone number Route -- tested
 app.post("/patient/relative/modify/number", verifiToken, (req, res) => {
   const { error, value } = Joi.object({
     number: joi.string().min(10).required(),
@@ -812,7 +812,7 @@ app.get("/medecin/patientlist", verifiToken, (req, res) => {
   });
 });
 
-//Delete patient from the patient list API -- tested
+//Delete patient from the patient list Route -- tested
 app.post("/medecin/patientlist/remove", verifiToken, (req, res) => {
   // validation of the data
   const { error, value } = joi
@@ -853,7 +853,7 @@ app.post("/medecin/patientlist/remove", verifiToken, (req, res) => {
   }
 });
 
-// Patient sign up API -- tested
+// Patient sign up Route -- tested
 app.post("/patient/signUp", (req, res) => {
   // verifying the form of data
   const { error, value } = patientSignUp.validate(req.body);
@@ -957,7 +957,7 @@ app.post("/patient/signUp", (req, res) => {
   }
 });
 
-// Modify the relative's name API -- tested
+// Modify the relative's name Route -- tested
 app.post("/patient/relative/modify/name", verifiToken, (req, res) => {
   const { error, value } = Joi.object({
     nom: joi.string().max(50).required(),
@@ -983,7 +983,7 @@ app.post("/patient/relative/modify/name", verifiToken, (req, res) => {
     );
   }
 });
-// Resend validation code to patient API -- tested
+// Resend validation code to patient Route -- tested
 app.get("/patient/signup/resendvalidation", verifiToken, (req, res) => {
   let statement = "SELECT idPatient FROM patientNonVerifie WHERE idPatient=?;";
   dbPool.query(statement, req.autData.id, (dbErr, result) => {
@@ -1057,7 +1057,7 @@ app.get("/patient/signup/resendvalidation", verifiToken, (req, res) => {
   });
 });
 
-// validate a patient account API -- tested
+// validate a patient account Route -- tested
 app.post("/patient/validateaccount", verifiToken, (req, res) => {
   // verify the data form
   const { error, value } = joi
@@ -1095,7 +1095,7 @@ app.post("/patient/validateaccount", verifiToken, (req, res) => {
   }
 });
 
-// Add patient's information and adress API -- tested
+// Add patient's information and adress Route -- tested
 app.post("/patient/information/add", verifiToken, (req, res) => {
   const { error, value } = patientInfo.validate(req.body);
   if (error) res.send(JSON.stringify(error.details));
@@ -1128,7 +1128,7 @@ app.post("/patient/information/add", verifiToken, (req, res) => {
   }
 });
 
-// Add patient's relative API -- tested
+// Add patient's relative Route -- tested
 app.post("/patient/relative/add", verifiToken, (req, res) => {
   const { error, value } = relativeInfo.validate(req.body);
   if (error) res.send(JSON.stringify(error.details));
@@ -1176,7 +1176,7 @@ app.post("/patient/relative/add", verifiToken, (req, res) => {
   }
 });
 
-// Get doctor's list API -- tested
+// Get doctor's list Route -- tested
 app.get("/medecin/list", verifiToken, (req, res) => {
   let statement =
     "SELECT idMedecin,nomMedecin,prenomMedecin,nomDaira,photoMedecin,nomWilaya FROM medecin m,wilaya w,daira d WHERE d.idWilaya=w.idWilaya AND d.idDaira=m.idDaira;";
@@ -1192,7 +1192,7 @@ app.get("/medecin/list", verifiToken, (req, res) => {
   });
 });
 
-// Send a request to doctor API -- tested
+// Send a request to doctor Route -- tested
 app.post("/medecin/request", verifiToken, (req, res) => {
   // validate the data form
   const { error, value } = joi
@@ -1220,7 +1220,7 @@ app.post("/medecin/request", verifiToken, (req, res) => {
   }
 });
 
-// Get the list of wilaya API -- tested
+// Get the list of wilaya Route -- tested
 app.get("/wilaya", verifiToken, (req, res) => {
   let statement = "SELECT idWilaya,nomWilaya FROM wilaya;";
   dbPool.query(statement, (dbErr, result) => {
@@ -1235,7 +1235,7 @@ app.get("/wilaya", verifiToken, (req, res) => {
   });
 });
 
-// Get the list of daira API -- tested
+// Get the list of daira Route -- tested
 app.get("/daira", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({ idWilaya: joi.number().required() })
@@ -1256,7 +1256,7 @@ app.get("/daira", verifiToken, (req, res) => {
   }
 });
 
-// Get the list of commune API -- tested
+// Get the list of commune Route -- tested
 app.get("/commune", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({ idDaira: joi.number().required() })
@@ -1277,7 +1277,7 @@ app.get("/commune", verifiToken, (req, res) => {
   }
 });
 
-// Delete patient account API -- tested
+// Delete patient account Route -- tested
 app.post("/patient/delete", verifiToken, (req, res) => {
   // delte the patient account from the database
   let statement = "DELETE FROM patient WHERE idPatient=?;";
@@ -1293,7 +1293,7 @@ app.post("/patient/delete", verifiToken, (req, res) => {
   });
 });
 
-// Send restore patient password link API -- tested
+// Send restore patient password link Route -- tested
 app.get("/patient/restorelink", (req, res) => {
   const { error, value } = joi
     .object({ email: joi.string().email().required() })
@@ -1361,7 +1361,7 @@ app.get("/patient/restorelink", (req, res) => {
   }
 });
 
-// reset password patient API -- tested
+// reset password patient Route -- tested
 app.post("/patient/resetpassword", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({
@@ -1398,7 +1398,7 @@ app.post("/patient/resetpassword", verifiToken, (req, res) => {
   }
 });
 
-// Send restore doctor password link API -- tested
+// Send restore doctor password link Route -- tested
 app.get("/medecin/restorelink", (req, res) => {
   const { error, value } = joi
     .object({ email: joi.string().email().required() })
@@ -1466,7 +1466,7 @@ app.get("/medecin/restorelink", (req, res) => {
   }
 });
 
-// reset password medecin API -- tested
+// reset password medecin Route -- tested
 app.post("/medecin/resetpassword", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({
@@ -1503,7 +1503,7 @@ app.post("/medecin/resetpassword", verifiToken, (req, res) => {
   }
 });
 
-// sign in patient API
+// sign in patient Route
 app.get("/patient/signin", (req, res) => {
   // we validate the form of data we receive
   const { error, value } = patientSignIn.validate(req.body);
@@ -1563,7 +1563,7 @@ app.get("/patient/signin", (req, res) => {
 });
 
 // =====================
-// Modify patient's mail API -- tested
+// Modify patient's mail Route -- tested
 app.post("/patient/modifyMail", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({ email: joi.string().email().required() })
@@ -1588,7 +1588,7 @@ app.post("/patient/modifyMail", verifiToken, (req, res) => {
   }
 });
 
-// Modify patient's username API -- tested
+// Modify patient's username Route -- tested
 app.post("/patient/modifyUsername", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({ username: joi.string().min(6).required() })
@@ -1630,7 +1630,7 @@ app.post("/patient/modifyUsername", verifiToken, (req, res) => {
   }
 });
 
-// Modify patient's password API -- tested
+// Modify patient's password Route -- tested
 app.post("/patient/modifyPassword", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({
@@ -1660,7 +1660,7 @@ app.post("/patient/modifyPassword", verifiToken, (req, res) => {
   }
 });
 
-// Modify patient's first and last name API -- tested
+// Modify patient's first and last name Route -- tested
 app.post("/patient/modifyName", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({
@@ -1685,7 +1685,7 @@ app.post("/patient/modifyName", verifiToken, (req, res) => {
   }
 });
 
-// Modify patient's phone number API -- tested
+// Modify patient's phone number Route -- tested
 app.post("/patient/modifyNumber", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({
@@ -1716,7 +1716,7 @@ app.post("/patient/modifyNumber", verifiToken, (req, res) => {
   }
 });
 
-// Modify patient's adress API -- tested
+// Modify patient's adress Route -- tested
 app.post("/patient/modifyadress", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({
@@ -1742,7 +1742,7 @@ app.post("/patient/modifyadress", verifiToken, (req, res) => {
   }
 });
 
-// Modify patient's photo API -- tested
+// Modify patient's photo Route -- tested
 app.post(
   "/patient/modifyPhoto",
   verifiToken,
@@ -1762,7 +1762,7 @@ app.post(
   }
 );
 
-// Delete patient's account API -- tested
+// Delete patient's account Route -- tested
 app.post("/patient/delete", verifiToken, (req, res) => {
   let statement = "DELETE FROM patient WHERE idPatient=?";
   dbPool.query(statement, req.autData.id, (err, result) => {
@@ -1775,7 +1775,7 @@ app.post("/patient/delete", verifiToken, (req, res) => {
   });
 });
 
-// Get patient profile API -- tested
+// Get patient profile Route -- tested
 app.get("/patient", verifiToken, (req, res) => {
   // validate the for of the received data
   const { error, value } = joi
@@ -1930,6 +1930,220 @@ app.post("/rdv/archive", verifiToken, (req, res) => {
             }
           }
         );
+      }
+    });
+  }
+});
+
+// Get the medication list of a patient Route -- tested
+app.get("/patient/medication", verifiToken, (req, res) => {
+  // verify the form of the data
+  const { error, value } = joi
+    .object({ idPatient: joi.number().required() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement =
+      "SELECT m.idMedicament,m.nomMedicament,l.posologie,l.dateDebut FROM medicament m,listMedicament l WHERE m.idMedicament=l.idMedicament AND l.idPatient=?;";
+    dbPool.query(statement, value.idPatient, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // send the list back
+        res.send(JSON.stringify(result));
+      }
+    });
+  }
+});
+
+// Add a medication to the list of medication for a patient -- tested
+app.post("/patient/medication/add", verifiToken, (req, res) => {
+  // verify the form of the data
+  const { error, value } = joi
+    .object({
+      idPatient: joi.number().required(),
+      idMedicament: joi.number().required(),
+      dosage: joi.string().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // insert the medication in the medication list
+    let statement =
+      "insert into listmedicament(idMedicament,idPatient,posologie,dateDebut) VALUES (?,?,?,curdate());";
+    dbPool.query(
+      statement,
+      [value.idMedicament, value.idPatient, value.dosage],
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // medication inserted
+          res.end();
+        }
+      }
+    );
+  }
+});
+
+// Modify the dosage of a medication in the list of medication for a patient Route -- tested
+app.post("/patient/medication/modify", verifiToken, (req, res) => {
+  // validate the form of the data
+  const { error, value } = joi
+    .object({
+      idPatient: joi.number().required(),
+      idMedicament: joi.number().required(),
+      dosage: joi.string().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // update the dosage
+    let statement =
+      "UPDATE listmedicament SET posologie=? WHERE idPatient=? AND idMedicament=?;";
+    dbPool.query(
+      statement,
+      [value.dosage, value.idPatient, value.idMedicament],
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // list updated
+          res.end();
+        }
+      }
+    );
+  }
+});
+
+// Delete a medication from the list of a patient Route -- tested
+app.post("/patient/medication/delete", verifiToken, (req, res) => {
+  // validate the form of the data
+  const { error, value } = joi
+    .object({
+      idPatient: joi.number().required(),
+      idMedicament: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // delete the medicin from the list
+    let statement =
+      "DELETE FROM listMedicament WHERE idPatient=? AND idMedicament=?;";
+    dbPool.query(
+      statement,
+      [value.idPatient, value.idMedicament],
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // medicin deleted
+          res.end();
+        }
+      }
+    );
+  }
+});
+
+// Get all medications list Route -- tested
+app.get("/medication", verifiToken, (req, res) => {
+  let statement = "SELECT * FROM medicament;";
+  dbPool.query(statement, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // we send the list of medication back
+      res.send(JSON.stringify(result));
+    }
+  });
+});
+
+// Add a new medication Route -- tested
+app.post("/medication/add", verifiToken, (req, res) => {
+  // validate the form of the data
+  const { error, value } = joi
+    .object({
+      nomMedicament: joi.string().max(50).required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // add the medication to the list
+    let statement = "INSERT INTO medicament(nomMedicament) values(?);";
+    dbPool.query(statement, value.nomMedicament, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // medication added to the database
+        res.end();
+      }
+    });
+  }
+});
+
+// Modify the name of a medication Route -- tested
+app.post("/medication/modify", verifiToken, (req, res) => {
+  // validate the form of the data
+  const { error, value } = joi
+    .object({
+      idMedicament: joi.number().required(),
+      nomMedicament: joi.string().max(50).required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // add the medication to the list
+    let statement =
+      "UPDATE medicament SET nomMedicament=? WHERE idMedicament=?;";
+    dbPool.query(
+      statement,
+      [value.nomMedicament, value.idMedicament],
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // medication modified at the database
+          res.end();
+        }
+      }
+    );
+  }
+});
+
+// Delete a medication Route -- tested
+app.post("/medication/delete", verifiToken, (req, res) => {
+  // validate the form of the data
+  const { error, value } = joi
+    .object({
+      idMedicament: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // add the medication to the list
+    let statement = "DELETE FROM medicament WHERE idMedicament=?;";
+    dbPool.query(statement, value.idMedicament, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // medication modified at the database
+        res.end();
       }
     });
   }
