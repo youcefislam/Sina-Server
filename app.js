@@ -2149,6 +2149,80 @@ app.post("/medication/delete", verifiToken, (req, res) => {
   }
 });
 
+// take a dose of a medic Route -- tested
+app.post("/patient/medication/journal/add", verifiToken, (req, res) => {
+  // validate the form of the data
+  const { error, value } = joi
+    .object({
+      idMedicament: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement =
+      "SELECT lienJournalMedicament,idPatient,dateInscriptionPatient FROM patient WHERE idPatient =?;";
+    dbPool.query(statement, req.autData.id, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // write on the file
+        fs.appendFile(
+          result[0].lienJournalMedicament
+            ? result[0].lienJournalMedicament
+            : "./Public/uploads/MedicJournal/" +
+                result[0].idPatient +
+                "-" +
+                result[0].dateInscriptionPatient.getTime() / 1000 +
+                ".txt",
+          `{idMedicament:${value.idMedicament},date:${moment().format()}},`,
+          (err) => {
+            if (err) {
+              // fs module error
+              console.log("## fs module error ## ", err);
+              res.sendStatus(500);
+            } else {
+              // record stored
+              res.end();
+            }
+          }
+        );
+      }
+    });
+  }
+});
+
+// Patient end his medication Route -- tested
+app.post("/patient/medication/journal/end", verifiToken, (req, res) => {
+  // validate the form of the data
+  const { error, value } = joi
+    .object({
+      idMedicament: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    // delete the medication from the list of medication of the patient
+    let statement =
+      "DELETE FROM listmedicament WHERE idMedicament = ? AND idPatient = ?;";
+    dbPool.query(
+      statement,
+      [value.idMedicament, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          // databse error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // medication deleted from the list
+          res.end();
+        }
+      }
+    );
+  }
+});
+
 app.listen(3000, () => {
   console.log("Server connected on port 3000!");
 });
