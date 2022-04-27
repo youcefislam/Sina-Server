@@ -2272,7 +2272,7 @@ app.get("/patient/note", verifiToken, (req, res) => {
           res.sendStatus(500);
         } else {
           // send back the notes list
-          res.send(result);
+          res.send(JSON.stringify(result));
         }
       }
     );
@@ -2348,6 +2348,177 @@ app.post("/patient/note/delete", verifiToken, (req, res) => {
         res.sendStatus(500);
       } else {
         // note added
+        res.end();
+      }
+    });
+  }
+});
+
+// Get all hospital list Route -- tested
+app.get("/hospital/", verifiToken, (req, res) => {
+  let statement = "SELECT * FROM hopital;";
+  dbPool.query(statement, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // send the hospital list back
+      res.send(JSON.stringify(result));
+    }
+  });
+});
+
+// Get hospital list of a commune Route -- tested
+app.get("/commune/hospital/", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      idCommune: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+  }
+  let statement = "SELECT * FROM hopital WHERE idCommune=?;";
+  dbPool.query(statement, value.idCommune, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // send the hospital list back
+      res.send(JSON.stringify(result));
+    }
+  });
+});
+
+// Get hospital list of a daira Route -- tested
+app.get("/daira/hospital/", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      idDaira: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+  }
+  let statement =
+    "SELECT * FROM hopital WHERE idCommune IN (select idCommune FROM commune WHERE idDaira=?);";
+  dbPool.query(statement, value.idDaira, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // send the hospital list back
+      res.send(JSON.stringify(result));
+    }
+  });
+});
+
+// Get hospital list of a wilaya Route -- tested
+app.get("/wilaya/hospital/", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      idWilaya: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+  }
+  let statement =
+    "SELECT * FROM hopital WHERE idCommune IN (select idCommune FROM commune WHERE idDaira IN (SELECT idDaira FROM daira WHERE idWilaya=?));";
+  dbPool.query(statement, value.idWilaya, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // send the hospital list back
+      res.send(JSON.stringify(result));
+    }
+  });
+});
+
+// Add a hospital Route -- tested
+app.post("/hospital/add", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      nomHopital: joi.string().max(50).required(),
+      adress: joi.string().max(255).required(),
+      numeroTlf: joi.string().max(10).required(),
+      idCommune: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement =
+      "insert into hopital(nomHopital,adressHopital,numTlfHopital,idCommune) values(?,?,?,?);";
+    dbPool.query(
+      statement,
+      [value.nomHopital, value.adress, value.numeroTlf, value.idCommune],
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // hospital added
+          res.end();
+        }
+      }
+    );
+  }
+});
+
+// Modify a hospital Route -- tested
+app.post("/hospital/modify", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      nomHopital: joi.string().max(50).required(),
+      adress: joi.string().max(255).required(),
+      numeroTlf: joi.string().max(10).required(),
+      idHopital: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement =
+      "UPDATE hopital SET nomHopital=?,adressHopital=?,numTlfHopital=? WHERE idHopital=?;";
+    dbPool.query(
+      statement,
+      [value.nomHopital, value.adress, value.numeroTlf, value.idHopital],
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // hospital modified
+          res.end();
+        }
+      }
+    );
+  }
+});
+
+// Delete hospital Route -- tested
+app.post("/hospital/delete", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      idHopital: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement = "DELTE FROM hopital WHERE idHopital=?;";
+    dbPool.query(statement, value.idHopital, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // hospital deleted
         res.end();
       }
     });

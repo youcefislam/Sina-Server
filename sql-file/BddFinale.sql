@@ -26,8 +26,8 @@ Create table Commune (
 );
 
 Create table Hopital (
-     idHoptial INT NOT NULL AUTO_INCREMENT, 
-     nomHoptial VARCHAR(50), 
+     idHopital INT NOT NULL AUTO_INCREMENT, 
+     nomHopital VARCHAR(50), 
      adressHopital VARCHAR(255), 
      numTlfHopital VARCHAR(10), 
      idCommune INT,
