@@ -2223,6 +2223,36 @@ app.post("/patient/medication/journal/end", verifiToken, (req, res) => {
   }
 });
 
+// Patient connect Route -- tested
+app.post("/patient/connect", verifiToken, (req, res) => {
+  let statement = "UPDATE patient SET statusPatient=1 WHERE idPatient=?;";
+  dbPool.query(statement, req.autData.id, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // status updated
+      res.end();
+    }
+  });
+});
+
+// Patient disconnect Route -- tested
+app.post("/patient/disconnect", verifiToken, (req, res) => {
+  let statement = "UPDATE patient SET statusPatient=0 WHERE idPatient=?;";
+  dbPool.query(statement, req.autData.id, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // status updated
+      res.end();
+    }
+  });
+});
+
 app.listen(3000, () => {
   console.log("Server connected on port 3000!");
 });
