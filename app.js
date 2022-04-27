@@ -2253,6 +2253,107 @@ app.post("/patient/disconnect", verifiToken, (req, res) => {
   });
 });
 
+// Get note list of a patient list Route -- tested
+app.get("/patient/note", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({ idPatient: joi.number() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement =
+      "SELECT idNote,DateNote,NoteMedecin FROM notemedecin WHERE idPatient=?;";
+    dbPool.query(
+      statement,
+      value.idPatient ? value.idPatient : req.autData.id,
+      (dbErr, result) => {
+        if (dbErr) {
+          // database error
+          console.log("## db error ## ", dbErr);
+          res.sendStatus(500);
+        } else {
+          // send back the notes list
+          res.send(result);
+        }
+      }
+    );
+  }
+});
+
+// Add a note to a patient Route -- tested
+app.post("/patient/note/add", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      idPatient: joi.number().required(),
+      note: joi.string().max(1000).required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement =
+      "insert into notemedecin(datenote,notemedecin,idPatient) values(curdate(),?,?);";
+    dbPool.query(statement, [value.note, value.idPatient], (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // note added
+        // notify patient ?
+        res.end();
+      }
+    });
+  }
+});
+
+// Modify a patient note Route -- tested
+app.post("/patient/note/modify", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      idNote: joi.number().required(),
+      note: joi.string().max(1000).required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement =
+      "UPDATE notemedecin SET datenote=curdate(),notemedecin=? WHERE idNote=?;";
+    dbPool.query(statement, [value.note, value.idNote], (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // note added
+        // notify patient ?
+        res.end();
+      }
+    });
+  }
+});
+
+// Delete a patient note Route -- tested
+app.post("/patient/note/delete", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({
+      idNote: joi.number().required(),
+    })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement = "DELETE FROM notemedecin WHERE idNote=?;";
+    dbPool.query(statement, value.idNote, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // note added
+        res.end();
+      }
+    });
+  }
+});
+
 app.listen(3000, () => {
   console.log("Server connected on port 3000!");
 });
