@@ -52,6 +52,20 @@ const checkFileType = (file, cb) => {
     cb("Error : Image Only");
   }
 };
+const checkReportType = (file, cb) => {
+  //type of valid extension
+  const filetype = /pdf/;
+  //check file extension
+  const extname = filetype.test(path.extname(file.originalname).toLowerCase());
+  // check the mimetype
+  const mimetype = filetype.test(file.mimetype);
+
+  if (extname && mimetype) {
+    return cb(null, true);
+  } else {
+    cb("Pdf Only");
+  }
+};
 
 // setting the disk storage engine -- tested
 const photoStorage = multer.diskStorage({
@@ -67,11 +81,28 @@ const photoStorage = multer.diskStorage({
   },
 });
 
+const reportStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./Public/uploads/reportFiles");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "rapport-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
 const upload = multer({
   storage: photoStorage, // where to store the files
   limits: 1000000, // limit of the uploaded data
   fileFilter: (res, file, cb) => {
     checkFileType(file, cb); // type of valid files
+  },
+});
+const uploadReport = multer({
+  storage: reportStorage, // where to store the files
+  limits: 30000000, // limit of the uploaded data
+  fileFilter: (res, file, cb) => {
+    checkReportType(file, cb); // type of valid files
   },
 });
 
@@ -1784,7 +1815,7 @@ app.get("/patient", verifiToken, (req, res) => {
   if (error) res.send(JSON.stringify(error.details));
   else {
     let statement =
-      "SELECT idPatient,nomPatient,prenomPatient,sexePatient,dateNaisPatient,adressPatient,photoPatient,degreGravite,statusPatient,TypeMaladie,nomProche,prenomProche,NumTlfProche,mailProche,nomCommune,nomDaira,nomWilaya FROM patient p,typemaladie t,proche r,commune c,daira d, wilaya w WHERE p.idPatient=? and p.idProche=r.idProche and p.idTypeMaladie=t.idTypeMaladie and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya;SELECT idFichierECG,lienFichier,dateCreation FROM fichierecg WHERE idPatient=?;SELECT idRapport,lienRapport,dateRapport FROM rapport WHERE idPatient=?; SELECT idRendezVous,dateRV,lieuRV FROM  rendezvous WHERE idPatient=?;";
+      "SELECT idPatient,nomPatient,prenomPatient,sexePatient,dateNaisPatient,adressPatient,photoPatient,degreGravite,statusPatient,TypeMaladie,nomProche,prenomProche,NumTlfProche,mailProche,nomCommune,nomDaira,nomWilaya FROM patient p,typemaladie t,proche r,commune c,daira d, wilaya w WHERE p.idPatient=? and p.idProche=r.idProche and p.idTypeMaladie=t.idTypeMaladie and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya;SELECT idFichierECG,lienFichier,dateCreation FROM fichierecg WHERE idPatient=?;SELECT idRapport,dateRapport FROM rapport WHERE idPatient=?; SELECT idRendezVous,dateRV,lieuRV FROM  rendezvous WHERE idPatient=?;";
     dbPool.query(
       statement,
       [value.idPatient, value.idPatient, value.idPatient, value.idPatient],
@@ -2523,6 +2554,67 @@ app.post("/hospital/delete", verifiToken, (req, res) => {
       }
     });
   }
+});
+
+// receive a new report file Route -- tested
+app.post(
+  "/patient/report/add",
+  verifiToken,
+  uploadReport.single("file"),
+  (req, res) => {
+    const { error, value } = joi
+      .object({ idPatient: joi.number().required() })
+      .validate(req.body);
+    if (error) res.send(JSON.stringify(error.details));
+    else {
+      if (req.file.path) {
+        let statement =
+          "INSERT INTO rapport(lienRapport,dateRapport,idPatient) VALUES(?,curdate(),?);";
+        dbPool.query(
+          statement,
+          [req.file.path, req.body.idPatient],
+          (dbErr, result) => {
+            if (dbErr) {
+              // database error
+              console.log("## db error ## ", dbErr);
+              res.sendStatus(500);
+            } else {
+              // report added
+              res.end();
+            }
+          }
+        );
+      }
+    }
+  }
+);
+
+// Get a reportt file
+app.get("/patient/report/download", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({ idRapport: joi.number().required() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement = "SELECT lienRapport FROM rapport WHERE idRapport=?;";
+    dbPool.query(statement, value.idRapport, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // send the file to be downloaded
+        result[0]
+          ? res.download("./" + path.normalize(result[0].lienRapport))
+          : res.send({ error: "file not found" });
+      }
+    });
+  }
+});
+
+// handling unkown errors
+app.use((err, req, res, next) => {
+  res.status(500).send(JSON.stringify({ err: err }));
 });
 
 app.listen(3000, () => {
