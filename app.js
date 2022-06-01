@@ -66,6 +66,20 @@ const checkReportType = (file, cb) => {
     cb("Pdf Only");
   }
 };
+const checkEcgtType = (file, cb) => {
+  //type of valid extension
+  const filetype = /csv/;
+  //check file extension
+  const extname = filetype.test(path.extname(file.originalname).toLowerCase());
+  // check the mimetype
+  const mimetype = filetype.test(file.mimetype);
+
+  if (extname && mimetype) {
+    return cb(null, true);
+  } else {
+    cb("csv Only");
+  }
+};
 
 // setting the disk storage engine -- tested
 const photoStorage = multer.diskStorage({
@@ -91,6 +105,16 @@ const reportStorage = multer.diskStorage({
   },
 });
 
+const ecgFileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./Public/uploads/ECGfiles");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "ecg-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
 const upload = multer({
   storage: photoStorage, // where to store the files
   limits: 1000000, // limit of the uploaded data
@@ -103,6 +127,13 @@ const uploadReport = multer({
   limits: 30000000, // limit of the uploaded data
   fileFilter: (res, file, cb) => {
     checkReportType(file, cb); // type of valid files
+  },
+});
+const uploadEcg = multer({
+  storage: ecgFileStorage, // where to store the files
+  limits: 30000000, // limit of the uploaded data
+  fileFilter: (res, file, cb) => {
+    checkEcgtType(file, cb); // type of valid files
   },
 });
 
@@ -2589,7 +2620,7 @@ app.post(
   }
 );
 
-// Get a reportt file
+// Get a reportt file Route -- tested
 app.get("/patient/report/download", verifiToken, (req, res) => {
   const { error, value } = joi
     .object({ idRapport: joi.number().required() })
@@ -2606,6 +2637,61 @@ app.get("/patient/report/download", verifiToken, (req, res) => {
         // send the file to be downloaded
         result[0]
           ? res.download("./" + path.normalize(result[0].lienRapport))
+          : res.send({ error: "file not found" });
+      }
+    });
+  }
+});
+
+//Post an ECG file Route --tested
+app.post(
+  "/patient/ecg/add",
+  verifiToken,
+  uploadEcg.single("file"),
+  (req, res) => {
+    const { error, value } = joi
+      .object({ dateCreation: joi.date().required() })
+      .validate(req.body);
+    if (error) res.send(JSON.stringify(error.details));
+    else {
+      if (req.file.path) {
+        let statement =
+          "INSERT INTO fichierecg(lienFichier,dateCreation,idPatient) VALUES(?,?,?);";
+        dbPool.query(
+          statement,
+          [req.file.path, value.dateCreation, req.autData.id],
+          (dbErr, result) => {
+            if (dbErr) {
+              // database error
+              console.log("## db error ## ", dbErr);
+              res.sendStatus(500);
+            } else {
+              // ecg added
+              res.end();
+            }
+          }
+        );
+      }
+    }
+  }
+);
+// Get an ECG file Route -- tested
+app.get("/patient/ecg/download", verifiToken, (req, res) => {
+  const { error, value } = joi
+    .object({ idFichierECG: joi.number().required() })
+    .validate(req.body);
+  if (error) res.send(JSON.stringify(error.details));
+  else {
+    let statement = "SELECT lienFichier FROM fichierecg WHERE idFichierECG=?;";
+    dbPool.query(statement, value.idFichierECG, (dbErr, result) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        // send the file to be downloaded
+        result[0]
+          ? res.download("./" + path.normalize(result[0].lienFichier))
           : res.send({ error: "file not found" });
       }
     });
