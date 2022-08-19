@@ -435,9 +435,11 @@ app.post("/medecin/delete", verifiToken, (req, res) => {
 
 // Modify the relative's mail Route -- tested
 app.post("/patient/relative/modify/email", verifiToken, (req, res) => {
-  const { error, value } = Joi.object({
-    email: joi.string().email().required(),
-  }).validate(req.body);
+  const { error, value } = joi
+    .object({
+      email: joi.string().email().required(),
+    })
+    .validate(req.body);
   if (error) res.status(403).send(error.details);
   else {
     sql =
@@ -779,9 +781,11 @@ app.post("/medecin/waitinglist/accept", verifiToken, (req, res) => {
 
 // Modify the relative's phone number Route -- tested
 app.post("/patient/relative/modify/number", verifiToken, (req, res) => {
-  const { error, value } = Joi.object({
-    number: joi.string().min(10).required(),
-  }).validate(req.body);
+  const { error, value } = joi
+    .object({
+      number: joi.string().min(10).required(),
+    })
+    .validate(req.body);
   if (error) res.status(403).send(error.details);
   else {
     sql =
@@ -1053,14 +1057,16 @@ app.post("/patient/signUp", (req, res) => {
 
 // Modify the relative's name Route -- tested
 app.post("/patient/relative/modify/name", verifiToken, (req, res) => {
-  const { error, value } = Joi.object({
-    nom: joi.string().max(50).required(),
-    prenom: joi.string().max(50).required(),
-  }).validate(req.body);
+  const { error, value } = joi
+    .object({
+      nom: joi.string().max(50).required(),
+      prenom: joi.string().max(50).required(),
+    })
+    .validate(req.body);
   if (error) res.status(403).send(error.details);
   else {
     sql =
-      "UPDATE proche SET nomProche = ?,prenomProche = ? WHERE idProche=(SELECT idProche FROM patient WHERE idPatient=?);";
+      "UPDATE proche SET nomProche=?,prenomProche=? WHERE idProche=(SELECT idProche FROM patient WHERE idPatient=?);";
     dbPool.query(
       sql,
       [value.nom, value.prenom, req.autData.id],
@@ -1068,8 +1074,9 @@ app.post("/patient/relative/modify/name", verifiToken, (req, res) => {
         if (err) {
           // database error
           console.log(err);
-          res.sendStatus(500);
+          res.status(500).send(err);
         } else {
+          console.log("dfsdfs");
           // name modified successefully
           res.end();
         }
@@ -2787,13 +2794,42 @@ app.post("/patient/real", verifiToken, (req, res) => {
 
 app.get("/patient/info", verifiToken, (req, res) => {
   let statement =
-    "SELECT nomPatient,idMedecin,idProche FROM patient WHERE idPatient=?;";
+    "SELECT nomPatient,idMedecin,idProche,userNamePatient,mailPatient,prenomPatient,sexePatient,dateNaisPatient,adressPatient,degreGravite,dateInscriptionPatient,NumTlfPatient,TypeMaladie,nomWilaya,nomCommune FROM patient p,typemaladie t,wilaya w,commune c,daira d WHERE idPatient=? and t.idTypeMaladie=p.idTypeMaladie and c.idCommune=p.idCommune and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya;";
   dbPool.query(statement, req.autData.id, (dbErr, result) => {
     if (dbErr) {
       // datatbase error
       console.log("## db error ## ", dbErr);
       res.sendStatus(500);
     } else {
+      res.send(JSON.stringify(result[0]));
+    }
+  });
+});
+
+app.get("/proche/info", verifiToken, (req, res) => {
+  let statement =
+    "SELECT nomProche,prenomProche,NumTlfProche,mailProche FROM patient p,proche r WHERE p.idPatient=? and p.idProche=r.idProche;";
+  dbPool.query(statement, req.autData.id, (dbErr, result) => {
+    if (dbErr) {
+      // datatbase error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      res.send(JSON.stringify(result[0]));
+    }
+  });
+});
+
+app.get("/medecin/info", verifiToken, (req, res) => {
+  let statement =
+    "SELECT nomMedecin,prenomMedecin,NumTlfMedecin,mailMedecin,nomDaira,nomCommune,nomWilaya FROM patient p,medecin m,daira d,commune c,wilaya w WHERE p.idPatient=? and p.idMedecin=m.idMedecin and m.idDaira=d.idDaira and d.idWilaya=w.idWilaya;";
+  dbPool.query(statement, req.autData.id, (dbErr, result) => {
+    if (dbErr) {
+      // datatbase error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      console.log(result[0]);
       res.send(JSON.stringify(result[0]));
     }
   });
@@ -2811,6 +2847,16 @@ const getSocketByPatientId = (userId) => {
   for (let i = 0; i < patientSocketIds.length; i++) {
     if (patientSocketIds[i].userId == userId) {
       socket = patientSocketIds[i].socket;
+      break;
+    }
+  }
+  return socket;
+};
+const getPatientSocketByDoctorId = (userId) => {
+  let socket = "";
+  for (let i = 0; i < connectedPatients.length; i++) {
+    if (connectedPatients[i].idMedecin == userId) {
+      socket = connectedPatients[i].socketId;
       break;
     }
   }
@@ -2857,41 +2903,56 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-  // console.log("a user connected ", socket);
+  console.log("a user connected ", socket.id);
   socket.on("disconnect", () => {
     console.log("a user is disconnected ", socket.id);
     if (socket.autData.patient) {
       connectedPatients = connectedPatients.filter(
         (item) => item.socketId != socket.id
       );
+      patientSocketIds = patientSocketIds.filter(
+        (item) => item.socket.id != socket.id
+      );
       let socketMedecin = getSocketByDoctorId(socket.autData.idMedecin);
       if (socketMedecin) {
         let connectedPaitientWithId = connectedPatients.filter(
           (item) => item.idMedecin == socket.autData.idMedecin
         );
-        io.to(socketMedecin).emit("updateUserList", connectedPaitientWithId);
+        io.to(socketMedecin.id).emit("updateUserList", connectedPaitientWithId);
       }
     } else {
       connectedDoctors = connectedDoctors.filter(
         (item) => item.socketId != socket.id
       );
+      doctorSocketIds = doctorSocketIds.filter(
+        (item) => item.socket.id != socket.id
+      );
+      let socketPatient = getPatientSocketByDoctorId(socket.autData.id);
+      if (socketPatient) {
+        io.to(socketPatient).emit("DoctorGoes", { disconnected: true });
+      }
     }
   });
   socket.on("loggedin", function () {
+    // console.log(socket.autData);
     if (socket.autData.patient) {
+      console.log("one");
       patientSocketIds.push({ socket: socket, userId: socket.autData.id });
       connectedPatients = connectedPatients.filter(
         (item) => item.user_id != socket.autData.id
       );
       connectedPatients.push({ ...socket.autData, socketId: socket.id });
       let socketMedecin = getSocketByDoctorId(socket.autData.idMedecin);
+      console.log("two");
+      // console.log(socketMedecin, "    ", socket.autData.idMedecin);
       if (socketMedecin) {
         let connectedPaitientWithId = connectedPatients.filter(
           (item) => item.idMedecin == socket.autData.idMedecin
         );
-        io.to(socketMedecin).emit("updateUserList", connectedPaitientWithId);
+        console.log("three");
+        console.log(socketMedecin.id);
+        io.to(socketMedecin.id).emit("updateUserList", connectedPaitientWithId);
       }
-      console.log(connectedPatients);
     } else {
       doctorSocketIds.push({ socket: socket, userId: socket.autData.id });
       connectedDoctors.push({ ...socket.autData, socketId: socket.id });
@@ -2902,14 +2963,14 @@ io.on("connection", (socket) => {
     socket.join(data.room);
     let withSocket = getSocketByPatientId(data.withUserId);
     socket.broadcast.to(withSocket.id).emit("invite", { data });
+    // socket.broadcast.to(socket.id).emit("invite");
   });
   socket.on("joinRoom", function (data) {
-    socket.join(data.room);
+    console.log("join a room ", data);
+    socket.join(data);
   });
   socket.on("message", function (data) {
-    // socket.broadcast.to(data.room).emit("ecg", data);
-    console.log(data.data);
-    // socket.broadcast.emit("ecg", data);
+    socket.broadcast.to(data.room).emit("message", data.message);
   });
 });
 
