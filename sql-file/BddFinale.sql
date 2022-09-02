@@ -1,6 +1,6 @@
-drop database sina;
-create schema if not exists sina;
-use sina;
+-- drop database sina;
+-- create schema if not exists sina;
+-- use sina;
 Create table Wilaya (
     idWilaya INT NOT NULL AUTO_INCREMENT, 
     nomWilaya VARCHAR(50),
@@ -31,7 +31,7 @@ Create table Hopital (
      adressHopital VARCHAR(255), 
      numTlfHopital VARCHAR(10), 
      idCommune INT,
-     primary key(idHoptial),
+     primary key(idHopital),
      Constraint FK_hopital_idCommun FOREIGN KEY (idCommune) references Commune (idCommune) ON DELETE CASCADE,
      Constraint Unq_hopital_num UNIQUE(numTlfHopital)
 );

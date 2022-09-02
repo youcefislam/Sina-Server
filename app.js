@@ -10,6 +10,30 @@ const nodemailer = require("nodemailer"); // Used to send mails. For more detail
 const moment = require("moment"); // for better date and time treatment For more detail check:https://momentjs.com/
 // const io = require('socket.io')(server)
 const { v4: uuidV4 } = require("uuid");
+const sgMail = require("@sendgrid/mail");
+const client = require("twilio")(
+  "AC1c1dd4e10deaedb91d4d6634b6c84e39",
+  "8eebeb2661cf49a9ad90fd8b6c15c2bb"
+);
+const cors = require("cors");
+
+function sendTwilloMessage(to, message, res) {
+  client.messages
+    .create({
+      body: message,
+      to: "+213" + to,
+      from: "+19207064918",
+    })
+    .then((message) => {
+      res.end();
+      console.log("sms sent");
+    })
+    // here you can implement your fallback code
+    .catch((error) => {
+      res.sendStatus(500);
+      console.log(error);
+    });
+}
 
 // ### initialization of express ###
 var app = express();
@@ -18,6 +42,10 @@ const httpServer = createServer(app);
 const { Server } = require("socket.io");
 
 const io = new Server(httpServer);
+
+const apiKey =
+  "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";
+sgMail.setApiKey(apiKey);
 
 app.use(express.json({ limit: "1mb" })); // Maximum request body size
 
@@ -82,6 +110,7 @@ const checkEcgtType = (file, cb) => {
   const extname = filetype.test(path.extname(file.originalname).toLowerCase());
   // check the mimetype
   const mimetype = filetype.test(file.mimetype);
+  console.log(extname);
 
   if (extname && mimetype) {
     return cb(null, true);
@@ -159,7 +188,7 @@ const medecinSignUp = joi.object({
   email: joi.string().email().required(),
   nom: joi.string().max(50).required(),
   prenom: joi.string().max(50).required(),
-  numeroTlf: joi.string().max(10).required(),
+  numeroTlf: joi.number().max(1000000000).required(),
   sex: joi.number().max(1).required(),
   address: joi.string().max(400).required(),
   wilaya: joi.number().required(),
@@ -194,13 +223,50 @@ const patientSignIn = joi.object({
   username: joi.string().alphanum().min(6).required(),
   password: joi.string().alphanum().min(8).required(),
 });
+// app.use(function (req, res, next) {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
+//   res.setHeader(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+//   );
+//   res.setHeader(
+//     "Access-Control-Allow-Methods",
+//     "GET, POST, PUT, DELETE, OPTIONS"
+//   );
+//   res.setHeader("Access-Control-Allow-Credentials", true);
+//   // res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+//   next();
+// });
+// Add headers before the routes are defined
+app.use(function (req, res, next) {
+  // Website you wish to allow to connect
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
+  // Request methods you wish to allow
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+  );
+
+  // Request headers you wish to allow
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+
+  // Set to true if you need the website to include cookies in the requests sent
+  // to the API (e.g. in case you use sessions)
+  res.setHeader("Access-Control-Allow-Credentials", true);
+
+  // Pass to next layer of middleware
+  next();
+});
 
 // Getting the secret key for jwt (to be changed later)
 const mySecretKey =
   "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNzkwMTUwMDY0IiwibmFtZSI6IllvdWNlZiIsImFkbWluIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjJ9.B1N25sqbB_Qm7KQq7GyeFjYoWo2J_XvuWZw-2ocFGVWBXHc7v5-UHbYB7xmTvI_NBG8RaFh7wOfs4PNUJ7anlI8nHQQ5QF10kU-CLDO-18dG52uepkTX1vUqbUvNLG4QqLhidj-IcLgpHgfUPjiBq5YHyXyzEkRtyZZKOvDTRQtBBLqqoSxvgKq6FBQJZz47UbacVXOkPFyXC74u28QOZdA5vrQip7Gdex_rt2HNCzs977kTf4lhHJYF5UQcXLrLbo2vQ6V-5wupYLlmF2CCyG9dLxRzxbNY2oBOdqQy2DyRWqONtsnP3Z9s_KrbIgLfhPQLDB4x24UYUu9le7Q_A";
 // verify token function with jwt -- tested
 const verifiToken = (req, res, next) => {
-  // console.log(req.headers);
   const bearerHeader = req.headers["authorization"];
   if (bearerHeader) {
     // we split the bearerHeader and take the bearer token
@@ -246,9 +312,13 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
         // SQL statement we dont use the data here to prevent SQL injections so we replace the fields with a ? and add them when we execute the statement
         let statement = `INSERT INTO medecin(userNameMedecin,passwordMedecin,mailMedecin,nomMedecin,prenomMedecin,sexeMedecin,photoMedecin,dateInscriptientMedecin,NumTlfMedecin,idDaira)
         VALUES(?,?,?,?,?,?,?,curdate(),?,?);`;
+        let tempt =
+          value.numeroTlf[0] == "0"
+            ? value.numeroTlf.slice(1)
+            : value.numeroTlf;
         // Add the doctor to our database
         dbPool.query(
-          sql,
+          statement,
           [
             value.username,
             hash,
@@ -257,7 +327,7 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
             value.prenom,
             value.sex,
             req.file ? req.file.path : null,
-            value.numeroTlf,
+            tempt,
             value.daira,
           ],
           (dbErr, result) => {
@@ -281,7 +351,7 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
               // Everything is good we move on
               // we add the doctor to the not verified accounts table
               statement = "INSERT INTO medecinNonVerifie VALUES(?);";
-              dbPool(statement, result.insertId, (dbEerr, result2) => {
+              dbPool.query(statement, result.insertId, (dbEerr, result2) => {
                 if (dbEerr) {
                   // database error
                   console.log("## db error ## ", dbErr);
@@ -308,30 +378,30 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
                                 <p>Cordialement,</p>
                                 <p>L'équipe de Sina.</p>`;
                         // We send a confirmation mail to the user here
-                        transporter.sendMail(
-                          {
-                            from: '"Sina" sina.app.pfe@outlook.fr', // sender address
-                            to: value.email, // list of receivers
-                            subject: "Vérifiez votre adresse e-mail ✔", // Subject line
-                            text: "Sina support team", // plain text body
-                            html: emailBody, // html body
-                          },
-                          (MailerErr, data) => {
-                            if (MailerErr) {
-                              if (req.file)
-                                fs.unlink(
-                                  path.normalize(req.file.path),
-                                  (err) => {
-                                    if (err) console.log(err);
-                                  }
-                                );
-                              console.log(MailerErr);
-                              res.sendStatus(500);
-                            } else {
-                              res.send(JSON.stringify({ token }));
-                            }
-                          }
-                        );
+                        const msg = {
+                          to: value.email, // Change to your recipient
+                          from: "sina.app.pfe@outlook.fr", // Change to your verified sender
+                          subject: "Vérifiez votre adresse e-mail ✔",
+                          text: "Sina support team",
+                          html: emailBody,
+                        };
+                        sgMail
+                          .send(msg)
+                          .then((response) => {
+                            console.log("emmail sent");
+                            res.send(JSON.stringify({ token }));
+                          })
+                          .catch((err) => {
+                            if (req.file)
+                              fs.unlink(
+                                path.normalize(req.file.path),
+                                (err) => {
+                                  if (err) console.log(err);
+                                }
+                              );
+                            console.log(err.message);
+                            res.sendStatus(500);
+                          });
                       }
                     }
                   );
@@ -353,14 +423,15 @@ app.post("/medecin/signup", upload.single("photo"), (req, res) => {
 });
 
 // Sign in a doctor Route -- tested
-app.get("/medecin/signin", (req, res) => {
+app.post("/medecin/signin", (req, res) => {
   // we validate the form of data we receive
-
+  console.log(req.body);
   const { error, value } = medecinSignIn.validate(req.body);
   if (error) {
     // data not valid
     res.status(403).send(error.details);
   } else {
+    console.log(value);
     // valid data .. next
     // select the user information from the database and compare it to the received data
     let statement =
@@ -596,24 +667,22 @@ app.post("/medecin/modifyNumber", verifiToken, (req, res) => {
   if (error) res.send(error.details);
   else {
     let statement = "UPDATE medecin SET NumTlfMedecin=? WHERE idMedecin=?";
-    dbPool.query(
-      statement,
-      [value.numeroTlf, req.autData.id],
-      (dbErr, result) => {
-        if (dbErr) {
-          console.log("##db error##", dbErr);
-          // if we have double entry error
-          if (dbErr.errno == 1062)
-            res.status(403).send(
-              JSON.stringify({
-                error: 1062,
-                message: dbErr.sqlMessage,
-              })
-            );
-          else res.sendStatus(500); // Internal server ERROR
-        } else res.end();
-      }
-    );
+    let tempt =
+      value.numeroTlf[0] == "0" ? value.numeroTlf.slice(1) : value.numeroTlf;
+    dbPool.query(statement, [tempt, req.autData.id], (dbErr, result) => {
+      if (dbErr) {
+        console.log("##db error##", dbErr);
+        // if we have double entry error
+        if (dbErr.errno == 1062)
+          res.status(403).send(
+            JSON.stringify({
+              error: 1062,
+              message: dbErr.sqlMessage,
+            })
+          );
+        else res.sendStatus(500); // Internal server ERROR
+      } else res.end();
+    });
   }
 });
 
@@ -678,7 +747,7 @@ app.post(
 app.get("/medecin/waitinglist", verifiToken, (req, res) => {
   // select all the doctor's patients
   let statement =
-    "SELECT p.idPatient,p.nomPatient,p.prenomPatient FROM listatt l,patient p WHERE l.idMedecin=? and l.idPatient=p.idPatient LIMIT 1;";
+    "SELECT p.idPatient,p.nomPatient,p.prenomPatient FROM listatt l,patient p WHERE l.idMedecin=? and l.idPatient=p.idPatient;";
   dbPool.query(statement, req.autData.id, (dberr, results) => {
     if (dberr) {
       //database error
@@ -686,6 +755,7 @@ app.get("/medecin/waitinglist", verifiToken, (req, res) => {
       res.sendStatus(500);
     } else {
       // we send the list back
+      console.log(results);
       res.send(JSON.stringify(results));
     }
   });
@@ -1007,43 +1077,42 @@ app.post("/patient/signUp", (req, res) => {
                             <p>Cordialement,</p>
                             <p>L'équipe de Sina.</p>`;
                     // We send a confirmation mail to the patient here
-                    transporter.sendMail(
-                      {
-                        from: '"Sina" sina.app.pfe@outlook.fr', // sender address
-                        to: value.email, // list of receivers
-                        subject: "Vérifiez votre adresse e-mail ✔", // Subject line
-                        text: "Sina support team", // plain text body
-                        html: emailBody, // html body
-                      },
-                      (MailerErr, data) => {
-                        if (MailerErr) {
-                          console.log("## nodemail error ## ", MailerErr);
-                          res.sendStatus(500);
-                        } else {
-                          // Generate a token
-                          jwt.sign(
-                            {
-                              id: result1.insertId,
-                              username: value.username,
-                              patient: 1,
-                            },
-                            mySecretKey,
-                            (jwtErr, token) => {
-                              if (jwtErr) {
-                                // jwt error
-                                console.log("## jwt error ## ", jwtErr);
-                                res.sendStatus(500);
-                              } else {
-                                // Token generated we send it to patient
-                                res.send(
-                                  JSON.stringify({ validationCode, token })
-                                );
-                              }
+                    const msg = {
+                      to: value.email, // Change to your recipient
+                      from: "sina.app.pfe@outlook.fr", // Change to your verified sender
+                      subject: "Vérifiez votre adresse e-mail ✔",
+                      text: "Sina support team",
+                      html: emailBody,
+                    };
+                    sgMail
+                      .send(msg)
+                      .then((response) => {
+                        console.log("emmail sent");
+                        jwt.sign(
+                          {
+                            id: result1.insertId,
+                            username: value.username,
+                            patient: 1,
+                          },
+                          mySecretKey,
+                          (jwtErr, token) => {
+                            if (jwtErr) {
+                              // jwt error
+                              console.log("## jwt error ## ", jwtErr);
+                              res.sendStatus(500);
+                            } else {
+                              // Token generated we send it to patient
+                              res.send(
+                                JSON.stringify({ validationCode, token })
+                              );
                             }
-                          );
-                        }
-                      }
-                    );
+                          }
+                        );
+                      })
+                      .catch((err) => {
+                        console.log(err.message);
+                        res.sendStatus(500);
+                      });
                   }
                 }
               );
@@ -1125,26 +1194,23 @@ app.get("/patient/signup/resendvalidation", verifiToken, (req, res) => {
                       <p>Cordialement,</p>
                       <p>L'équipe de Sina.</p>`;
                   // We send a confirmation mail to the patient here
-                  transporter.sendMail(
-                    {
-                      from: '"Sina" sina.app.pfe@outlook.fr', // sender address
-                      to: result2[0].mailPatient, // list of receivers
-                      subject: "Vérifiez votre adresse e-mail ✔", // Subject line
-                      text: "Sina support team", // plain text body
-                      html: emailBody, // html body
-                    },
-                    (MailerErr, data) => {
-                      if (MailerErr) {
-                        // node mail error
-                        console.log("## nodemail error ## ", MailerErr);
-                        res.sendStatus(500);
-                      } else {
-                        // no errors
-                        // send the verification code back
-                        res.send({ validationCode });
-                      }
-                    }
-                  );
+                  const msg = {
+                    to: result2[0].mailPatient, // Change to your recipient
+                    from: "sina.app.pfe@outlook.fr", // Change to your verified sender
+                    subject: "Vérifiez votre adresse e-mail ✔",
+                    text: "Sina support team",
+                    html: emailBody,
+                  };
+                  sgMail
+                    .send(msg)
+                    .then((response) => {
+                      console.log("emmail sent");
+                      res.send({ validationCode });
+                    })
+                    .catch((err) => {
+                      console.log(err.message);
+                      res.sendStatus(500);
+                    });
                 }
               }
             );
@@ -1324,7 +1390,7 @@ app.post("/medecin/request", verifiToken, (req, res) => {
 });
 
 // Get the list of wilaya Route -- tested
-app.get("/wilaya", verifiToken, (req, res) => {
+app.get("/wilaya", (req, res) => {
   let statement = "SELECT idWilaya,nomWilaya FROM wilaya;";
   dbPool.query(statement, (dbErr, result) => {
     if (dbErr) {
@@ -1339,7 +1405,7 @@ app.get("/wilaya", verifiToken, (req, res) => {
 });
 
 // Get the list of daira Route -- tested
-app.post("/daira", verifiToken, (req, res) => {
+app.post("/daira", (req, res) => {
   const { error, value } = joi
     .object({ idWilaya: joi.number().required() })
     .validate(req.body);
@@ -1360,7 +1426,7 @@ app.post("/daira", verifiToken, (req, res) => {
 });
 
 // Get the list of commune Route -- tested
-app.post("/commune", verifiToken, (req, res) => {
+app.post("/commune", (req, res) => {
   const { error, value } = joi
     .object({ idDaira: joi.number().required() })
     .validate(req.body);
@@ -1436,23 +1502,23 @@ app.post("/patient/restorelink", (req, res) => {
                                       <p> ce lien ne fonctionne que pendant les 2 prochaines heures </p>
                                       <p>Cordialement,</p>
                                       <p>L'équipe de Sina.</p>`;
-                transporter.sendMail(
-                  {
-                    from: '"Sina" sina.app.pfe@outlook.fr', // sender address
-                    to: value.email, // list of receivers
-                    subject: "Restaurer votre mot de passe ✔", // Subject line
-                    text: "Sina support team", // plain text body
-                    html: emailBody, // html body
-                  },
-                  (MailerErr, data) => {
-                    if (MailerErr) {
-                      console.log(MailerErr);
-                      res.sendStatus(500);
-                    } else {
-                      res.end();
-                    }
-                  }
-                );
+                const msg = {
+                  to: value.email, // Change to your recipient
+                  from: "sina.app.pfe@outlook.fr", // Change to your verified sender
+                  subject: "Restaurer votre mot de passe ✔",
+                  text: "Sina support team",
+                  html: emailBody,
+                };
+                sgMail
+                  .send(msg)
+                  .then((response) => {
+                    console.log("emmail sent");
+                    res.end();
+                  })
+                  .catch((err) => {
+                    console.log(err.message);
+                    res.sendStatus(500);
+                  });
               }
             }
           );
@@ -1503,12 +1569,13 @@ app.post("/patient/resetpassword", verifiToken, (req, res) => {
 });
 
 // Send restore doctor password link Route -- tested
-app.get("/medecin/restorelink", (req, res) => {
+app.post("/medecin/restorelink", (req, res) => {
   const { error, value } = joi
     .object({ email: joi.string().email().required() })
     .validate(req.body);
-  if (error) res.send(JSON.stringify(error.details));
+  if (error) res.status(403).send(JSON.stringify(error.details));
   else {
+    console.log(value);
     // we verify if the email is linked to a patient account in our database
     let statement =
       "SELECT idMedecin,userNameMedecin FROM medecin WHERE mailMedecin = ?;";
@@ -1541,23 +1608,23 @@ app.get("/medecin/restorelink", (req, res) => {
                                       <p> ce lien ne fonctionne que pendant les 2 prochaines heures </p>
                                       <p>Cordialement,</p>
                                       <p>L'équipe de Sina.</p>`;
-                transporter.sendMail(
-                  {
-                    from: '"Sina" sina.app.pfe@outlook.fr', // sender address
-                    to: value.email, // list of receivers
-                    subject: "Restaurer votre mot de passe ✔", // Subject line
-                    text: "Sina support team", // plain text body
-                    html: emailBody, // html body
-                  },
-                  (MailerErr, data) => {
-                    if (MailerErr) {
-                      console.log(MailerErr);
-                      res.sendStatus(500);
-                    } else {
-                      res.end();
-                    }
-                  }
-                );
+                const msg = {
+                  to: value.email, // Change to your recipient
+                  from: "sina.app.pfe@outlook.fr", // Change to your verified sender
+                  subject: "Restaurer votre mot de passe ✔",
+                  text: "Sina support team",
+                  html: emailBody,
+                };
+                sgMail
+                  .send(msg)
+                  .then((response) => {
+                    console.log("emmail sent");
+                    res.end();
+                  })
+                  .catch((err) => {
+                    console.log(err.message);
+                    res.sendStatus(500);
+                  });
               }
             }
           );
@@ -1882,29 +1949,29 @@ app.post("/patient/delete", verifiToken, (req, res) => {
 });
 
 // Get patient profile Route -- tested
-app.get("/patient", verifiToken, (req, res) => {
+app.get("/patient/:id", verifiToken, (req, res) => {
   // validate the for of the received data
-  const { error, value } = joi
-    .object({ idPatient: joi.number().required() })
-    .validate(req.body);
-  if (error) res.send(JSON.stringify(error.details));
-  else {
-    let statement =
-      "SELECT idPatient,nomPatient,prenomPatient,sexePatient,dateNaisPatient,adressPatient,photoPatient,degreGravite,statusPatient,TypeMaladie,nomProche,prenomProche,NumTlfProche,mailProche,nomCommune,nomDaira,nomWilaya FROM patient p,typemaladie t,proche r,commune c,daira d, wilaya w WHERE p.idPatient=? and p.idProche=r.idProche and p.idTypeMaladie=t.idTypeMaladie and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya;SELECT idFichierECG,lienFichier,dateCreation FROM fichierecg WHERE idPatient=?;SELECT idRapport,dateRapport FROM rapport WHERE idPatient=?; SELECT idRendezVous,dateRV,lieuRV FROM  rendezvous WHERE idPatient=?;";
-    dbPool.query(
-      statement,
-      [value.idPatient, value.idPatient, value.idPatient, value.idPatient],
-      (dbErr, results, fields) => {
-        if (dbErr) {
-          // database error
-          console.log("## db error ## ", dbErr);
-          res.sendStatus(500);
-        } else {
-          res.send(JSON.stringify({ results, fields }));
-        }
+  // const { error, value } = joi
+  //   .object({ idPatient: joi.number().required() })
+  //   .validate(req.params.id);
+  // if (error) res.send(JSON.stringify(error.details));
+  // else {
+  let statement =
+    "SELECT idPatient,nomPatient,prenomPatient,sexePatient,dateNaisPatient,adressPatient,photoPatient,degreGravite,statusPatient,TypeMaladie,mailPatient,nomProche,prenomProche,NumTlfProche,mailProche,nomCommune,nomDaira,nomWilaya FROM patient p,typemaladie t,proche r,commune c,daira d, wilaya w WHERE p.idPatient=? and p.idProche=r.idProche and p.idTypeMaladie=t.idTypeMaladie and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya LIMIT 1;SELECT idFichierECG,lienFichier,dateCreation FROM fichierecg WHERE idPatient=?;SELECT idRapport,dateRapport FROM rapport WHERE idPatient=?; SELECT idRendezVous,dateRV FROM  rendezvous WHERE idPatient=?;";
+  dbPool.query(
+    statement,
+    [req.params.id, req.params.id, req.params.id, req.params.id, req.params.id],
+    (dbErr, results, fields) => {
+      if (dbErr) {
+        // database error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        res.send(JSON.stringify(results));
       }
-    );
-  }
+    }
+  );
+  // }
 });
 
 // Add an appointement -- tested
@@ -2637,55 +2704,68 @@ app.post(
   verifiToken,
   uploadReport.single("file"),
   (req, res) => {
-    const { error, value } = joi
-      .object({ idPatient: joi.number().required() })
-      .validate(req.body);
-    if (error) res.send(JSON.stringify(error.details));
-    else {
-      if (req.file.path) {
-        let statement =
-          "INSERT INTO rapport(lienRapport,dateRapport,idPatient) VALUES(?,curdate(),?);";
-        dbPool.query(
-          statement,
-          [req.file.path, req.body.idPatient],
-          (dbErr, result) => {
-            if (dbErr) {
-              // database error
-              console.log("## db error ## ", dbErr);
-              res.sendStatus(500);
-            } else {
-              // report added
-              res.end();
-            }
+    // console.log(req.body);
+    if (req?.file?.path) {
+      let statement =
+        "INSERT INTO rapport(lienRapport,dateRapport,idPatient) VALUES(?,curdate(),?);";
+      dbPool.query(
+        statement,
+        [req.file.path, req.body.idPatient],
+        (dbErr, result) => {
+          if (dbErr) {
+            // database error
+            console.log("## db error ## ", dbErr);
+            res.sendStatus(500);
+          } else {
+            // report added
+            res.end();
           }
-        );
-      }
+        }
+      );
     }
   }
 );
 
 // Get a reportt file Route -- tested
-app.get("/patient/report/download", verifiToken, (req, res) => {
-  const { error, value } = joi
-    .object({ idRapport: joi.number().required() })
-    .validate(req.body);
-  if (error) res.send(JSON.stringify(error.details));
-  else {
+app.get(
+  "/patient/report/:id/download",
+  verifiToken,
+  cors({
+    exposedHeaders: ["Content-Disposition"],
+  }),
+  (req, res) => {
     let statement = "SELECT lienRapport FROM rapport WHERE idRapport=?;";
-    dbPool.query(statement, value.idRapport, (dbErr, result) => {
+    dbPool.query(statement, req.params.id, (dbErr, result) => {
       if (dbErr) {
         // database error
         console.log("## db error ## ", dbErr);
         res.sendStatus(500);
       } else {
+        if (result[0]) {
+          try {
+            const fileName = "file.pdf";
+            const fileURL = "./" + path.normalize(result[0].lienRapport);
+            const stream = fs.createReadStream(fileURL);
+            res.set({
+              "Content-Disposition": `attachment; filename='${fileName}'`,
+              "Content-Type": "application/pdf",
+            });
+            stream.pipe(res);
+          } catch (e) {
+            console.error(e);
+            res.status(500).end();
+          }
+        } else {
+          res.send({ error: "file not found" });
+        }
         // send the file to be downloaded
-        result[0]
-          ? res.download("./" + path.normalize(result[0].lienRapport))
-          : res.send({ error: "file not found" });
+
+        // result[0]
+        //   ? res.download("./" + path.normalize(result[0].lienRapport))
       }
     });
   }
-});
+);
 
 //Post an ECG file Route --tested
 app.post(
@@ -2693,6 +2773,7 @@ app.post(
   verifiToken,
   uploadEcg.single("file"),
   (req, res) => {
+    console.log("file arrived ", req?.file);
     const { error, value } = joi
       .object({ dateCreation: joi.date().required() })
       .validate(req.body);
@@ -2720,68 +2801,74 @@ app.post(
   }
 );
 // Get an ECG file Route -- tested
-app.get("/patient/ecg/download", verifiToken, (req, res) => {
-  const { error, value } = joi
-    .object({ idFichierECG: joi.number().required() })
-    .validate(req.body);
-  if (error) res.send(JSON.stringify(error.details));
-  else {
-    let statement = "SELECT lienFichier FROM fichierecg WHERE idFichierECG=?;";
-    dbPool.query(statement, value.idFichierECG, (dbErr, result) => {
-      if (dbErr) {
-        // database error
-        console.log("## db error ## ", dbErr);
-        res.sendStatus(500);
-      } else {
-        // send the file to be downloaded
-        result[0]
-          ? res.download("./" + path.normalize(result[0].lienFichier))
-          : res.send({ error: "file not found" });
-      }
-    });
-  }
+app.get("/patient/ecg/:id/download", verifiToken, (req, res) => {
+  let statement = "SELECT lienFichier FROM fichierecg WHERE idFichierECG=?;";
+  dbPool.query(statement, req.params.id, (dbErr, result) => {
+    if (dbErr) {
+      // database error
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      // send the file to be downloaded
+      result[0]
+        ? res.download("./" + path.normalize(result[0].lienFichier))
+        : res.send({ error: "file not found" });
+    }
+  });
 });
 
 // send alerts to mmedecins
 app.post("/patient/alert", verifiToken, (req, res) => {
   const { error, value } = joi
-    .object({ heartCondition: joi.string().required() })
+    .object({
+      heartCondition: joi.string().required(),
+      latitude: joi.number().required(),
+      longitude: joi.number().required(),
+    })
     .validate(req.body);
   if (error) res.send(JSON.stringify(error.details));
   else {
     const statement =
-      "SELECT mailMedecin FROM medecin m,patient p WHERE p.idPatient=? and p.idMedecin=m.idMedecin;";
+      "SELECT NumTlfMedecin,nomPatient,prenomPatient,NumTlfProche FROM medecin m,patient p,proche pr WHERE p.idPatient=? and p.idMedecin=m.idMedecin and pr.idProche=p.idProche;";
     dbPool.query(statement, req.autData.id, (dbErr, result) => {
       if (dbErr) {
         // datatbase error
         console.log("## db error ## ", dbErr);
         res.sendStatus(500);
       } else {
-        const url = `http://localhost:3000/patient/ecg/live/${req.autData.id}`;
-        const emailBody = `
-                                <h3>Alert !</h3>
-                                <p>On a detecter une arythmie de type ${value.heartCondition}. Vous devez visiter ce lien pour confirmer le cas :</p>
-                                <a href='${url}'>${url}</a>
-                                <p>Cordialement,</p>
-                                <p>L'équipe de santé de Sina.</p>`;
-        // We send a confirmation mail to the user here
-        transporter.sendMail(
-          {
-            from: '"Sina" sina.app.pfe@outlook.fr', // sender address
-            to: result[0].mailMedecin, // list of receivers
-            subject: "ALERT!", // Subject line
-            text: "Sina health team", // plain text body
-            html: emailBody, // html body
-          },
-          (MailerErr, data) => {
-            if (MailerErr) {
-              console.log(MailerErr);
-              res.sendStatus(500);
-            } else {
-              res.end();
-            }
-          }
-        );
+        const messageMedecin = `On a detecter une arythmie de type ${value.heartCondition} pour votre patient ${result[0].nomPatient} ${result[0].prenomPatient}. Vous devez visiter notre site web pour plus d'information. son emplacement: https://www.google.com/maps/search/?api=1&query=${value.latitude}%2C${value.longitude} -Sina Health Team`;
+        // sendTwilloMessage(result[0].NumTlfMedecin, messageMedecin, res);
+        const messageProche = `On a detecter une arythmie de type ${value.heartCondition} pour votre proche ${result[0].nomPatient} ${result[0].prenomPatient}. Vous devez contactez son medecin (${result[0].NumTlfMedecin}). son emplacement: https://www.google.com/maps/search/?api=1&query=${value.latitude}%2C${value.longitude} -Sina Health Team`;
+        // sendTwilloMessage(result[0].NumTlfProche, messageProche, res);
+        //www.google.com/maps/search/?api=1&query=36.4676903%2C2.6205144
+        https: console.log("we sent the sms, ", messageProche);
+        // console.log(value);
+        // res.end();
+        // const url = `http://localhost:3000/patient/ecg/live/${req.autData.id}`;
+        // const emailBody = `
+        //                         <h3>Alert !</h3>
+        //                         <p>On a detecter une arythmie de type ${value.heartCondition}. Vous devez visiter ce lien pour confirmer le cas :</p>
+        //                         <a href='${url}'>${url}</a>
+        //                         <p>Cordialement,</p>
+        //                         <p>L'équipe de santé de Sina.</p>`;
+        // // We send a confirmation mail to the user here
+        // const msg = {
+        //   to: result[0].mailMedecin, // Change to your recipient
+        //   from: "sina.app.pfe@outlook.fr", // Change to your verified sender
+        //   subject: "ALERT!",
+        //   text: "Sina health team",
+        //   html: emailBody,
+        // };
+        // sgMail
+        //   .send(msg)
+        //   .then((response) => {
+        //     console.log("emmail sent");
+        //     res.end();
+        //   })
+        //   .catch((err) => {
+        //     console.log(err.message);
+        //     res.sendStatus(500);
+        //   });
       }
     });
   }
@@ -2791,10 +2878,15 @@ app.post("/patient/alert", verifiToken, (req, res) => {
 app.post("/patient/real", verifiToken, (req, res) => {
   res.send();
 });
+// send alerts to mmedecins
+app.post("/doctor/real", verifiToken, (req, res) => {
+  res.send(JSON.stringify({ myId: req.autData.id }));
+});
 
-app.get("/patient/info", verifiToken, (req, res) => {
+app.get("/patient/get/info", verifiToken, (req, res) => {
   let statement =
-    "SELECT nomPatient,idMedecin,idProche,userNamePatient,mailPatient,prenomPatient,sexePatient,dateNaisPatient,adressPatient,degreGravite,dateInscriptionPatient,NumTlfPatient,TypeMaladie,nomWilaya,nomCommune FROM patient p,typemaladie t,wilaya w,commune c,daira d WHERE idPatient=? and t.idTypeMaladie=p.idTypeMaladie and c.idCommune=p.idCommune and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya;";
+    "SELECT nomPatient,p.idMedecin,p.idProche,NumTlfProche,NumTlfMedecin,userNamePatient,mailPatient,prenomPatient,sexePatient,dateNaisPatient,adressPatient,degreGravite,dateInscriptionPatient,NumTlfPatient,TypeMaladie,nomWilaya,nomCommune FROM proche pr,patient p,typemaladie t,wilaya w,commune c,daira d,medecin m WHERE idPatient=? and p.idMedecin=m.idMedecin and p.idProche=pr.idProche and t.idTypeMaladie=p.idTypeMaladie and c.idCommune=p.idCommune and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya;";
+
   dbPool.query(statement, req.autData.id, (dbErr, result) => {
     if (dbErr) {
       // datatbase error
@@ -2833,6 +2925,25 @@ app.get("/medecin/info", verifiToken, (req, res) => {
       res.send(JSON.stringify(result[0]));
     }
   });
+});
+
+app.get("/doctor/myinfo", verifiToken, (req, res) => {
+  let statement =
+    "SELECT Distinct userNameMedecin,sexeMedecin,autoAccept,nomMedecin,prenomMedecin,NumTlfMedecin,mailMedecin,nomDaira,nomWilaya FROM medecin m,daira d,wilaya w WHERE m.idMedecin=? and m.idDaira=d.idDaira and d.idWilaya=w.idWilaya;SELECT count(*) as numberReport FROM rapport r,patient p WHERE r.idPatient=p.idPatient and p.idMedecin=?;SELECT count(*) as numberPatient FROM patient WHERE idMedecin=?;SELECT count(*) as numberPatientAtt FROM listatt WHERE idMedecin=?;";
+  dbPool.query(
+    statement,
+    [req.autData.id, req.autData.id, req.autData.id, req.autData.id],
+    (dbErr, result) => {
+      if (dbErr) {
+        // datatbase error
+        console.log("## db error ## ", dbErr);
+        res.sendStatus(500);
+      } else {
+        console.log(result);
+        res.send(JSON.stringify(result));
+      }
+    }
+  );
 });
 
 // socketio connection
@@ -2901,25 +3012,28 @@ io.use((socket, next) => {
     }
   });
 });
+const disconnectPatient = (socket) => {
+  connectedPatients = connectedPatients.filter(
+    (item) => item.socketId != socket.id
+  );
+  patientSocketIds = patientSocketIds.filter(
+    (item) => item.socket.id != socket.id
+  );
+  let socketMedecin = getSocketByDoctorId(socket.autData.idMedecin);
+  if (socketMedecin) {
+    let connectedPaitientWithId = connectedPatients.filter(
+      (item) => item.idMedecin == socket.autData.idMedecin
+    );
+    io.to(socketMedecin.id).emit("updateUserList", connectedPaitientWithId);
+  }
+};
 
 io.on("connection", (socket) => {
-  console.log("a user connected ", socket.id);
+  console.log("a user connected ", socket.id, " from ", socket.autData);
   socket.on("disconnect", () => {
-    console.log("a user is disconnected ", socket.id);
+    // console.log("a user is disconnected ", socket.id);
     if (socket.autData.patient) {
-      connectedPatients = connectedPatients.filter(
-        (item) => item.socketId != socket.id
-      );
-      patientSocketIds = patientSocketIds.filter(
-        (item) => item.socket.id != socket.id
-      );
-      let socketMedecin = getSocketByDoctorId(socket.autData.idMedecin);
-      if (socketMedecin) {
-        let connectedPaitientWithId = connectedPatients.filter(
-          (item) => item.idMedecin == socket.autData.idMedecin
-        );
-        io.to(socketMedecin.id).emit("updateUserList", connectedPaitientWithId);
-      }
+      disconnectPatient(socket);
     } else {
       connectedDoctors = connectedDoctors.filter(
         (item) => item.socketId != socket.id
@@ -2933,51 +3047,89 @@ io.on("connection", (socket) => {
       }
     }
   });
-  socket.on("loggedin", function () {
+  socket.on("leaveRoom", (data) => {
+    let socketPatient = getSocketByPatientId(data.withUserId);
+    io.to(socketPatient.id).emit("DoctorGoes", {
+      disconnected: true,
+      room: data.room,
+    });
+    socket.leave(data.room);
+  });
+  socket.on("patientStopRecording", (data) => {
+    // console.log(socket.id, " patient stop recording ");
+    disconnectPatient(socket);
+    socket.leave(data?.room);
+  });
+  socket.on("loggedin", function (data) {
     // console.log(socket.autData);
     if (socket.autData.patient) {
-      console.log("one");
+      patientSocketIds = patientSocketIds.filter(
+        (item) => item.userId != socket.autData.id
+      );
       patientSocketIds.push({ socket: socket, userId: socket.autData.id });
       connectedPatients = connectedPatients.filter(
-        (item) => item.user_id != socket.autData.id
+        (item) => item.id != socket.autData.id
       );
       connectedPatients.push({ ...socket.autData, socketId: socket.id });
       let socketMedecin = getSocketByDoctorId(socket.autData.idMedecin);
-      console.log("two");
       // console.log(socketMedecin, "    ", socket.autData.idMedecin);
       if (socketMedecin) {
         let connectedPaitientWithId = connectedPatients.filter(
           (item) => item.idMedecin == socket.autData.idMedecin
         );
-        console.log("three");
-        console.log(socketMedecin.id);
+        // console.log(socketMedecin.id);
         io.to(socketMedecin.id).emit("updateUserList", connectedPaitientWithId);
       }
     } else {
+      doctorSocketIds = doctorSocketIds.filter(
+        (item) => item.userId != socket.autData.id
+      );
       doctorSocketIds.push({ socket: socket, userId: socket.autData.id });
+      connectedDoctors = connectedDoctors.filter(
+        (item) => item.id != socket.autData.id
+      );
       connectedDoctors.push({ ...socket.autData, socketId: socket.id });
+      let connectedPaitientWithId = connectedPatients.filter(
+        (item) => item.idMedecin == socket.autData.id
+      );
+      io.to(socket.id).emit("updateUserList", connectedPaitientWithId);
     }
   });
   socket.on("create", function (data) {
-    console.log("create room");
+    // console.log(socket.id, " joingin the room : ", data.room);
+    // console.log("create room");
     socket.join(data.room);
     let withSocket = getSocketByPatientId(data.withUserId);
     socket.broadcast.to(withSocket.id).emit("invite", { data });
     // socket.broadcast.to(socket.id).emit("invite");
   });
   socket.on("joinRoom", function (data) {
-    console.log("join a room ", data);
+    // console.log(socket.id, " patient is joining the room : ", data);
     socket.join(data);
   });
   socket.on("message", function (data) {
-    socket.broadcast.to(data.room).emit("message", data.message);
+    data?.room && socket.broadcast.to(data.room).emit("message", data.message);
+  });
+  socket.on("disconnectMe", function (data) {
+    // console.log(data)
+    // if (socket.autData.patient && data.doctorIsWatching ) {
+    //   let socketMedecin = getSocketByDoctorId(socket.autData.idMedecin);
+    //   // console.log(socketMedecin, "    ", socket.autData.idMedecin);
+    //   if (socketMedecin) {
+    //     let connectedPaitientWithId = connectedPatients.filter(
+    //       (item) => item.idMedecin == socket.autData.idMedecin
+    //     );
+    //     console.log(socketMedecin.id);
+    //     io.to(socketMedecin.id).emit("updateUserList", connectedPaitientWithId);
+    //   }
+    // }
   });
 });
 
-// handling unkown errors -- tested
-app.use((err, req, res, next) => {
-  res.status(500).send(JSON.stringify({ err: err }));
-});
+// // handling unkown errors -- tested
+// app.use((err, req, res, next) => {
+//   res.status(500).send(JSON.stringify({ err: err }));
+// });
 
 // app.listen(3000, () => {
 //   console.log("Server connected on port 3000!");
