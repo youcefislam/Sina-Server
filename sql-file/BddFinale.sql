@@ -1,6 +1,6 @@
--- drop database sina;
--- create schema if not exists sina;
--- use sina;
+drop database sina;
+create schema if not exists sina;
+use sina;
 Create table Wilaya (
     idWilaya INT NOT NULL AUTO_INCREMENT, 
     nomWilaya VARCHAR(50),
@@ -166,11 +166,11 @@ CREATE TABLE patientNonVerifie(
      idPatient INT NOT NULL,
      validationCode INT NOT NULL,
      PRIMARY KEY (idPatient),
-     CONSTRAINT FK_patNonVerif_IdP FOREIGN KEY (idPatient) REFERENCES patient (idPatient) ON DELETE CASCADE
+     CONSTRAINT FK_patNonVerif_IdP FOREIGN KEY (idPatient) REFERENCES Patient (idPatient) ON DELETE CASCADE
 );
 
 CREATE TABLE medecinNonVerifie(
      idMedecin INT NOT NULL,
      PRIMARY KEY (idMedecin),
-     CONSTRAINT FK_medNonVerif_IdP FOREIGN KEY (idMedecin) REFERENCES medecin (idMedecin) ON DELETE CASCADE
+     CONSTRAINT FK_medNonVerif_IdP FOREIGN KEY (idMedecin) REFERENCES Medecin (idMedecin) ON DELETE CASCADE
 );

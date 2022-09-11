@@ -60,6 +60,15 @@ var dbPool = mysql.createPool({
   database: "sina",
   multipleStatements: true,
 });
+// var dbPool = mysql.createConnection({
+//   // connectionLimit: 30,
+//   host: "containers-us-west-83.railway.app",
+//   user: "root",
+//   password: "RqPS8QMHaf0vxM8rLP0x",
+//   database: "railway",
+//   // multipleStatements: true,
+//   connectTimeout: 30000,
+// });
 // dbPool.on("acquire", function (connection) {
 //   console.log("Connection %d acquired", connection.threadId);
 // });
@@ -1599,6 +1608,7 @@ app.post("/medecin/restorelink", (req, res) => {
                 console.log(jwtErr);
                 res.sendStatus(500);
               } else {
+                console.log("email will be sent");
                 // we send the link to restore the password
                 const url = `http://localhost:3000/medecin/restorepassword/${token}`;
                 const emailBody = `
@@ -2819,6 +2829,7 @@ app.get("/patient/ecg/:id/download", verifiToken, (req, res) => {
 
 // send alerts to mmedecins
 app.post("/patient/alert", verifiToken, (req, res) => {
+  console.log("sms sender route called with : ", req.body);
   const { error, value } = joi
     .object({
       heartCondition: joi.string().required(),
@@ -2836,12 +2847,12 @@ app.post("/patient/alert", verifiToken, (req, res) => {
         console.log("## db error ## ", dbErr);
         res.sendStatus(500);
       } else {
-        const messageMedecin = `On a detecter une arythmie de type ${value.heartCondition} pour votre patient ${result[0].nomPatient} ${result[0].prenomPatient}. Vous devez visiter notre site web pour plus d'information. son emplacement: https://www.google.com/maps/search/?api=1&query=${value.latitude}%2C${value.longitude} -Sina Health Team`;
-        // sendTwilloMessage(result[0].NumTlfMedecin, messageMedecin, res);
+        const messageMedecin = `On a detecter une arythmie de type ${value.heartCondition} pour votre patient ${result[0].nomPatient} ${result[0].prenomPatient}. son emplacement: https://www.google.com/maps/search/?api=1&query=${value.latitude}%2C${value.longitude} -Sina Health Team`;
+        sendTwilloMessage(result[0].NumTlfMedecin, messageMedecin, res);
         const messageProche = `On a detecter une arythmie de type ${value.heartCondition} pour votre proche ${result[0].nomPatient} ${result[0].prenomPatient}. Vous devez contactez son medecin (${result[0].NumTlfMedecin}). son emplacement: https://www.google.com/maps/search/?api=1&query=${value.latitude}%2C${value.longitude} -Sina Health Team`;
         // sendTwilloMessage(result[0].NumTlfProche, messageProche, res);
         //www.google.com/maps/search/?api=1&query=36.4676903%2C2.6205144
-        https: console.log("we sent the sms, ", messageProche);
+        console.log("we sent the sms, ", messageProche);
         // console.log(value);
         // res.end();
         // const url = `http://localhost:3000/patient/ecg/live/${req.autData.id}`;
@@ -2876,7 +2887,16 @@ app.post("/patient/alert", verifiToken, (req, res) => {
 
 // send alerts to mmedecins
 app.post("/patient/real", verifiToken, (req, res) => {
-  res.send();
+  let statement = "SELECT idPatient FROM patient WHERE idPatient=?";
+  db.query(statement, req.autData.id, (dbErr, result) => {
+    if (dbErr) {
+      console.log("## db error ## ", dbErr);
+      res.sendStatus(500);
+    } else {
+      if (result[0].idPatient) res.send();
+      else res.sendStatus(403);
+    }
+  });
 });
 // send alerts to mmedecins
 app.post("/doctor/real", verifiToken, (req, res) => {
@@ -2884,15 +2904,20 @@ app.post("/doctor/real", verifiToken, (req, res) => {
 });
 
 app.get("/patient/get/info", verifiToken, (req, res) => {
+  console.log(req.autData);
   let statement =
-    "SELECT nomPatient,p.idMedecin,p.idProche,NumTlfProche,NumTlfMedecin,userNamePatient,mailPatient,prenomPatient,sexePatient,dateNaisPatient,adressPatient,degreGravite,dateInscriptionPatient,NumTlfPatient,TypeMaladie,nomWilaya,nomCommune FROM proche pr,patient p,typemaladie t,wilaya w,commune c,daira d,medecin m WHERE idPatient=? and p.idMedecin=m.idMedecin and p.idProche=pr.idProche and t.idTypeMaladie=p.idTypeMaladie and c.idCommune=p.idCommune and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya;";
+    "SELECT p.nomPatient,p.idMedecin,p.idProche,p.userNamePatient,p.mailPatient,p.prenomPatient,p.sexePatient,p.dateNaisPatient,p.adressPatient,p.degreGravite,p.dateInscriptionPatient,p.NumTlfPatient,nomWilaya,nomCommune,nomDaira,p.idProche,NumTlfProche FROM patient p,wilaya w,commune c,daira d,proche pr WHERE p.idPatient=? and p.idProche=pr.idProche and c.idCommune=p.idCommune and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya;SELECT NumTlfMedecin,TypeMaladie from patient p,typemaladie t,medecin m where p.idMedecin=m.idMedecin and t.idTypeMaladie=p.idTypeMaladie and p.idPatient = ?;";
 
-  dbPool.query(statement, req.autData.id, (dbErr, result) => {
+  dbPool.query(statement, [req.autData.id, req.autData.id], (dbErr, result) => {
     if (dbErr) {
       // datatbase error
       console.log("## db error ## ", dbErr);
       res.sendStatus(500);
     } else {
+      let temp = {
+        ...result[0][0],
+        ...result[0][1],
+      };
       res.send(JSON.stringify(result[0]));
     }
   });
