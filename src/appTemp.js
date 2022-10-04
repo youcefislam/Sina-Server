@@ -40,6 +40,8 @@ app.use(
 );
 app.use(bodyParser.json());
 
+// Routes
+// Medecin route
 app.use("/medecin", medecinRouter);
 
 app.get("*", (req, res) => {

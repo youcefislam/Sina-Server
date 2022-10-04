@@ -1,9 +1,13 @@
 const mysql = require("mysql");
-const { medecinSignUpJoi } = require("../../Utilities/validations");
+const {
+  medecinSignUpJoi,
+  medecinSignInJoi,
+} = require("../../Utilities/validations");
 const {
   hashPassword,
   generateToken,
   sendMail,
+  comparePassword,
 } = require("../../Utilities/utility");
 
 // ### Connection with the database ### -- tested
@@ -110,6 +114,50 @@ const medecinSignUp = async (req, res) => {
   }
 };
 
+const medecinSignIn = async (req, res) => {
+  // we validate the form of data we receive
+  const { error, value } = await medecinSignInJoi(req.body);
+  if (error) {
+    // data not valid
+    console.log(error);
+    res.status(403).send(error.details);
+  } else {
+    // valid data .. next
+    // select the user information from the database and compare it to the received data
+    let statement =
+      "SELECT idMedecin,passwordMedecin FROM medecin WHERE usernameMedecin=?";
+    dbPool.query(statement, value.username, async (err, result) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send({ error: "internal_server_error" });
+      } else {
+        if (result[0]) {
+          // Account exist
+          const { error, correct } = await comparePassword(
+            value.password,
+            result[0].passwordMedecin
+          );
+          if (error) res.status(500).send({ error: "internal_server_error" });
+          else {
+            if (correct) {
+              const { token, error } = await generateToken({
+                id: result[0].idMedecin,
+                username: value.username,
+              });
+              if (error)
+                res.status(500).send({ error: "internal_server_error" });
+              else res.send({ token });
+            } else {
+              res.status(403).send({ error: "password" });
+            }
+          }
+        } else res.status(403).send({ error: "username" });
+      }
+    });
+  }
+};
+
 module.exports = {
   medecinSignUp,
+  medecinSignIn,
 };

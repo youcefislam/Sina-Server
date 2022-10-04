@@ -1,10 +1,13 @@
 const express = require("express");
-const { medecinSignUp } = require("./controllers");
+const { medecinSignUp, medecinSignIn } = require("./controllers");
 
 const Router = express.Router();
 
 // Endpoints
-// Sign up Route for doctors
+// Sign up endpoint
 Router.post("/signup", medecinSignUp);
+
+// Sign in endpoint
+Router.post("/signin", medecinSignIn);
 
 module.exports = Router;

@@ -26,6 +26,16 @@ const hashPassword = async (input) => {
   }
 };
 
+const comparePassword = async (password, validPassword) => {
+  try {
+    const correct = await bcrypt.compare(password, validPassword);
+    return { correct };
+  } catch (error) {
+    console.log(error);
+    return { error };
+  }
+};
+
 const generateToken = async (values) => {
   try {
     const token = await jwt.sign(values, process.env.MY_SECRET_KEY);
@@ -50,6 +60,7 @@ const sendMail = async (mail) => {
 module.exports = {
   deleteFile_fs,
   hashPassword,
+  comparePassword,
   generateToken,
   sendMail,
 };
