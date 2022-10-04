@@ -4,6 +4,7 @@ const {
   medecinSignIn,
   medecinValidateAccount,
   medecinDeleteAccount,
+  medecinModifyMail,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -21,5 +22,8 @@ Router.get("/confirmation/:token", medecinValidateAccount);
 
 // Delete account endpoint
 Router.post("/delete", tokenAuthorization, medecinDeleteAccount);
+
+// Modify doctor's mail endpoint
+Router.post("/modifyMail", tokenAuthorization, medecinModifyMail);
 
 module.exports = Router;

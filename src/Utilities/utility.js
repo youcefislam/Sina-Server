@@ -49,7 +49,6 @@ const generateToken = async (values) => {
 const validateToken = async (token) => {
   try {
     const valid = await jwt.verify(token, process.env.MY_SECRET_KEY);
-
     return { valid };
   } catch (error) {
     console.log(error);
@@ -60,7 +59,6 @@ const validateToken = async (token) => {
 const sendMail = async (mail) => {
   try {
     const mailSent = await sendGrid.send(mail);
-    console.log(mailSent);
     return { mailSent };
   } catch (error) {
     console.log(error);

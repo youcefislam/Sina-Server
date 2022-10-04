@@ -1,8 +1,5 @@
-const mysql = require("mysql");
-const {
-  medecinSignUpJoi,
-  medecinSignInJoi,
-} = require("../../Utilities/validations");
+const dbPool = require("../../Database/Connection");
+const validateBody = require("../../Utilities/validations");
 const {
   hashPassword,
   generateToken,
@@ -11,20 +8,10 @@ const {
   comparePassword,
 } = require("../../Utilities/utility");
 
-// ### Connection with the database ### -- tested
-var dbPool = mysql.createPool({
-  connectionLimit: 30,
-  host: "localhost",
-  user: "sina",
-  password: "password",
-  database: "sina",
-  multipleStatements: true,
-});
-
 const medecinSignUp = async (req, res) => {
   // Check the data form and verify it
 
-  const { error, value } = await medecinSignUpJoi(req.body);
+  const { error, value } = await validateBody("medecinSignUp", req.body);
 
   if (error) {
     res.status(403).send(error.details);
@@ -117,7 +104,7 @@ const medecinSignUp = async (req, res) => {
 
 const medecinSignIn = async (req, res) => {
   // we validate the form of data we receive
-  const { error, value } = await medecinSignInJoi(req.body);
+  const { error, value } = await validateBody("medecinSignIn", req.body);
   if (error) {
     // data not valid
     console.log(error);
@@ -174,9 +161,30 @@ const medecinDeleteAccount = (req, res) => {
   });
 };
 
+const medecinModifyMail = async (req, res) => {
+  const { error, value } = await validateBody("validMail", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement = "UPDATE medecin SET mailMedecin=? WHERE idMedecin=?";
+    dbPool.query(statement, [value.email, req.autData.id], (dbErr, result) => {
+      if (dbErr) {
+        console.log("##db error##", dbErr);
+        // if we have double entry error
+        if (dbErr.errno == 1062)
+          res.status(403).send({
+            error: 1062,
+            message: dbErr.sqlMessage,
+          });
+        else res.status(500).send({ error: "internal_server_error" }); // Internal server ERROR
+      } else res.end();
+    });
+  }
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
   medecinValidateAccount,
   medecinDeleteAccount,
+  medecinModifyMail,
 };
