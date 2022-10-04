@@ -164,8 +164,19 @@ const medecinValidateAccount = async (req, res) => {
   else res.sendStatus(200);
 };
 
+const medecinDeleteAccount = (req, res) => {
+  let statement = "DELETE FROM medecin WHERE idMedecin=?";
+  dbPool.query(statement, req.autData.id, (err, result) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send({ error: "internal_server_error" });
+    } else res.end();
+  });
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
   medecinValidateAccount,
+  medecinDeleteAccount,
 };

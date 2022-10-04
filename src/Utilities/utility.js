@@ -49,6 +49,7 @@ const generateToken = async (values) => {
 const validateToken = async (token) => {
   try {
     const valid = await jwt.verify(token, process.env.MY_SECRET_KEY);
+
     return { valid };
   } catch (error) {
     console.log(error);
