@@ -6,6 +6,7 @@ const {
 const {
   hashPassword,
   generateToken,
+  validateToken,
   sendMail,
   comparePassword,
 } = require("../../Utilities/utility");
@@ -157,7 +158,14 @@ const medecinSignIn = async (req, res) => {
   }
 };
 
+const medecinValidateAccount = async (req, res) => {
+  const { error, valid } = await validateToken(req.params.token);
+  if (error) res.status(403).send({ error: "invalid_token" });
+  else res.sendStatus(200);
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
+  medecinValidateAccount,
 };
