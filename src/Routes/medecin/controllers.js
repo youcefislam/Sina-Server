@@ -181,10 +181,42 @@ const medecinModifyMail = async (req, res) => {
   }
 };
 
+const medecinModifyUsername = async (req, res) => {
+  const { error, value } = await validateBody("validUsername", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement = "UPDATE medecin SET userNameMedecin=? WHERE idMedecin=?";
+    dbPool.query(
+      statement,
+      [value.username, req.autData.id],
+      async (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          // if we have double entry error
+          if (dbErr.errno == 1062)
+            res.status(403).send({
+              error: 1062,
+              message: dbErr.sqlMessage,
+            });
+          else res.status(500).send({ error: "internal_server_error" }); // Internal server ERROR
+        } else {
+          const { error, token } = await generateToken({
+            id: req.autData.id,
+            username: value.username,
+          });
+          if (error) res.status(500).send({ error: "internal_server_error" });
+          else res.send({ token });
+        }
+      }
+    );
+  }
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
   medecinValidateAccount,
   medecinDeleteAccount,
   medecinModifyMail,
+  medecinModifyUsername,
 };

@@ -47,6 +47,7 @@ const validations = {
   validMail: joi.object({
     email: joi.string().email().required(),
   }),
+  validUsername: joi.object({ username: joi.string().min(6).required() }),
 };
 
 const validateBody = async (type, body) => {
