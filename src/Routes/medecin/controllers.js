@@ -246,6 +246,34 @@ const medecinModifyName = async (req, res) => {
   }
 };
 
+const medecinModifyNumber = async (req, res) => {
+  const { error, value } = await validateBody("validNumber", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement = "UPDATE medecin SET NumTlfMedecin=? WHERE idMedecin=?";
+    value.numeroTlf =
+      value.numeroTlf[0] == "0" ? value.numeroTlf.slice(1) : value.numeroTlf;
+    dbPool.query(
+      statement,
+      [value.numeroTlf, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          // if we have double entry error
+          if (dbErr.errno == 1062)
+            res.status(403).send(
+              JSON.stringify({
+                error: 1062,
+                message: dbErr.sqlMessage,
+              })
+            );
+          else res.status(500).send({ error: "internal_server_error" }); // Internal server ERROR
+        } else res.end();
+      }
+    );
+  }
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
@@ -255,4 +283,5 @@ module.exports = {
   medecinModifyUsername,
   medecinModifyPassword,
   medecinModifyName,
+  medecinModifyNumber,
 };

@@ -56,6 +56,9 @@ const validations = {
     nom: joi.string().max(50).required(),
     prenom: joi.string().max(50).required(),
   }),
+  validNumber: joi.object({
+    numeroTlf: joi.string().max(10).required(),
+  }),
 };
 
 const validateBody = async (type, body) => {

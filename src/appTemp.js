@@ -48,4 +48,9 @@ app.get("*", (req, res) => {
   res.status(404).send({ error: "NOT_FOUND" });
 });
 
+// handling unknown errors -- tested
+app.use((err, req, res, next) => {
+  res.status(500).send({ error: "unknown_internal_error_server" });
+});
+
 module.exports = app;
