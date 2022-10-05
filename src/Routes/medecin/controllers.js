@@ -286,6 +286,22 @@ const medecinModifyAutoAccept = async (req, res) => {
   }
 };
 
+const medecinModifyDaira = async (req, res) => {
+  const { error, value } = await validateBody("validDaira", req.body);
+  if (error) res.send(error.details);
+  else {
+    // must be modified to check if the daira exists first after inserting it. -- NOT DONE YET
+    let statement =
+      "UPDATE medecin SET idDaira=(SELECT idDaira FROM daira WHERE idDaira=?) WHERE idMedecin=?;";
+    dbPool.query(statement, [value.daira, req.autData.id], (dbErr, result) => {
+      if (dbErr) {
+        console.log("##db error##", dbErr);
+        res.status(500).send({ error: "internal_server_error" });
+      } else res.end();
+    });
+  }
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
@@ -297,4 +313,5 @@ module.exports = {
   medecinModifyName,
   medecinModifyNumber,
   medecinModifyAutoAccept,
+  medecinModifyDaira,
 };
