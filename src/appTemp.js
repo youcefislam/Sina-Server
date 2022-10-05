@@ -1,5 +1,6 @@
 const express = require("express");
 const medecinRouter = require("./Routes/medecin/route");
+const waitingListRouter = require("./Routes/waitingList/route");
 var bodyParser = require("body-parser");
 
 const app = express();
@@ -44,7 +45,10 @@ app.use(bodyParser.json());
 // Medecin route
 app.use("/medecin", medecinRouter);
 
-app.get("*", (req, res) => {
+// waiting list route
+app.use("/waitinglist", waitingListRouter);
+
+app.use("*", (req, res) => {
   res.status(404).send({ error: "NOT_FOUND" });
 });
 
