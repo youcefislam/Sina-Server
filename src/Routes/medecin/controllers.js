@@ -227,6 +227,25 @@ const medecinModifyPassword = async (req, res) => {
   }
 };
 
+const medecinModifyName = async (req, res) => {
+  const { error, value } = await validateBody("validName", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "UPDATE medecin SET nomMedecin=?,prenomMedecin=? WHERE idMedecin=?";
+    dbPool.query(
+      statement,
+      [value.nom, value.prenom, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          res.status(500).send({ error: "internal_server_error" });
+        } else res.end();
+      }
+    );
+  }
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
@@ -235,4 +254,5 @@ module.exports = {
   medecinModifyMail,
   medecinModifyUsername,
   medecinModifyPassword,
+  medecinModifyName,
 };
