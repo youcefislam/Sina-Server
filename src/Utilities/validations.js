@@ -59,6 +59,7 @@ const validations = {
   validNumber: joi.object({
     numeroTlf: joi.string().max(10).required(),
   }),
+  validAccept: joi.object({ auto: joi.number().max(1).required() }),
 };
 
 const validateBody = async (type, body) => {

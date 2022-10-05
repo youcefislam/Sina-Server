@@ -261,16 +261,28 @@ const medecinModifyNumber = async (req, res) => {
           console.log("##db error##", dbErr);
           // if we have double entry error
           if (dbErr.errno == 1062)
-            res.status(403).send(
-              JSON.stringify({
-                error: 1062,
-                message: dbErr.sqlMessage,
-              })
-            );
+            res.status(403).send({
+              error: 1062,
+              message: dbErr.sqlMessage,
+            });
           else res.status(500).send({ error: "internal_server_error" }); // Internal server ERROR
         } else res.end();
       }
     );
+  }
+};
+
+const medecinModifyAutoAccept = async (req, res) => {
+  const { error, value } = await validateBody("validAccept", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement = "UPDATE medecin SET autoAccept=? WHERE idMedecin=?";
+    dbPool.query(statement, [value.auto, req.autData.id], (dbErr, result) => {
+      if (dbErr) {
+        console.log("##db error##", dbErr);
+        res.status(500).send({ error: "internal_server_error" }); // Internal server ERROR
+      } else res.end();
+    });
   }
 };
 
@@ -284,4 +296,5 @@ module.exports = {
   medecinModifyPassword,
   medecinModifyName,
   medecinModifyNumber,
+  medecinModifyAutoAccept,
 };

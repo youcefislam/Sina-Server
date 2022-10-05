@@ -9,6 +9,7 @@ const {
   medecinModifyPassword,
   medecinModifyName,
   medecinModifyNumber,
+  medecinModifyAutoAccept,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -41,5 +42,8 @@ Router.post("/modifyName", tokenAuthorization, medecinModifyName);
 
 // Modify doctor's phone number endpoint
 Router.post("/modifyNumber", tokenAuthorization, medecinModifyNumber);
+
+// Modify doctor's auto accept endpoint
+Router.post("/modifyAccept", tokenAuthorization, medecinModifyAutoAccept);
 
 module.exports = Router;
