@@ -48,6 +48,10 @@ const validations = {
     email: joi.string().email().required(),
   }),
   validUsername: joi.object({ username: joi.string().min(6).required() }),
+  validNewPassword: joi.object({
+    password: joi.string().alphanum().min(8).required(),
+    repeat_password: joi.ref("password"),
+  }),
 };
 
 const validateBody = async (type, body) => {

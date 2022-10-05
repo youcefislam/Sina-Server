@@ -6,6 +6,7 @@ const {
   medecinDeleteAccount,
   medecinModifyMail,
   medecinModifyUsername,
+  medecinModifyPassword,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -29,5 +30,8 @@ Router.post("/modifyMail", tokenAuthorization, medecinModifyMail);
 
 // Modify doctor's username Route -- tested
 Router.post("/modifyUsername", tokenAuthorization, medecinModifyUsername);
+
+// Modify doctor's password Route -- tested
+Router.post("/modifyPassword", tokenAuthorization, medecinModifyPassword);
 
 module.exports = Router;

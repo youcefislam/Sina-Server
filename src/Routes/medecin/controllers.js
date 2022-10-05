@@ -16,17 +16,14 @@ const medecinSignUp = async (req, res) => {
   if (error) {
     res.status(403).send(error.details);
   } else {
-    // Hashing the password using the bcrypt module
     const { hash, error } = await hashPassword(value.password);
 
     if (error) res.status(500).send({ error: "internal_server_error" });
     else {
-      // SQL statement we dont use the data here to prevent SQL injections so we replace the fields with a ? and add them when we execute the statement
       let statement = `INSERT INTO medecin(userNameMedecin,passwordMedecin,mailMedecin,nomMedecin,prenomMedecin,sexeMedecin,photoMedecin,dateInscriptientMedecin,NumTlfMedecin,idDaira)
           VALUES(?,?,?,?,?,?,?,curdate(),?,?);`;
       value.numeroTlf =
         value.numeroTlf[0] == "0" ? value.numeroTlf.slice(1) : value.numeroTlf;
-      // Add the doctor to our database
       dbPool.query(
         statement,
         [
@@ -212,6 +209,24 @@ const medecinModifyUsername = async (req, res) => {
   }
 };
 
+const medecinModifyPassword = async (req, res) => {
+  const { error, value } = await validateBody("validNewPassword", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    const { hash, error } = await hashPassword(value.password);
+    if (error) res.status(500).send({ error: "internal_server_error" });
+    else {
+      let statement = "UPDATE medecin SET passwordMedecin=? WHERE idMedecin=?";
+      dbPool.query(statement, [hash, req.autData.id], (dbErr, result) => {
+        if (dbErr) {
+          console.log("##db error##", dbErr);
+          res.status(500).send({ error: "internal_server_error" });
+        } else res.end();
+      });
+    }
+  }
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
@@ -219,4 +234,5 @@ module.exports = {
   medecinDeleteAccount,
   medecinModifyMail,
   medecinModifyUsername,
+  medecinModifyPassword,
 };
