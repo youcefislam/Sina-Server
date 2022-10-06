@@ -303,16 +303,38 @@ const medecinModifyDaira = async (req, res) => {
 };
 
 const medecinGetPatientList = async (req, res) => {
-  // select the patients
   const statement =
     "SELECT idPatient,nomPatient,prenomPatient,statusPatient,photoPatient,TIMESTAMPDIFF(year,dateNaisPatient,CURDATE()) as agePatient FROM patient WHERE idMedecin=?;";
   dbPool.query(statement, req.autData.id, (dberr, result) => {
     if (dberr) {
-      // database error
       console.log("## db err ## ", dberr);
       res.status(500).send({ error: "internal_server_error" });
     } else res.send({ results: result });
   });
+};
+
+const medecinRemovePatient = async (req, res) => {
+  const { error, value } = validateBody("validPatientId", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement = "SELECT idMedecin FROM patient WHERE idPatient=?;";
+    dbPool.query(statement, value.idPatient, (dberr, result) => {
+      if (dberr) {
+        console.log("## db err ##", dberr);
+        res.status(500).send({ error: "internal_server_error" });
+      } else {
+        if (result[0]?.idMedecin == req.autData.id) {
+          statement = "UPDATE patient SET idMedecin=? WHERE idPatient=?";
+          dbPool.query(statement, [null, value.idPatient], (dberr, result) => {
+            if (dberr) {
+              console.log("## db err ##", dberr);
+              res.status(500).send({ error: "internal_server_error" });
+            } else res.end();
+          });
+        } else res.status(400).send({ error: "patient_not_found" });
+      }
+    });
+  }
 };
 
 module.exports = {
@@ -328,4 +350,5 @@ module.exports = {
   medecinModifyAutoAccept,
   medecinModifyDaira,
   medecinGetPatientList,
+  medecinRemovePatient,
 };

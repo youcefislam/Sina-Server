@@ -12,6 +12,7 @@ const {
   medecinModifyAutoAccept,
   medecinModifyDaira,
   medecinGetPatientList,
+  medecinRemovePatient,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -51,7 +52,10 @@ Router.post("/modifyAccept", tokenAuthorization, medecinModifyAutoAccept);
 // Modify doctor's daira endpoint
 Router.post("/modifyDaira", tokenAuthorization, medecinModifyDaira);
 
-// get the doctor's patient list -- tested
+// Get the doctor's patient list endpoint
 Router.get("/patientlist", tokenAuthorization, medecinGetPatientList);
+
+// Delete patient from the patient list endpoint -- not tested
+Router.post("/patientlist/remove", tokenAuthorization, medecinRemovePatient);
 
 module.exports = Router;
