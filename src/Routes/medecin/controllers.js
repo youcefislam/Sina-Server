@@ -302,6 +302,19 @@ const medecinModifyDaira = async (req, res) => {
   }
 };
 
+const medecinGetPatientList = async (req, res) => {
+  // select the patients
+  const statement =
+    "SELECT idPatient,nomPatient,prenomPatient,statusPatient,photoPatient,TIMESTAMPDIFF(year,dateNaisPatient,CURDATE()) as agePatient FROM patient WHERE idMedecin=?;";
+  dbPool.query(statement, req.autData.id, (dberr, result) => {
+    if (dberr) {
+      // database error
+      console.log("## db err ## ", dberr);
+      res.status(500).send({ error: "internal_server_error" });
+    } else res.send({ results: result });
+  });
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
@@ -314,4 +327,5 @@ module.exports = {
   medecinModifyNumber,
   medecinModifyAutoAccept,
   medecinModifyDaira,
+  medecinGetPatientList,
 };
