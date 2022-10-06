@@ -89,8 +89,33 @@ const acceptPatientRequest = async (req, res) => {
   }
 };
 
+const refusePatientRequest = async (req, res) => {
+  const { error, value } = await validateBody("validPatientId", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement = "SELECT idMedecin FROM listatt WHERE idPatient=? LIMIT 1;";
+    dbPool.query(statement, value.idPatient, (dberr, result) => {
+      if (dberr) {
+        console.log("## db error", dberr);
+        res.status(500).send({ error: "internal_server_error" });
+      } else {
+        if (result[0]?.idMedecin == req.autData.id) {
+          statement = "DELETE FROM listatt WHERE  idPatient=?;";
+          dbPool.query(statement, value.idPatient, (dberr, result) => {
+            if (dberr) {
+              console.log("## db error ## ", dberr);
+              res.status(500).send({ error: "internal_server_error" });
+            } else res.end();
+          });
+        } else res.status(400).send({ error: "request_not_found" });
+      }
+    });
+  }
+};
+
 module.exports = {
   getWaitingList,
   addPatientRequest,
   acceptPatientRequest,
+  refusePatientRequest,
 };
