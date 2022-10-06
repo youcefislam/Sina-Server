@@ -1,8 +1,10 @@
 const express = require("express");
+var bodyParser = require("body-parser");
+
 const medecinRouter = require("./Routes/medecin/route");
 const waitingListRouter = require("./Routes/waitingList/route");
 const relativeRouter = require("./Routes/relative/route");
-var bodyParser = require("body-parser");
+const maladieRouter = require("./Routes/maladie/route");
 
 const app = express();
 // Static files serving Middleware (allow access to these files publicly) -- tested
@@ -34,6 +36,7 @@ app.use(function (req, res, next) {
   // Pass to next layer of middleware
   next();
 });
+
 // configure the app to use bodyParser()
 app.use(
   bodyParser.urlencoded({
@@ -51,6 +54,9 @@ app.use("/waitinglist", waitingListRouter);
 
 // relative route
 app.use("/relative", relativeRouter);
+
+// maladie route
+app.use("/maladie", maladieRouter);
 
 app.use("*", (req, res) => {
   res.status(404).send({ error: "NOT_FOUND" });
