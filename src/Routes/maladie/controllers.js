@@ -20,6 +20,23 @@ const getMaladiesList = (req, res) => {
   });
 };
 
+const addMaladie = async (req, res) => {
+  const { error, value } = await validateBody("validDiseaseType", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    // add the type if disease to the list
+    let statement = "INSERT INTO typemaladie(typemaladie) VALUES(?);";
+    dbPool.query(statement, value.TypeMaladie, (dberr, result) => {
+      if (dberr) {
+        // database error
+        console.log("## db error ## ", dberr);
+        res.status(500).send({ error: "internal_server_error" });
+      } else res.send();
+    });
+  }
+};
+
 module.exports = {
   getMaladiesList,
+  addMaladie,
 };

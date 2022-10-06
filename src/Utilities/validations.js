@@ -71,6 +71,9 @@ const validations = {
   validNumber: joi.object({
     number: joi.string().min(10).required(),
   }),
+  validDiseaseType: joi.object({
+    TypeMaladie: joi.string().max(50).required(),
+  }),
 };
 
 const validateBody = async (type, body) => {
