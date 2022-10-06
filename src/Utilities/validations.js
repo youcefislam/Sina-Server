@@ -68,6 +68,9 @@ const validations = {
     degreGravite: joi.number().max(10).required(),
     idTypeMaladie: joi.number().required(),
   }),
+  validNumber: joi.object({
+    number: joi.string().min(10).required(),
+  }),
 };
 
 const validateBody = async (type, body) => {

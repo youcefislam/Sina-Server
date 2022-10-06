@@ -8,7 +8,7 @@ const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
 const Router = express.Router();
 
-// Waiting list route == not tested yet
+// Waiting list route == not tested yet --- previous /medecin/waitinglist/
 // Get the waiting list of the doctor endpoint
 Router.get("/", tokenAuthorization, getWaitingList);
 

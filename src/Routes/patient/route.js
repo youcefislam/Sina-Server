@@ -4,8 +4,6 @@ const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
 const Router = express.Router();
 
-// Endpoints
-// Modify the relative's mail Route -- need tests
-Router.post("/relative/modify/email", tokenAuthorization, modifyRelativeMail);
+// patient router
 
 module.exports = Router;
