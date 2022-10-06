@@ -37,7 +37,60 @@ const addPatientRequest = (req, res) => {
   );
 };
 
+const acceptPatientRequest = async (req, res) => {
+  // received data form validation
+  const { error, value } = await validateBody("validPatientApproval", req.body);
+  if (error) res.send(400).send(error.details);
+  else {
+    let statement = "SELECT idMedecin FROM ListAtt WHERE idPatient=?  LIMIT 1;";
+    dbPool.query(statement, value.idPatient, (dberr, result) => {
+      if (dberr) {
+        // database error
+        console.log("##dberr##", dberr);
+        res.status(500).send({ error: "internal_server_error" });
+      } else {
+        if (result[0]?.idMedecin == req.autData.id) {
+          statement =
+            "UPDATE patient SET idMedecin=?,idTypeMaladie=?,degreGravite=? WHERE idPatient=?;";
+          dbPool.query(
+            statement,
+            [
+              result[0].idMedecin,
+              value.idTypeMaladie,
+              value.degreGravite,
+              value.idPatient,
+            ],
+            (dberr, result) => {
+              if (dberr) {
+                // database doctor
+                console.log("## db err ##", dberr);
+                res.status(500).send({ error: "internal_server_error" });
+              } else {
+                // we delete the patient from the doctor's waiting list
+                statement =
+                  "DELETE FROM ListAtt WHERE idPatient=? && idMedecin=?";
+                dbPool.query(
+                  statement,
+                  [value.idPatient, req.autData.id],
+                  (dberr, result) => {
+                    if (dberr) {
+                      // database error
+                      console.log("## db err ##", dberr);
+                      res.status(500).send({ error: "internal_server_error" });
+                    } else res.end();
+                  }
+                );
+              }
+            }
+          );
+        } else res.status(400).send({ error: "request_not_found" });
+      }
+    });
+  }
+};
+
 module.exports = {
   getWaitingList,
   addPatientRequest,
+  acceptPatientRequest,
 };

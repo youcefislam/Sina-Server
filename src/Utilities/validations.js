@@ -63,6 +63,11 @@ const validations = {
   validDaira: joi.object({
     daira: joi.number().required(),
   }),
+  validPatientApproval: joi.object({
+    idPatient: joi.number().required(),
+    degreGravite: joi.number().max(10).required(),
+    idTypeMaladie: joi.number().required(),
+  }),
 };
 
 const validateBody = async (type, body) => {
