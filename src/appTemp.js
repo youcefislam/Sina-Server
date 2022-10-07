@@ -2,6 +2,7 @@ const express = require("express");
 var bodyParser = require("body-parser");
 
 const medecinRouter = require("./Routes/medecin/route");
+const patientRouter = require("./Routes/patient/route");
 const waitingListRouter = require("./Routes/waitingList/route");
 const relativeRouter = require("./Routes/relative/route");
 const maladieRouter = require("./Routes/maladie/route");
@@ -49,6 +50,9 @@ app.use(bodyParser.json());
 // Medecin route
 app.use("/medecin", medecinRouter);
 
+// Patient route
+app.use("/patient", patientRouter);
+
 // waiting list route
 app.use("/waitinglist", waitingListRouter);
 
@@ -64,6 +68,7 @@ app.use("*", (req, res) => {
 
 // handling unknown errors -- tested
 app.use((err, req, res, next) => {
+  if (err.status == 400) res.status(err.status).send({ error: "Bad_request" });
   res.status(500).send({ error: "unknown_internal_error_server" });
 });
 
