@@ -6,6 +6,7 @@ const patientRouter = require("./Routes/patient/route");
 const waitingListRouter = require("./Routes/waitingList/route");
 const relativeRouter = require("./Routes/relative/route");
 const maladieRouter = require("./Routes/maladie/route");
+const wilayaRouter = require("./Routes/wilaya/route");
 
 const app = express();
 // Static files serving Middleware (allow access to these files publicly) -- tested
@@ -61,6 +62,9 @@ app.use("/relative", relativeRouter);
 
 // maladie route
 app.use("/maladie", maladieRouter);
+
+// Wilaya route
+app.use("/wilaya", wilayaRouter);
 
 app.use("*", (req, res) => {
   res.status(404).send({ error: "NOT_FOUND" });
