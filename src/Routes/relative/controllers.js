@@ -67,8 +67,43 @@ const modifyRelativeName = async (req, res) => {
   }
 };
 
+const addRelativeInfo = async (req, res) => {
+  const { error, value } = await validateBody("relativeInfo", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "INSERT INTO proche(nomProche,prenomProche,NumTlfProche,mailProche) VALUES(?,?,?,?);";
+    dbPool.query(
+      statement,
+      [value.nom, value.prenom, value.numeroTlf, value.email],
+      (dbErr, result) => {
+        if (dbErr) {
+          if (dbErr.errno == 1062)
+            res.status(400).send({
+              error: 1062,
+              message: dbErr.sqlMessage,
+            });
+          else res.status(500).send({ error: "internal_server_error" });
+        } else {
+          statement = "UPDATE patient SET idProche=? WHERE idPatient=?;";
+          dbPool.query(
+            statement,
+            [result.insertId, req.autData.id],
+            (dbErr, result2) => {
+              if (dbErr)
+                res.status(500).send({ error: "internal_server_error" });
+              else res.end();
+            }
+          );
+        }
+      }
+    );
+  }
+};
+
 module.exports = {
   modifyRelativeMail,
   modifyRelativeNumber,
   modifyRelativeName,
+  addRelativeInfo,
 };

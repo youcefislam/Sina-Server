@@ -3,12 +3,16 @@ const {
   modifyRelativeMail,
   modifyRelativeNumber,
   modifyRelativeName,
+  addRelativeInfo,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
 const Router = express.Router();
 
-// relative route == not tested yet --- previous /patient/relative/
+// relative route -- previous /patient/relative/
+// Add patient's relative endpoint
+Router.post("/add", tokenAuthorization, addRelativeInfo);
+
 // Modify the relative's mail Route -- need tests
 Router.post("/modify/email", tokenAuthorization, modifyRelativeMail);
 
