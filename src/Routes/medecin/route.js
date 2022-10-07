@@ -13,12 +13,16 @@ const {
   medecinModifyDaira,
   medecinGetPatientList,
   medecinRemovePatient,
+  getListOfDoctors,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
 const Router = express.Router();
 
 // Endpoints
+// Get doctor's list endpoint
+Router.get("/", tokenAuthorization, getListOfDoctors);
+
 // Sign up endpoint
 Router.post("/signup", medecinSignUp);
 

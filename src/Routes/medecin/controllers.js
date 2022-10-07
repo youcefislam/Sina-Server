@@ -337,6 +337,15 @@ const medecinRemovePatient = async (req, res) => {
   }
 };
 
+const getListOfDoctors = (req, res) => {
+  let statement =
+    "SELECT idMedecin,nomMedecin,prenomMedecin,nomDaira,photoMedecin,nomWilaya FROM medecin m,wilaya w,daira d WHERE d.idWilaya=w.idWilaya AND d.idDaira=m.idDaira;";
+  dbPool.query(statement, (dbErr, result) => {
+    if (dbErr) res.status(500).send({ error: "internal_server_error" });
+    else res.send({ results: result });
+  });
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
@@ -351,4 +360,5 @@ module.exports = {
   medecinModifyDaira,
   medecinGetPatientList,
   medecinRemovePatient,
+  getListOfDoctors,
 };
