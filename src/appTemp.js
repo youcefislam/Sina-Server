@@ -8,6 +8,7 @@ const relativeRouter = require("./Routes/relative/route");
 const maladieRouter = require("./Routes/maladie/route");
 const wilayaRouter = require("./Routes/wilaya/route");
 const dairaRouter = require("./Routes/daira/route");
+const communeRouter = require("./Routes/commune/route");
 
 const app = express();
 // Static files serving Middleware (allow access to these files publicly) -- tested
@@ -69,6 +70,9 @@ app.use("/wilaya", wilayaRouter);
 
 // daira route
 app.use("/daira", dairaRouter);
+
+// commune route
+app.use("/commune", communeRouter);
 
 app.use("*", (req, res) => {
   res.status(404).send({ error: "NOT_FOUND" });
