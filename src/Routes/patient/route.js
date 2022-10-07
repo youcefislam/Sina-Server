@@ -1,5 +1,9 @@
 const express = require("express");
-const { patientSignUp, patientResendValidation } = require("./controllers");
+const {
+  patientSignUp,
+  patientResendValidation,
+  patientAddInfo,
+} = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
 const Router = express.Router();
@@ -14,5 +18,8 @@ Router.get(
   tokenAuthorization,
   patientResendValidation
 );
+
+// Add patient's information and adress Route -- tested
+Router.post("/information/add", tokenAuthorization, patientAddInfo);
 
 module.exports = Router;

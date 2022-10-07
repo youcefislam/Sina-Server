@@ -118,7 +118,34 @@ const patientResendValidation = async (req, res) => {
   });
 };
 
+const patientAddInfo = async (req, res) => {
+  const { error, value } = await validateBody("patientInfo", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "UPDATE patient SET nomPatient=?,prenomPatient=?,NumTlfPatient=?,sexePatient=?,dateNaisPatient=?,adressPatient=?,idCommune=(SELECT idCommune FROM commune WHERE idCommune=?) WHERE idPatient=?;";
+    dbPool.query(
+      statement,
+      [
+        value.nom,
+        value.prenom,
+        value.num,
+        value.sex,
+        new Date(value.dateNaiss),
+        value.adress,
+        value.idCommune,
+        req.autData.id,
+      ],
+      (dbErr, result) => {
+        if (dbErr) res.status(500).send({ error: "internal_server_error" });
+        else res.end();
+      }
+    );
+  }
+};
+
 module.exports = {
   patientSignUp,
   patientResendValidation,
+  patientAddInfo,
 };
