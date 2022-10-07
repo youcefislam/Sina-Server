@@ -6,6 +6,7 @@ const {
   validateToken,
   sendMail,
   comparePassword,
+  createValidationCode,
 } = require("../../Utilities/utility");
 
 const patientSignUp = async (req, res) => {
@@ -31,7 +32,7 @@ const patientSignUp = async (req, res) => {
             else res.status(500).send({ error: "internal_server_error" });
           } else {
             statement = "INSERT INTO patientNonVerifie values (?,?);";
-            const validationCode = Math.floor(Math.random() * 899999 + 100000);
+            const validationCode = createValidationCode();
             dbPool.query(
               statement,
               [result1.insertId, validationCode],
@@ -46,14 +47,11 @@ const patientSignUp = async (req, res) => {
                           <p style="font-weight: bold;color: #0DBDA5;">${validationCode}</p>
                           <p>Cordialement,</p>
                           <p>L'équipe de Sina.</p>`;
-                  const validationMail = {
-                    to: value.email,
-                    from: "sina.app.pfe@outlook.fr",
-                    subject: "Vérifiez votre adresse e-mail ✔",
-                    text: "Sina support team",
-                    html: emailBody,
-                  };
-                  const { error } = await sendMail(validationMail);
+                  const { error } = await sendMail(
+                    value.email,
+                    "Vérifiez votre adresse e-mail ✔",
+                    emailBody
+                  );
                   if (error)
                     res.status(500).send({ error: "internal_server_error" });
                   else {
@@ -76,6 +74,51 @@ const patientSignUp = async (req, res) => {
   }
 };
 
+const patientResendValidation = async (req, res) => {
+  let statement = "SELECT idPatient FROM patientNonVerifie WHERE idPatient=?;";
+  dbPool.query(statement, req.autData.id, (dbErr, result) => {
+    if (dbErr) res.status(500).send({ error: "internal_server_error" });
+    else {
+      if (result[0]?.idPatient == req.autData.id) {
+        statement = "SELECT mailPatient FROM patient WHERE idPatient=?;";
+        dbPool.query(statement, result[0]?.idPatient, (dbErr, result2) => {
+          if (dbErr) res.status(500).send({ error: "internal_server_error" });
+          else {
+            const validationCode = createValidationCode();
+            statement =
+              "UPDATE patientNonVerifie SET validationCode=? WHERE idPatient=?;";
+            dbPool.query(
+              statement,
+              [validationCode, req.autData.id],
+              async (dbErr, result3) => {
+                if (dbErr)
+                  res.status(500).send({ error: "internal_server_error" });
+                else {
+                  const emailBody = `
+                      <h3>Cher ${req.autData.username}!</h3>
+                      <p>Voici le code de validation ci-dessous pour vérifier votre compte:</p>
+                      <p style="font-weight: bold;color: #0DBDA5;">${validationCode}</p>
+                      <p>Cordialement,</p>
+                      <p>L'équipe de Sina.</p>`;
+                  const { error } = await sendMail(
+                    result2[0].mailPatient,
+                    "Vérifiez votre adresse e-mail ✔",
+                    emailBody
+                  );
+                  if (error)
+                    res.status(500).send({ error: "internal_server_error" });
+                  else res.send({ validationCode });
+                }
+              }
+            );
+          }
+        });
+      } else res.status(403);
+    }
+  });
+};
+
 module.exports = {
   patientSignUp,
+  patientResendValidation,
 };

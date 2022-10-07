@@ -56,7 +56,14 @@ const validateToken = async (token) => {
   }
 };
 
-const sendMail = async (mail) => {
+const sendMail = async (to, subject, html) => {
+  const mail = {
+    to,
+    from: "sina.app.pfe@outlook.fr",
+    subject,
+    text: "Sina support team",
+    html,
+  };
   try {
     const mailSent = await sendGrid.send(mail);
     return { mailSent };
@@ -66,6 +73,8 @@ const sendMail = async (mail) => {
   }
 };
 
+const createValidationCode = () => Math.floor(Math.random() * 899999 + 100000);
+
 module.exports = {
   deleteFile_fs,
   hashPassword,
@@ -73,4 +82,5 @@ module.exports = {
   generateToken,
   validateToken,
   sendMail,
+  createValidationCode,
 };

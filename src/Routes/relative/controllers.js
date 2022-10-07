@@ -9,8 +9,8 @@ const {
 } = require("../../Utilities/utility");
 
 const modifyRelativeMail = async (req, res) => {
-  const { error, value } = await validateBody("relativeMail", req.body);
-  if (error) res.status(403).send(error.details);
+  const { error, value } = await validateBody("validMail", req.body);
+  if (error) res.status(400).send(error.details);
   else {
     let statement =
       "UPDATE proche SET mailProche = ? WHERE idProche=(SELECT idProche FROM patient WHERE idPatient=?);";
@@ -20,7 +20,7 @@ const modifyRelativeMail = async (req, res) => {
         console.log("## db error ## ", dbErr);
         // if we have double entry error
         if (dbErr.errno == 1062)
-          res.status(403).send({
+          res.status(400).send({
             error: 1062,
             message: dbErr.sqlMessage,
           });
@@ -36,7 +36,7 @@ const modifyRelativeNumber = async (req, res) => {
   else {
     let statement =
       "UPDATE proche SET NumTlfProche = ? WHERE idProche=(SELECT idProche FROM patient WHERE idPatient=?);";
-    dbPool.query(sql, [value.number, req.autData.id], (dbErr, result) => {
+    dbPool.query(statement, [value.number, req.autData.id], (dbErr, result) => {
       if (dbErr) {
         console.log("## db error ## ", dbErr);
         if (dbErr.errno == 1062)
