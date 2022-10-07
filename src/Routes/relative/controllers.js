@@ -50,7 +50,25 @@ const modifyRelativeNumber = async (req, res) => {
   }
 };
 
+const modifyRelativeName = async (req, res) => {
+  const { error, value } = await validateBody("validName", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    sql =
+      "UPDATE proche SET nomProche=?,prenomProche=? WHERE idProche=(SELECT idProche FROM patient WHERE idPatient=?);";
+    dbPool.query(
+      sql,
+      [value.nom, value.prenom, req.autData.id],
+      (err, result) => {
+        if (err) res.status(500).send({ error: "internal_server_error" });
+        else res.end();
+      }
+    );
+  }
+};
+
 module.exports = {
   modifyRelativeMail,
   modifyRelativeNumber,
+  modifyRelativeName,
 };

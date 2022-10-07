@@ -5,7 +5,7 @@ const { tokenAuthorization } = require("../../Middlewares/middlewares");
 const Router = express.Router();
 
 // patient router
-// Patient sign up Route -- tested
+// Patient sign up endpoint
 Router.post("/signUp", patientSignUp);
 
 module.exports = Router;
