@@ -36,9 +36,9 @@ const comparePassword = async (password, validPassword) => {
   }
 };
 
-const generateToken = async (values) => {
+const generateToken = async (values, options = {}) => {
   try {
-    const token = await jwt.sign(values, process.env.MY_SECRET_KEY);
+    const token = await jwt.sign(values, process.env.MY_SECRET_KEY, options);
     return { token };
   } catch (error) {
     console.log(error);

@@ -152,9 +152,53 @@ const patientDeleteAccount = async (req, res) => {
   });
 };
 
+const patientSendRestoreLink = async (req, res) => {
+  const { error, value } = await validateBody("validMail", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "SELECT idPatient,userNamePatient FROM patient WHERE mailPatient = ?;";
+    dbPool.query(statement, value.email, async (dbErr, result) => {
+      if (dbErr) res.status(500).send({ error: "internal_server_error" });
+      else {
+        if (result[0]) {
+          const { token, error } = await generateToken(
+            {
+              id: result[0].idPatient,
+              username: result[0].userNamePatient,
+            },
+            {
+              expiresIn: "2h",
+            }
+          );
+          if (error) res.status(500).send({ error: "internal_server_error" });
+          else {
+            const url = `http://localhost:3000/patient/restorepassword/${token}`;
+            const emailBody = `
+                                      <h3>Cher ${result[0].userNamePatient}!</h3>
+                                      <p>nous sommes désolés que vous rencontriez des problèmes pour utiliser votre compte, entrez ce lien pour réinitialiser votre mot de passe:</p>
+                                      <a href='${url}'>${url}</a>
+                                      <p> ce lien ne fonctionne que pendant les 2 prochaines heures </p>
+                                      <p>Cordialement,</p>
+                                      <p>L'équipe de Sina.</p>`;
+            const { error } = await sendMail(
+              value.email,
+              "Restaurer votre mot de passe ✔",
+              emailBody
+            );
+            if (error) res.status(500).send({ error: "internal_server_error" });
+            else res.end();
+          }
+        } else res.status(400).send({ error: "no_account_found" });
+      }
+    });
+  }
+};
+
 module.exports = {
   patientSignUp,
   patientResendValidation,
   patientAddInfo,
   patientDeleteAccount,
+  patientSendRestoreLink,
 };

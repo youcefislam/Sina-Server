@@ -4,6 +4,7 @@ const {
   patientResendValidation,
   patientAddInfo,
   patientDeleteAccount,
+  patientSendRestoreLink,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -20,10 +21,13 @@ Router.get(
   patientResendValidation
 );
 
-// Add patient's information and adress Route -- tested
+// Add patient's information and adress endpoint
 Router.post("/information/add", tokenAuthorization, patientAddInfo);
 
-// Delete patient account Route -- tested
+// Delete patient account endpoint
 Router.post("/delete", tokenAuthorization, patientDeleteAccount);
+
+// Send reset patient's password link endpoint
+Router.post("/resetlink", patientSendRestoreLink);
 
 module.exports = Router;
