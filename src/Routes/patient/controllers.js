@@ -195,10 +195,28 @@ const patientSendRestoreLink = async (req, res) => {
   }
 };
 
+const patientResetPassword = async (req, res) => {
+  const { error, value } = await validateBody("validNewPassword", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    const { hash, error } = await hashPassword(value.password);
+    if (error) res.status(500).send({ error: "internal_server_error" });
+    else {
+      let statement =
+        "UPDATE patient SET passwordPatient = ? WHERE idPatient = ?;";
+      dbPool.query(statement, [hash, req.autData.id], (dbErr, result) => {
+        if (dbErr) res.status(500).send({ error: "internal_server_error" });
+        else res.end();
+      });
+    }
+  }
+};
+
 module.exports = {
   patientSignUp,
   patientResendValidation,
   patientAddInfo,
   patientDeleteAccount,
   patientSendRestoreLink,
+  patientResetPassword,
 };
