@@ -144,8 +144,17 @@ const patientAddInfo = async (req, res) => {
   }
 };
 
+const patientDeleteAccount = async (req, res) => {
+  let statement = "DELETE FROM patient WHERE idPatient=?;";
+  dbPool.query(statement, req.autData.id, (dbErr, result) => {
+    if (dbErr) res.status(500).send({ error: "internal_server_error" });
+    else res.end();
+  });
+};
+
 module.exports = {
   patientSignUp,
   patientResendValidation,
   patientAddInfo,
+  patientDeleteAccount,
 };

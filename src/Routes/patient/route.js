@@ -3,6 +3,7 @@ const {
   patientSignUp,
   patientResendValidation,
   patientAddInfo,
+  patientDeleteAccount,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -21,5 +22,8 @@ Router.get(
 
 // Add patient's information and adress Route -- tested
 Router.post("/information/add", tokenAuthorization, patientAddInfo);
+
+// Delete patient account Route -- tested
+Router.post("/delete", tokenAuthorization, patientDeleteAccount);
 
 module.exports = Router;
