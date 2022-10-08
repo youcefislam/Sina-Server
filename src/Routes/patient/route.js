@@ -29,7 +29,7 @@ Router.post("/information/add", tokenAuthorization, patientAddInfo);
 Router.post("/delete", tokenAuthorization, patientDeleteAccount);
 
 // Send reset patient's password link endpoint
-Router.post("/resetlink", patientSendRestoreLink);
+Router.get("/resetlink", patientSendRestoreLink);
 
 // reset password patient endpoint
 Router.post("/resetpassword", tokenAuthorization, patientResetPassword);

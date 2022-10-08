@@ -346,6 +346,53 @@ const getListOfDoctors = (req, res) => {
   });
 };
 
+const medecinSendRestoreLink = async (req, res) => {
+  const { error, value } = await validateBody("validMail", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "SELECT idMedecin,userNameMedecin FROM medecin WHERE mailMedecin = ?;";
+    dbPool.query(statement, value.email, async (dbErr, result) => {
+      if (dbErr) res.status(500).send({ error: "internal_server_error" });
+      else {
+        if (result[0]) {
+          const { token, error } = await generateToken(
+            { id: result[0].idMedecin, username: result[0].userNameMedecin },
+            {
+              expiresIn: "2h",
+            }
+          );
+          if (error) res.status(500).send({ error: "internal_server_error" });
+          else {
+            const url = `http://localhost:3000/medecin/restorepassword/${token}`;
+            const emailBody = `
+                                  <h3>Cher ${result[0].userNameMedecin}!</h3>
+                                  <p>nous sommes désolés que vous rencontriez des problèmes pour utiliser votre compte, entrez ce lien pour réinitialiser votre mot de passe:</p>
+                                  <a href='${url}'>${url}</a>
+                                  <p> ce lien ne fonctionne que pendant les 2 prochaines heures </p>
+                                  <p>Cordialement,</p>
+                                  <p>L'équipe de Sina.</p>`;
+            const msg = {
+              to: value.email, // Change to your recipient
+              from: "sina.app.pfe@outlook.fr", // Change to your verified sender
+              subject: "Restaurer votre mot de passe ✔",
+              text: "Sina support team",
+              html: emailBody,
+            };
+            const { error } = await sendMail(
+              value.email,
+              "Restaurer votre mot de passe ✔",
+              emailBody
+            );
+            if (error) res.status(500).send({ error: "internal_server_error" });
+            else res.end();
+          }
+        } else res.status(400).send({ error: "no_account_found" });
+      }
+    });
+  }
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
@@ -361,4 +408,5 @@ module.exports = {
   medecinGetPatientList,
   medecinRemovePatient,
   getListOfDoctors,
+  medecinSendRestoreLink,
 };

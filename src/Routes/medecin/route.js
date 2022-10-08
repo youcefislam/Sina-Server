@@ -14,6 +14,7 @@ const {
   medecinGetPatientList,
   medecinRemovePatient,
   getListOfDoctors,
+  medecinSendRestoreLink,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -59,7 +60,10 @@ Router.post("/modifyDaira", tokenAuthorization, medecinModifyDaira);
 // Get the doctor's patient list endpoint
 Router.get("/patientlist", tokenAuthorization, medecinGetPatientList);
 
-// Delete patient from the patient list endpoint -- not tested
+// Delete patient from the patient list endpoint
 Router.post("/patientlist/remove", tokenAuthorization, medecinRemovePatient);
+
+// Send restore doctor password link endpoint
+Router.get("/restorelink", medecinSendRestoreLink);
 
 module.exports = Router;
