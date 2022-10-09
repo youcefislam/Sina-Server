@@ -80,6 +80,10 @@ const validations = {
     commune: joi.number().required(),
     adress: joi.string().max(255).required(),
   }),
+  validAppointment: joi.object({
+    id: joi.number().required(),
+    date: joi.date().required(),
+  }),
 };
 
 const validateBody = async (type, body) => {
