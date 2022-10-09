@@ -7,6 +7,7 @@ const {
   patientSendRestoreLink,
   patientResetPassword,
   patientSignIn,
+  patientModifyMail,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -37,5 +38,8 @@ Router.post("/resetpassword", tokenAuthorization, patientResetPassword);
 
 // sign in patient endpoint
 Router.post("/signin", patientSignIn);
+
+// Modify patient's mail end point --- need to add email validation also
+Router.post("/modifyMail", tokenAuthorization, patientModifyMail);
 
 module.exports = Router;
