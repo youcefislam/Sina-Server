@@ -212,6 +212,41 @@ const patientResetPassword = async (req, res) => {
   }
 };
 
+const patientSignIn = async (req, res) => {
+  const { error, value } = await validateBody("patientSignIn", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "SELECT idPatient,passwordPatient FROM patient WHERE usernamePatient=?";
+    dbPool.query(statement, value.username, async (err, result) => {
+      if (err) res.status(500).send({ error: "internal_server_error" });
+      else {
+        if (result[0]) {
+          const { correct, error } = await comparePassword(
+            value.password,
+            result[0].passwordPatient
+          );
+          if (error) res.status(500).send({ error: "internal_server_error" });
+          else {
+            if (correct) {
+              const { token, error } = await generateToken({
+                id: result[0].idPatient,
+                username: value.username,
+                patient: 1,
+              });
+              if (error)
+                res.status(500).send({ error: "internal_server_error" });
+              else res.send({ token });
+            } else {
+              res.status(400).send({ error: "wrong_password" });
+            }
+          }
+        } else res.status(400).send({ error: "wrong_password" });
+      }
+    });
+  }
+};
+
 module.exports = {
   patientSignUp,
   patientResendValidation,
@@ -219,4 +254,5 @@ module.exports = {
   patientDeleteAccount,
   patientSendRestoreLink,
   patientResetPassword,
+  patientSignIn,
 };

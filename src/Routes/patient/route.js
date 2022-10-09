@@ -6,6 +6,7 @@ const {
   patientDeleteAccount,
   patientSendRestoreLink,
   patientResetPassword,
+  patientSignIn,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -33,5 +34,8 @@ Router.get("/resetlink", patientSendRestoreLink);
 
 // reset password patient endpoint
 Router.post("/resetpassword", tokenAuthorization, patientResetPassword);
+
+// sign in patient endpoint
+Router.post("/signin", patientSignIn);
 
 module.exports = Router;
