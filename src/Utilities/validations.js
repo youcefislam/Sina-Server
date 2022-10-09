@@ -76,6 +76,10 @@ const validations = {
   }),
   validPatientId: joi.object({ idPatient: joi.number().required() }),
   validId: joi.object({ id: joi.number().required() }),
+  validPatientAddress: joi.object({
+    commune: joi.number().required(),
+    adress: joi.string().max(255).required(),
+  }),
 };
 
 const validateBody = async (type, body) => {

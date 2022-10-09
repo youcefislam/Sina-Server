@@ -265,6 +265,107 @@ const patientModifyMail = async (req, res) => {
   }
 };
 
+const patientModifyUsername = async (req, res) => {
+  const { error, value } = await validateBody("validUsername", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement = "UPDATE patient SET userNamePatient=? WHERE idPatient=?";
+    dbPool.query(
+      statement,
+      [value.username, req.autData.id],
+      async (dbErr, result) => {
+        if (dbErr) {
+          if (dbErr.errno == 1062)
+            res.status(400).send({
+              error: 1062,
+              message: dbErr.sqlMessage,
+            });
+          else res.status(500).send({ error: "internal_server_error" });
+        } else {
+          const { token, error } = await generateToken({
+            id: req.autData.id,
+            username: value.username,
+          });
+          if (error) res.status(500).send({ error: "internal_server_error" });
+          else res.send({ token });
+        }
+      }
+    );
+  }
+};
+
+const patientModifyPassword = async (req, res) => {
+  const { error, value } = await validateBody("validNewPassword", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    const { hash, error } = await hashPassword(value.password);
+    if (error) res.status(500).send({ error: "internal_server_error" });
+    else {
+      let statement = "UPDATE patient SET passwordPatient=? WHERE idPatient=?";
+      dbPool.query(statement, [hash, req.autData.id], (dbErr, result) => {
+        if (dbErr) res.status(500).send({ error: "internal_server_error" });
+        else res.end();
+      });
+    }
+  }
+};
+
+const patientModifyName = async (req, res) => {
+  const { error, value } = await validateBody("validName", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "UPDATE patient SET nomPatient=?,prenomPatient=? WHERE idPatient=?";
+    dbPool.query(
+      statement,
+      [value.nom, value.prenom, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) res.status(500).send({ error: "internal_server_error" });
+        else res.end();
+      }
+    );
+  }
+};
+
+const patientModifyNumber = async (req, res) => {
+  const { error, value } = await validateBody("validNumber", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement = "UPDATE patient SET NumTlfPatient=? WHERE idPatient=?";
+    dbPool.query(
+      statement,
+      [value.numeroTlf, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) {
+          if (dbErr.errno == 1062)
+            res.status(400).send({
+              error: 1062,
+              message: dbErr.sqlMessage,
+            });
+          else res.status(500).send({ error: "internal_server_error" });
+        } else res.end();
+      }
+    );
+  }
+};
+
+const patientModifyAddress = async (req, res) => {
+  const { error, value } = await validateBody("validPatientAddress", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "UPDATE patient SET idCommune=(SELECT idCommune FROM commune WHERE idCommune=?),adressPatient=? WHERE idPatient=?;";
+    dbPool.query(
+      statement,
+      [value.commune, value.adress, req.autData.id],
+      (dbErr, result) => {
+        if (dbErr) res.status(500).send({ error: "internal_server_error" });
+        else res.end();
+      }
+    );
+  }
+};
+
 module.exports = {
   patientSignUp,
   patientResendValidation,
@@ -274,4 +375,9 @@ module.exports = {
   patientResetPassword,
   patientSignIn,
   patientModifyMail,
+  patientModifyUsername,
+  patientModifyPassword,
+  patientModifyName,
+  patientModifyNumber,
+  patientModifyAddress,
 };
