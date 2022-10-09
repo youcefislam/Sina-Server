@@ -393,6 +393,23 @@ const medecinSendRestoreLink = async (req, res) => {
   }
 };
 
+const medecinResetPassword = async (req, res) => {
+  const { error, value } = await validateBody("validNewPassword", req.body);
+  if (error) res.status(400).send(error.details);
+  else {
+    const { hash, error } = await hashPassword(value.password);
+    if (error) res.status(500).send({ error: "internal_server_error" });
+    else {
+      let statement =
+        "UPDATE medecin SET passwordMedecin = ? WHERE idMedecin = ?;";
+      dbPool.query(statement, [hash, req.autData.id], (dbErr, result) => {
+        if (dbErr) res.sendStatus(500);
+        else res.end();
+      });
+    }
+  }
+};
+
 module.exports = {
   medecinSignUp,
   medecinSignIn,
@@ -409,4 +426,5 @@ module.exports = {
   medecinRemovePatient,
   getListOfDoctors,
   medecinSendRestoreLink,
+  medecinResetPassword,
 };
