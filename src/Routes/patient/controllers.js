@@ -366,6 +366,29 @@ const patientModifyAddress = async (req, res) => {
   }
 };
 
+const getPatientInfo = async (req, res) => {
+  const { error, value } = await validateBody("validId", req.params);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "SELECT idPatient,nomPatient,prenomPatient,sexePatient,dateNaisPatient,adressPatient,photoPatient,degreGravite,statusPatient,TypeMaladie,mailPatient,nomProche,prenomProche,NumTlfProche,mailProche,nomCommune,nomDaira,nomWilaya FROM patient p,typemaladie t,proche r,commune c,daira d, wilaya w WHERE p.idPatient=? and p.idProche=r.idProche and p.idTypeMaladie=t.idTypeMaladie and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya LIMIT 1;SELECT idFichierECG,lienFichier,dateCreation FROM fichierecg WHERE idPatient=?;SELECT idRapport,dateRapport FROM rapport WHERE idPatient=?; SELECT idRendezVous,dateRV FROM  rendezvous WHERE idPatient=?;";
+    dbPool.query(
+      statement,
+      [
+        req.params.id,
+        req.params.id,
+        req.params.id,
+        req.params.id,
+        req.params.id,
+      ],
+      (dbErr, results, fields) => {
+        if (dbErr) res.status(500).send({ error: "internal_server_error" });
+        else res.send({ results });
+      }
+    );
+  }
+};
+
 module.exports = {
   patientSignUp,
   patientResendValidation,
@@ -380,4 +403,5 @@ module.exports = {
   patientModifyName,
   patientModifyNumber,
   patientModifyAddress,
+  getPatientInfo,
 };

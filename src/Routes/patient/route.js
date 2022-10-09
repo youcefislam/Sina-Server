@@ -13,6 +13,7 @@ const {
   patientModifyName,
   patientModifyNumber,
   patientModifyAddress,
+  getPatientInfo,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -44,22 +45,25 @@ Router.post("/resetpassword", tokenAuthorization, patientResetPassword);
 // sign in patient endpoint
 Router.post("/signin", patientSignIn);
 
-// Modify patient's mail end point --- need to add email validation also
+// Modify patient's mail endpoint --- need to add email validation also
 Router.post("/modifyMail", tokenAuthorization, patientModifyMail);
 
-// Modify patient's username Route -- tested
+// Modify patient's username endpoint
 Router.post("/modifyUsername", tokenAuthorization, patientModifyUsername);
 
-// Modify patient's password Route -- tested
+// Modify patient's password endpoint
 Router.post("/modifyPassword", tokenAuthorization, patientModifyPassword);
 
-// Modify patient's first and last name Route -- tested
+// Modify patient's first and last name endpoint
 Router.post("/modifyName", tokenAuthorization, patientModifyName);
 
-// Modify patient's phone number Route -- tested
+// Modify patient's phone number endpoint
 Router.post("/modifyNumber", tokenAuthorization, patientModifyNumber);
 
-// Modify patient's adress Route -- tested
+// Modify patient's adress endpoint
 Router.post("/modifyadress", tokenAuthorization, patientModifyAddress);
+
+// Get patient profile endpoint
+Router.get("/:id", tokenAuthorization, getPatientInfo);
 
 module.exports = Router;
