@@ -100,6 +100,10 @@ const validations = {
     id: joi.number().required(),
     nomMedicament: joi.string().max(50).required(),
   }),
+  validNote: joi.object({
+    id: joi.number().required(),
+    note: joi.string().max(1000).required(),
+  }),
 };
 
 const validateBody = async (type, body) => {

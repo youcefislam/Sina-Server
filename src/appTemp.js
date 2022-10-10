@@ -11,6 +11,7 @@ const dairaRouter = require("./Routes/daira/route");
 const communeRouter = require("./Routes/commune/route");
 const appointmentRouter = require("./Routes/appointment/route");
 const medicationRouter = require("./Routes/medication/route");
+const noteRouter = require("./Routes/note/route");
 
 const app = express();
 // Static files serving Middleware (allow access to these files publicly) -- tested
@@ -81,6 +82,9 @@ app.use("/appointment", appointmentRouter);
 
 // appointment route
 app.use("/medication", medicationRouter);
+
+// note route
+app.use("/note", noteRouter);
 
 app.use("*", (req, res) => {
   res.status(404).send({ error: "NOT_FOUND" });
