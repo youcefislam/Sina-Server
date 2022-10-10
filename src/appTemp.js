@@ -10,6 +10,7 @@ const wilayaRouter = require("./Routes/wilaya/route");
 const dairaRouter = require("./Routes/daira/route");
 const communeRouter = require("./Routes/commune/route");
 const appointmentRouter = require("./Routes/appointment/route");
+const medicationRouter = require("./Routes/medication/route");
 
 const app = express();
 // Static files serving Middleware (allow access to these files publicly) -- tested
@@ -77,6 +78,9 @@ app.use("/commune", communeRouter);
 
 // appointment route
 app.use("/appointment", appointmentRouter);
+
+// appointment route
+app.use("/medication", medicationRouter);
 
 app.use("*", (req, res) => {
   res.status(404).send({ error: "NOT_FOUND" });

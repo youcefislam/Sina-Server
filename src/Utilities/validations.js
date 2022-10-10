@@ -84,6 +84,22 @@ const validations = {
     id: joi.number().required(),
     date: joi.date().required(),
   }),
+  validMedication: joi.object({
+    id: joi.number().required(),
+    idMedicament: joi.number().required(),
+    dosage: joi.string().required(),
+  }),
+  validMedicationId: joi.object({
+    id: joi.number().required(),
+    idMedicament: joi.number().required(),
+  }),
+  validMedicationName: joi.object({
+    nomMedicament: joi.string().max(50).required(),
+  }),
+  validNameMedication: joi.object({
+    id: joi.number().required(),
+    nomMedicament: joi.string().max(50).required(),
+  }),
 };
 
 const validateBody = async (type, body) => {
