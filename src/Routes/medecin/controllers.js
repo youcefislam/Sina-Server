@@ -403,11 +403,37 @@ const medecinResetPassword = async (req, res) => {
       let statement =
         "UPDATE medecin SET passwordMedecin = ? WHERE idMedecin = ?;";
       dbPool.query(statement, [hash, req.autData.id], (dbErr, result) => {
-        if (dbErr) res.sendStatus(500);
+        if (dbErr) res.status(500).send({ error: "internal_server_error" });
         else res.end();
       });
     }
   }
+};
+
+const getDoctorInfoById = async (req, res) => {
+  const { error, value } = await validateBody("validId", req.params);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "SELECT nomMedecin,prenomMedecin,NumTlfMedecin,mailMedecin,nomDaira,nomCommune,nomWilaya FROM medecin m,daira d,commune c,wilaya w WHERE m.idMedecin=? and m.idDaira=d.idDaira and d.idWilaya=w.idWilaya;";
+    dbPool.query(statement, value.id, (dbErr, result) => {
+      if (dbErr) res.status(500).send({ error: "internal_server_error" });
+      else res.send({ results: result[0] });
+    });
+  }
+};
+
+const medecinGetMyInfo = (req, res) => {
+  let statement =
+    "SELECT Distinct userNameMedecin,sexeMedecin,autoAccept,nomMedecin,prenomMedecin,NumTlfMedecin,mailMedecin,nomDaira,nomWilaya FROM medecin m,daira d,wilaya w WHERE m.idMedecin=? and m.idDaira=d.idDaira and d.idWilaya=w.idWilaya;SELECT count(*) as numberReport FROM rapport r,patient p WHERE r.idPatient=p.idPatient and p.idMedecin=?;SELECT count(*) as numberPatient FROM patient WHERE idMedecin=?;SELECT count(*) as numberPatientAtt FROM listatt WHERE idMedecin=?;";
+  dbPool.query(
+    statement,
+    [req.autData.id, req.autData.id, req.autData.id, req.autData.id],
+    (dbErr, result) => {
+      if (dbErr) res.status(500).send({ error: "internal_server_error" });
+      else res.send({ results: result });
+    }
+  );
 };
 
 module.exports = {
@@ -427,4 +453,6 @@ module.exports = {
   getListOfDoctors,
   medecinSendRestoreLink,
   medecinResetPassword,
+  getDoctorInfoById,
+  medecinGetMyInfo,
 };

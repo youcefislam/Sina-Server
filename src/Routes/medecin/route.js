@@ -16,6 +16,8 @@ const {
   getListOfDoctors,
   medecinSendRestoreLink,
   medecinResetPassword,
+  getDoctorInfoById,
+  medecinGetMyInfo,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -69,5 +71,11 @@ Router.get("/restorelink", medecinSendRestoreLink);
 
 // reset password medecin endpoint
 Router.post("/resetpassword", tokenAuthorization, medecinResetPassword);
+
+// doctor get his info endpoint
+Router.get("/my-info", tokenAuthorization, medecinGetMyInfo);
+
+// get doctor's info by id endpoint
+Router.get("/:id", tokenAuthorization, getDoctorInfoById);
 
 module.exports = Router;
