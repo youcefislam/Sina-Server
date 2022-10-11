@@ -15,6 +15,7 @@ const noteRouter = require("./Routes/note/route");
 const hospitalRouter = require("./Routes/hospital/route");
 const medicalReportRouter = require("./Routes/medicalReport/route");
 const ecgRouter = require("./Routes/Ecg/route");
+const alertRouter = require("./Routes/alerts/route");
 
 const app = express();
 // Static files serving Middleware (allow access to these files publicly)
@@ -97,6 +98,9 @@ app.use("/medical-report", medicalReportRouter);
 
 // ecg route
 app.use("/ecg", ecgRouter);
+
+// alert route
+app.use("/alert", alertRouter);
 
 app.use("*", (req, res) => {
   res.status(404).send({ error: "NOT_FOUND" });

@@ -111,6 +111,11 @@ const validations = {
     id: joi.number().required(),
   }),
   validDate: joi.object({ date: joi.date().required() }),
+  validAlert: joi.object({
+    heartCondition: joi.string().required(),
+    latitude: joi.number().required(),
+    longitude: joi.number().required(),
+  }),
 };
 
 const validateBody = async (type, body) => {
