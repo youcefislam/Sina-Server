@@ -21,9 +21,7 @@ const addMedicalReport = async (req, res) => {
         if (dbErr) res.status(500).send({ error: "internal_server_error" });
         else res.end();
       });
-    } else {
-      res.status(400).send({ error: "no_file_attached" });
-    }
+    } else res.status(400).send({ error: "no_file_attached" });
   }
 };
 

@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { addMedicalReport, getMedicalReport } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
-const { uploadReport, uploadEcg } = require("../../Utilities/uploadUtilities");
+const { uploadReport } = require("../../Utilities/uploadUtilities");
 const Router = express.Router();
 
 // medical report router
