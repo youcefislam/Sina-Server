@@ -12,9 +12,10 @@ const communeRouter = require("./Routes/commune/route");
 const appointmentRouter = require("./Routes/appointment/route");
 const medicationRouter = require("./Routes/medication/route");
 const noteRouter = require("./Routes/note/route");
+const hospitalRouter = require("./Routes/hospital/route");
 
 const app = express();
-// Static files serving Middleware (allow access to these files publicly) -- tested
+// Static files serving Middleware (allow access to these files publicly)
 app.use("/public/views", express.static("public/views"));
 app.use("/public/uploads/Media", express.static("public/uploads/Media"));
 app.use("/public/views", express.static("public/views"));
@@ -85,6 +86,9 @@ app.use("/medication", medicationRouter);
 
 // note route
 app.use("/note", noteRouter);
+
+// hospital route
+app.use("/hospital", hospitalRouter);
 
 app.use("*", (req, res) => {
   res.status(404).send({ error: "NOT_FOUND" });

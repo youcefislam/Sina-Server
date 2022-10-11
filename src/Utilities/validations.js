@@ -104,6 +104,12 @@ const validations = {
     id: joi.number().required(),
     note: joi.string().max(1000).required(),
   }),
+  validHospital: joi.object({
+    nomHopital: joi.string().max(50).required(),
+    adress: joi.string().max(255).required(),
+    numeroTlf: joi.string().max(10).required(),
+    id: joi.number().required(),
+  }),
 };
 
 const validateBody = async (type, body) => {
