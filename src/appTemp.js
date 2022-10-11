@@ -13,6 +13,7 @@ const appointmentRouter = require("./Routes/appointment/route");
 const medicationRouter = require("./Routes/medication/route");
 const noteRouter = require("./Routes/note/route");
 const hospitalRouter = require("./Routes/hospital/route");
+const medicalReportRouter = require("./Routes/medicalReport/route");
 
 const app = express();
 // Static files serving Middleware (allow access to these files publicly)
@@ -89,6 +90,9 @@ app.use("/note", noteRouter);
 
 // hospital route
 app.use("/hospital", hospitalRouter);
+
+// medical report route
+app.use("/medical-report", medicalReportRouter);
 
 app.use("*", (req, res) => {
   res.status(404).send({ error: "NOT_FOUND" });
