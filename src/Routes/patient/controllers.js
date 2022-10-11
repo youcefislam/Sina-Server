@@ -389,6 +389,22 @@ const getPatientInfo = async (req, res) => {
   }
 };
 
+const getMyInfoPatient = (req, res) => {
+  let statement =
+    "SELECT p.nomPatient,p.idMedecin,p.idProche,p.userNamePatient,p.mailPatient,p.prenomPatient,p.sexePatient,p.dateNaisPatient,p.adressPatient,p.degreGravite,p.dateInscriptionPatient,p.NumTlfPatient,nomWilaya,nomCommune,nomDaira,p.idProche,NumTlfProche FROM patient p,wilaya w,commune c,daira d,proche pr WHERE p.idPatient=? and p.idProche=pr.idProche and c.idCommune=p.idCommune and c.idDaira=d.idDaira and d.idWilaya=w.idWilaya;SELECT NumTlfMedecin,TypeMaladie from patient p,typemaladie t,medecin m where p.idMedecin=m.idMedecin and t.idTypeMaladie=p.idTypeMaladie and p.idPatient = ?;";
+
+  dbPool.query(statement, [req.autData.id, req.autData.id], (dbErr, result) => {
+    if (dbErr) res.status(500).send({ error: "internal_server_error" });
+    else {
+      let temp = {
+        ...result[0][0],
+        ...result[0][1],
+      };
+      res.send({ results: result[0] });
+    }
+  });
+};
+
 module.exports = {
   patientSignUp,
   patientResendValidation,
@@ -404,4 +420,5 @@ module.exports = {
   patientModifyNumber,
   patientModifyAddress,
   getPatientInfo,
+  getMyInfoPatient,
 };

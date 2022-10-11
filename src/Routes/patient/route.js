@@ -14,6 +14,7 @@ const {
   patientModifyNumber,
   patientModifyAddress,
   getPatientInfo,
+  getMyInfoPatient,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -62,6 +63,8 @@ Router.post("/modifyNumber", tokenAuthorization, patientModifyNumber);
 
 // Modify patient's adress endpoint
 Router.post("/modifyadress", tokenAuthorization, patientModifyAddress);
+
+Router.get("/my-info", tokenAuthorization, getMyInfoPatient);
 
 // Get patient profile endpoint
 Router.get("/:id", tokenAuthorization, getPatientInfo);
