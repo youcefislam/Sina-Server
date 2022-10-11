@@ -101,9 +101,23 @@ const addRelativeInfo = async (req, res) => {
   }
 };
 
+const getRelativeInfo = async (req, res) => {
+  const { error, value } = await validateBody("validId", req.params);
+  if (error) res.status(400).send(error.details);
+  else {
+    let statement =
+      "SELECT nomProche,prenomProche,NumTlfProche,mailProche FROM proche WHERE idProche=?;";
+    dbPool.query(statement, value.id, (dbErr, result) => {
+      if (dbErr) res.status(500).send({ error: "internal_server_error" });
+      else res.send({ results: result[0] });
+    });
+  }
+};
+
 module.exports = {
   modifyRelativeMail,
   modifyRelativeNumber,
   modifyRelativeName,
   addRelativeInfo,
+  getRelativeInfo,
 };

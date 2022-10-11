@@ -64,6 +64,7 @@ Router.post("/modifyNumber", tokenAuthorization, patientModifyNumber);
 // Modify patient's adress endpoint
 Router.post("/modifyadress", tokenAuthorization, patientModifyAddress);
 
+// patient get my info endpoint
 Router.get("/my-info", tokenAuthorization, getMyInfoPatient);
 
 // Get patient profile endpoint

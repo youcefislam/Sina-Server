@@ -4,6 +4,7 @@ const {
   modifyRelativeNumber,
   modifyRelativeName,
   addRelativeInfo,
+  getRelativeInfo,
 } = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 
@@ -21,5 +22,8 @@ Router.post("/modify/number", tokenAuthorization, modifyRelativeNumber);
 
 // Modify the relative's name endpoint -- need test
 Router.post("/modify/name", tokenAuthorization, modifyRelativeName);
+
+// get relative info by id endpoint
+Router.get("/:id", tokenAuthorization, getRelativeInfo);
 
 module.exports = Router;
