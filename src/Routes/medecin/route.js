@@ -78,4 +78,9 @@ Router.get("/my-info", tokenAuthorization, medecinGetMyInfo);
 // get doctor's info by id endpoint
 Router.get("/:id", tokenAuthorization, getDoctorInfoById);
 
+// send alerts to mmedecins
+Router.post("/real", tokenAuthorization, (req, res) => {
+  res.send({ myId: req.autData.id });
+});
+
 module.exports = Router;

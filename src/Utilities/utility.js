@@ -99,6 +99,60 @@ const sendTwilloMessage = (to, message) => {
 
 const createValidationCode = () => Math.floor(Math.random() * 899999 + 100000);
 
+// socketio connection
+
+patientSocketIds = [];
+connectedPatients = [];
+doctorSocketIds = [];
+connectedDoctors = [];
+
+const getSocketByPatientId = (userId) => {
+  let socket = "";
+  for (let i = 0; i < patientSocketIds.length; i++) {
+    if (patientSocketIds[i].userId == userId) {
+      socket = patientSocketIds[i].socket;
+      break;
+    }
+  }
+  return socket;
+};
+const getPatientSocketByDoctorId = (userId) => {
+  let socket = "";
+  for (let i = 0; i < connectedPatients.length; i++) {
+    if (connectedPatients[i].idMedecin == userId) {
+      socket = connectedPatients[i].socketId;
+      break;
+    }
+  }
+  return socket;
+};
+const getSocketByDoctorId = (userId) => {
+  let socket = "";
+  for (let i = 0; i < doctorSocketIds.length; i++) {
+    if (doctorSocketIds[i].userId == userId) {
+      socket = doctorSocketIds[i].socket;
+      break;
+    }
+  }
+  return socket;
+};
+
+const disconnectPatient = (socket) => {
+  connectedPatients = connectedPatients.filter(
+    (item) => item.socketId != socket.id
+  );
+  patientSocketIds = patientSocketIds.filter(
+    (item) => item.socket.id != socket.id
+  );
+  let socketMedecin = getSocketByDoctorId(socket.autData.idMedecin);
+  if (socketMedecin) {
+    let connectedPaitientWithId = connectedPatients.filter(
+      (item) => item.idMedecin == socket.autData.idMedecin
+    );
+    io.to(socketMedecin.id).emit("updateUserList", connectedPaitientWithId);
+  }
+};
+
 module.exports = {
   deleteFile_fs,
   hashPassword,
@@ -108,4 +162,8 @@ module.exports = {
   sendMail,
   createValidationCode,
   sendTwilloMessage,
+  getSocketByPatientId,
+  getPatientSocketByDoctorId,
+  getSocketByDoctorId,
+  disconnectPatient,
 };
