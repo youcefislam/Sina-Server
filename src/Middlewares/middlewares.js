@@ -8,12 +8,12 @@ const tokenAuthorization = async (req, res, next) => {
   if (bearerHeader) {
     req.token = bearerHeader.split(" ")[1];
     const { error, valid } = await validateToken(req.token);
-    if (error) res.status(403).send({ error: "invalid_token" });
+    if (error) res.status(401).send({ error: "invalid_token" });
     else {
       req.autData = valid;
       next();
     }
-  } else res.status(403).send({ error: "token_missing" });
+  } else res.status(401).send({ error: "token_missing" });
 };
 
 module.exports = {

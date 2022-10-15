@@ -32,7 +32,7 @@ INSERT INTO `sina`.`commune`(`idCommune`,`nomCommune`,`idDaira`)VALUES
 
 
 -- hopital
-INSERT INTO `sina`.`hopital`(`idHoptial`,`nomHoptial`,`adressHopital`,`numTlfHopital`,`idCommune`)VALUES
+INSERT INTO `sina`.`hopital`(`idHopital`,`nomHopital`,`adressHopital`,`numTlfHopital`,`idCommune`)VALUES
 (1,"hopital 1" , "adress" ,"027649550",1),(2,"hopital 2" , "adress" ,"027783764",2),(3,"hopital 3" , "adress" ,"02743128",3),
 (4,"hopital 4" , "adress" ,"027672293",4),(5,"hopital 5" , "adress" ,"027714540",5),(6,"hopital 6" , "adress" ,"027770693",6),        
 (7,"hopital 7" , "adress" ,"027430465",7),(8,"hopital 8" , "adress" ,"027360325",8),(9,"hopital 9" , "adress" ,"027789484",9),        

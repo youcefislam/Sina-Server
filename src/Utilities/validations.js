@@ -68,9 +68,6 @@ const validations = {
     degreGravite: joi.number().max(10).required(),
     idTypeMaladie: joi.number().required(),
   }),
-  validNumber: joi.object({
-    number: joi.string().min(10).required(),
-  }),
   validDiseaseType: joi.object({
     TypeMaladie: joi.string().max(50).required(),
   }),
@@ -118,13 +115,17 @@ const validations = {
   }),
 };
 
+function validationErrorHandler(error) {
+  this.type = "validation_error";
+  this.message = error.details[0].message;
+  this.path = error.details[0].path[0];
+}
+
 const validateBody = async (type, body) => {
   try {
-    const value = await validations[type].validateAsync(body);
-    return { value };
+    return await validations[type].validateAsync(body);
   } catch (error) {
-    console.log(error);
-    return { error };
+    throw new validationErrorHandler(error);
   }
 };
 

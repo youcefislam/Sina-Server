@@ -22,31 +22,25 @@ const deleteFile_fs = async (path) => {
 
 const hashPassword = async (input) => {
   try {
-    const hash = await bcrypt.hash(input, Number(process.env.SALT_ROUNDS));
-    return { hash };
+    return await bcrypt.hash(input, Number(process.env.SALT_ROUNDS));
   } catch (error) {
-    console.log(error);
-    return { error };
+    throw new Error(error);
   }
 };
 
 const comparePassword = async (password, validPassword) => {
   try {
-    const correct = await bcrypt.compare(password, validPassword);
-    return { correct };
+    return await bcrypt.compare(password, validPassword);
   } catch (error) {
-    console.log(error);
-    return { error };
+    throw new Error(error);
   }
 };
 
 const generateToken = async (values, options = {}) => {
   try {
-    const token = await jwt.sign(values, process.env.MY_SECRET_KEY, options);
-    return { token };
+    return await jwt.sign(values, process.env.MY_SECRET_KEY, options);
   } catch (error) {
-    console.log(error);
-    return { error };
+    throw new Error(error);
   }
 };
 
@@ -69,11 +63,9 @@ const sendMail = async (to, subject, html) => {
     html,
   };
   try {
-    const mailSent = await sendGrid.send(mail);
-    return { mailSent };
+    await sendGrid.send(mail);
   } catch (error) {
-    console.log(error.body);
-    return { error };
+    throw new Error(error);
   }
 };
 

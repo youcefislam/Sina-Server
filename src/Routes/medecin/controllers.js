@@ -7,389 +7,312 @@ const {
   sendMail,
   comparePassword,
 } = require("../../Utilities/utility");
+const {
+  insertMedecin,
+  insertNotVerifiedMedecin,
+  selectMedecinById,
+  selectMedecinByUsername,
+  selectAllMedecin,
+  deleteMedecinAccount,
+  updateMedecin,
+  selectMedecinsPatientList,
+  selectMedecinByPatientId,
+  selectMedecinByMail,
+} = require("./queries.js");
+
+const { updatePatient } = require("../patient/queries.js");
 
 const medecinSignUp = async (req, res) => {
-  // Check the data form and verify it
+  let medecin;
 
-  const { error, value } = await validateBody("medecinSignUp", req.body);
-
-  if (error) {
-    res.status(403).send(error.details);
-  } else {
-    const { hash, error } = await hashPassword(value.password);
-
-    if (error) res.status(500).send({ error: "internal_server_error" });
-    else {
-      let statement = `INSERT INTO medecin(userNameMedecin,passwordMedecin,mailMedecin,nomMedecin,prenomMedecin,sexeMedecin,photoMedecin,dateInscriptientMedecin,NumTlfMedecin,idDaira)
-          VALUES(?,?,?,?,?,?,?,curdate(),?,?);`;
-      value.numeroTlf =
-        value.numeroTlf[0] == "0" ? value.numeroTlf.slice(1) : value.numeroTlf;
-      dbPool.query(
-        statement,
-        [
-          value.username,
-          hash,
-          value.email,
-          value.nom,
-          value.prenom,
-          value.sex,
-          req.file ? req.file.path : null,
-          value.numeroTlf,
-          value.daira,
-        ],
-        (dbErr, result) => {
-          // If any database error occure
-          if (dbErr) {
-            console.log("##db error##", dbErr);
-            // if we have double entry error
-            if (dbErr.errno == 1062)
-              res.status(403).send({
-                error: 1062,
-                message: dbErr.sqlMessage,
-              });
-            else res.status(500).send({ error: "internal_server_error" }); // Internal server ERROR
-          } else {
-            // Everything is good we move on
-            // we add the doctor to the not verified accounts table
-            statement = "INSERT INTO medecinNonVerifie VALUES(?);";
-            dbPool.query(
-              statement,
-              result.insertId,
-              async (dbEerr, result2) => {
-                if (dbEerr) {
-                  // database error
-                  console.log("## db error ## ", dbErr);
-                  res.status(500).send({ error: "internal_server_error" });
-                } else {
-                  // Create a token for the user
-                  const { token, error } = await generateToken({
-                    id: result.insertId,
-                    username: value.username,
-                  });
-                  if (error)
-                    res.status(500).send({ error: "internal_server_error" });
-                  else {
-                    const url = `http://localhost:3000/confirmation/${token}`;
-                    const emailBody = `
-                                <h3>Cher ${value.username}!</h3>
-                                <p>TVeuillez cliquer sur le lien de confirmation ci-dessous pour vérifier votre adresse e-mail et créer votre compte:</p>
-                                <a href='${url}'>${url}</a>
-                                <p>Cordialement,</p>
-                                <p>L'équipe de Sina.</p>`;
-                    // We send a confirmation mail to the user here
-                    const mail = {
-                      to: value.email, // Change to your recipient
-                      from: "sina.app.pfe@outlook.fr", // Change to your verified sender
-                      subject: "Vérifiez votre adresse e-mail ✔",
-                      text: "Sina support team",
-                      html: emailBody,
-                    };
-                    const { error } = await sendMail(mail);
-                    if (error)
-                      res.status(500).send({ error: "internal_server_error" });
-                    else res.send({ token });
-                  }
-                }
-              }
-            );
-          }
-        }
-      );
-    }
+  try {
+    const body = await validateBody("medecinSignUp", req.body);
+    const hash = await hashPassword(body.password);
+    medecin = await insertMedecin(
+      body.username,
+      hash,
+      body.email,
+      body.nom,
+      body.prenom,
+      body.sex,
+      req.file ? req.file.path : null,
+      body.numeroTlf,
+      body.daira
+    );
+    const notVerifiedMedecin = await insertNotVerifiedMedecin(medecin);
+    const token = await generateToken({
+      id: medecin.idMedecin,
+      username: medecin.userNameMedecin,
+    });
+    const url = `http://localhost:3000/confirmation/${token}`;
+    const emailBody = `
+              <h3>Cher ${medecin.userNameMedecin}!</h3>
+              <p>TVeuillez cliquer sur le lien de confirmation ci-dessous pour vérifier votre adresse e-mail et créer votre compte:</p>
+              <a href='${url}'>${url}</a>
+              <p>Cordialement,</p>
+              <p>L'équipe de Sina.</p>`;
+    await sendMail(
+      medecin.mailMedecin,
+      "Vérifiez votre adresse e-mail ✔",
+      emailBody
+    );
+    res.status(201).send({ token });
+  } catch (error) {
+    medecin?.destroy();
+    if (
+      error.type == "duplicated_entry_error" ||
+      error.type == "validation_error"
+    )
+      res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
 const medecinSignIn = async (req, res) => {
-  // we validate the form of data we receive
-  const { error, value } = await validateBody("medecinSignIn", req.body);
-  if (error) {
-    // data not valid
-    console.log(error);
-    res.status(403).send(error.details);
-  } else {
-    // valid data .. next
-    // select the user information from the database and compare it to the received data
-    let statement =
-      "SELECT idMedecin,passwordMedecin FROM medecin WHERE usernameMedecin=?";
-    dbPool.query(statement, value.username, async (err, result) => {
-      if (err) {
-        console.log(err);
-        res.status(500).send({ error: "internal_server_error" });
-      } else {
-        if (result[0]) {
-          // Account exist
-          const { error, correct } = await comparePassword(
-            value.password,
-            result[0].passwordMedecin
-          );
-          if (error) res.status(500).send({ error: "internal_server_error" });
-          else {
-            if (correct) {
-              const { token, error } = await generateToken({
-                id: result[0].idMedecin,
-                username: value.username,
-              });
-              if (error)
-                res.status(500).send({ error: "internal_server_error" });
-              else res.send({ token });
-            } else {
-              res.status(403).send({ error: "password" });
-            }
-          }
-        } else res.status(403).send({ error: "username" });
-      }
-    });
+  try {
+    const body = await validateBody("medecinSignIn", req.body);
+    const medecinExist = await selectMedecinByUsername(body.username);
+    console.log(medecinExist.idMedecin);
+    if (medecinExist) {
+      const correctPassword = await comparePassword(
+        body.password,
+        medecinExist.passwordMedecin
+      );
+      if (correctPassword) {
+        const token = await generateToken({
+          id: medecinExist.idMedecin,
+          username: body.username,
+        });
+        res.status(201).send({ token });
+      } else
+        res
+          .status(400)
+          .send({ type: "incorrect_information", path: "password" });
+    } else
+      res.status(400).send({ type: "incorrect_information", path: "username" });
+  } catch (error) {
+    if (error.type == "validation_error") res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
 const medecinValidateAccount = async (req, res) => {
   const { error, valid } = await validateToken(req.params.token);
-  if (error) res.status(403).send({ error: "invalid_token" });
-  else res.sendStatus(200);
+  if (error) res.status(403);
+  else res.end();
 };
 
-const medecinDeleteAccount = (req, res) => {
-  let statement = "DELETE FROM medecin WHERE idMedecin=?";
-  dbPool.query(statement, req.autData.id, (err, result) => {
-    if (err) {
-      console.log(err);
-      res.status(500).send({ error: "internal_server_error" });
-    } else res.end();
-  });
+const medecinDeleteAccount = async (req, res) => {
+  try {
+    await deleteMedecinAccount(req.params.id);
+    res.sendStatus(204);
+  } catch (error) {
+    res.status(500).send({ error: "internal_server_error" });
+  }
 };
 
 const medecinModifyMail = async (req, res) => {
-  const { error, value } = await validateBody("validMail", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement = "UPDATE medecin SET mailMedecin=? WHERE idMedecin=?";
-    dbPool.query(statement, [value.email, req.autData.id], (dbErr, result) => {
-      if (dbErr) {
-        console.log("##db error##", dbErr);
-        // if we have double entry error
-        if (dbErr.errno == 1062)
-          res.status(403).send({
-            error: 1062,
-            message: dbErr.sqlMessage,
-          });
-        else res.status(500).send({ error: "internal_server_error" }); // Internal server ERROR
-      } else res.end();
-    });
+  try {
+    const value = await validateBody("validMail", req.body);
+    await updateMedecin(
+      { mailMedecin: value.email },
+      { idMedecin: req.params.id }
+    );
+    res.sendStatus(204);
+  } catch (error) {
+    if (
+      error.type == "validation_error" ||
+      error.type == "duplicated_entry_error"
+    )
+      res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
 const medecinModifyUsername = async (req, res) => {
-  const { error, value } = await validateBody("validUsername", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement = "UPDATE medecin SET userNameMedecin=? WHERE idMedecin=?";
-    dbPool.query(
-      statement,
-      [value.username, req.autData.id],
-      async (dbErr, result) => {
-        if (dbErr) {
-          console.log("##db error##", dbErr);
-          // if we have double entry error
-          if (dbErr.errno == 1062)
-            res.status(403).send({
-              error: 1062,
-              message: dbErr.sqlMessage,
-            });
-          else res.status(500).send({ error: "internal_server_error" }); // Internal server ERROR
-        } else {
-          const { error, token } = await generateToken({
-            id: req.autData.id,
-            username: value.username,
-          });
-          if (error) res.status(500).send({ error: "internal_server_error" });
-          else res.send({ token });
-        }
-      }
+  try {
+    const value = await validateBody("validUsername", req.body);
+    await updateMedecin(
+      { userNameMedecin: value.username },
+      { idMedecin: req.params.id }
     );
+    const token = await generateToken({
+      id: req.autData.id,
+      username: value.username,
+    });
+    res.send({ token });
+  } catch (error) {
+    if (
+      error.type == "validation_error" ||
+      error.type == "duplicated_entry_error"
+    )
+      res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
 const medecinModifyPassword = async (req, res) => {
-  const { error, value } = await validateBody("validNewPassword", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    const { hash, error } = await hashPassword(value.password);
-    if (error) res.status(500).send({ error: "internal_server_error" });
-    else {
-      let statement = "UPDATE medecin SET passwordMedecin=? WHERE idMedecin=?";
-      dbPool.query(statement, [hash, req.autData.id], (dbErr, result) => {
-        if (dbErr) {
-          console.log("##db error##", dbErr);
-          res.status(500).send({ error: "internal_server_error" });
-        } else res.end();
-      });
-    }
+  try {
+    const value = await validateBody("validNewPassword", req.body);
+    const hash = await hashPassword(value.password);
+
+    await updateMedecin(
+      { passwordMedecin: hash },
+      { idMedecin: req.params.id }
+    );
+    res.sendStatus(204);
+  } catch (error) {
+    if (error.type == "validation_error") res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
 const medecinModifyName = async (req, res) => {
-  const { error, value } = await validateBody("validName", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement =
-      "UPDATE medecin SET nomMedecin=?,prenomMedecin=? WHERE idMedecin=?";
-    dbPool.query(
-      statement,
-      [value.nom, value.prenom, req.autData.id],
-      (dbErr, result) => {
-        if (dbErr) {
-          console.log("##db error##", dbErr);
-          res.status(500).send({ error: "internal_server_error" });
-        } else res.end();
+  try {
+    const value = await validateBody("validName", req.body);
+    await updateMedecin(
+      {
+        nomMedecin: value.nom,
+        prenomMedecin: value.prenom,
+      },
+      {
+        idMedecin: req.params.id,
       }
     );
+    res.sendStatus(204);
+  } catch (error) {
+    if (error.type == "validation_error") res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
 const medecinModifyNumber = async (req, res) => {
-  const { error, value } = await validateBody("validNumber", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement = "UPDATE medecin SET NumTlfMedecin=? WHERE idMedecin=?";
-    value.numeroTlf =
-      value.numeroTlf[0] == "0" ? value.numeroTlf.slice(1) : value.numeroTlf;
-    dbPool.query(
-      statement,
-      [value.numeroTlf, req.autData.id],
-      (dbErr, result) => {
-        if (dbErr) {
-          console.log("##db error##", dbErr);
-          // if we have double entry error
-          if (dbErr.errno == 1062)
-            res.status(403).send({
-              error: 1062,
-              message: dbErr.sqlMessage,
-            });
-          else res.status(500).send({ error: "internal_server_error" }); // Internal server ERROR
-        } else res.end();
+  try {
+    const value = await validateBody("validNumber", req.body);
+    await updateMedecin(
+      {
+        NumTlfMedecin:
+          value.numeroTlf[0] == "0"
+            ? value.numeroTlf.slice(1)
+            : value.numeroTlf,
+      },
+      {
+        idMedecin: req.params.id,
       }
     );
+    res.sendStatus(204);
+  } catch (error) {
+    if (
+      error.type == "validation_error" ||
+      error.type == "duplicated_entry_error"
+    )
+      res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
 const medecinModifyAutoAccept = async (req, res) => {
-  const { error, value } = await validateBody("validAccept", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement = "UPDATE medecin SET autoAccept=? WHERE idMedecin=?";
-    dbPool.query(statement, [value.auto, req.autData.id], (dbErr, result) => {
-      if (dbErr) {
-        console.log("##db error##", dbErr);
-        res.status(500).send({ error: "internal_server_error" }); // Internal server ERROR
-      } else res.end();
-    });
+  try {
+    const value = await validateBody("validAccept", req.body);
+    await updateMedecin(
+      {
+        autoAccept: value.auto,
+      },
+      {
+        idMedecin: req.params.id,
+      }
+    );
+    res.sendStatus(204);
+  } catch (error) {
+    if (error.type == "validation_error") res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
 const medecinModifyDaira = async (req, res) => {
-  const { error, value } = await validateBody("validDaira", req.body);
-  if (error) res.send(error.details);
-  else {
-    // must be modified to check if the daira exists first after inserting it. -- NOT DONE YET
-    let statement =
-      "UPDATE medecin SET idDaira=(SELECT idDaira FROM daira WHERE idDaira=?) WHERE idMedecin=?;";
-    dbPool.query(statement, [value.daira, req.autData.id], (dbErr, result) => {
-      if (dbErr) {
-        console.log("##db error##", dbErr);
-        res.status(500).send({ error: "internal_server_error" });
-      } else res.end();
-    });
+  try {
+    const value = await validateBody("validDaira", req.body);
+
+    await updateMedecin(
+      {
+        idDaira: value.daira,
+      },
+      {
+        idMedecin: req.params.id,
+      }
+    );
+    res.sendStatus(204);
+  } catch (error) {
+    if (error.type == "validation_error" || error.type == "invalid_data")
+      res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
 const medecinGetPatientList = async (req, res) => {
-  const statement =
-    "SELECT idPatient,nomPatient,prenomPatient,statusPatient,photoPatient,TIMESTAMPDIFF(year,dateNaisPatient,CURDATE()) as agePatient FROM patient WHERE idMedecin=?;";
-  dbPool.query(statement, req.autData.id, (dberr, result) => {
-    if (dberr) {
-      console.log("## db err ## ", dberr);
-      res.status(500).send({ error: "internal_server_error" });
-    } else res.send({ results: result });
-  });
-};
-
-const medecinRemovePatient = async (req, res) => {
-  const { error, value } = validateBody("validPatientId", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement = "SELECT idMedecin FROM patient WHERE idPatient=?;";
-    dbPool.query(statement, value.idPatient, (dberr, result) => {
-      if (dberr) {
-        console.log("## db err ##", dberr);
-        res.status(500).send({ error: "internal_server_error" });
-      } else {
-        if (result[0]?.idMedecin == req.autData.id) {
-          statement = "UPDATE patient SET idMedecin=? WHERE idPatient=?";
-          dbPool.query(statement, [null, value.idPatient], (dberr, result) => {
-            if (dberr) {
-              console.log("## db err ##", dberr);
-              res.status(500).send({ error: "internal_server_error" });
-            } else res.end();
-          });
-        } else res.status(400).send({ error: "patient_not_found" });
-      }
-    });
+  try {
+    const patientList = await selectMedecinsPatientList(req.autData.id);
+    res.send({ results: patientList });
+  } catch (error) {
+    if (error.type == "validation_error" || error.type == "invalid_data")
+      res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
-const getListOfDoctors = (req, res) => {
-  let statement =
-    "SELECT idMedecin,nomMedecin,prenomMedecin,nomDaira,photoMedecin,nomWilaya FROM medecin m,wilaya w,daira d WHERE d.idWilaya=w.idWilaya AND d.idDaira=m.idDaira;";
-  dbPool.query(statement, (dbErr, result) => {
-    if (dbErr) res.status(500).send({ error: "internal_server_error" });
-    else res.send({ results: result });
-  });
+const medecinRemovePatient = async (req, res) => {
+  try {
+    const idMedecin = await selectMedecinByPatientId(req.params.id);
+
+    if (idMedecin == req.autData.id) {
+      await updatePatient({ idMedecin: null }, { idPatient: req.params.id });
+      res.sendStatus(204);
+    } else res.status(400).send({ error: "patient_not_found" });
+  } catch (error) {
+    console.log(error);
+    if (error.type == "invalid_data") res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
+  }
+};
+
+const getListOfDoctors = async (req, res) => {
+  try {
+    res.send({ results: await selectAllMedecin() });
+  } catch (error) {
+    res.status(500).send({ error: "internal_server_error" });
+  }
 };
 
 const medecinSendRestoreLink = async (req, res) => {
-  const { error, value } = await validateBody("validMail", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement =
-      "SELECT idMedecin,userNameMedecin FROM medecin WHERE mailMedecin = ?;";
-    dbPool.query(statement, value.email, async (dbErr, result) => {
-      if (dbErr) res.status(500).send({ error: "internal_server_error" });
-      else {
-        if (result[0]) {
-          const { token, error } = await generateToken(
-            { id: result[0].idMedecin, username: result[0].userNameMedecin },
-            {
-              expiresIn: "2h",
-            }
-          );
-          if (error) res.status(500).send({ error: "internal_server_error" });
-          else {
-            const url = `http://localhost:3000/medecin/restorepassword/${token}`;
-            const emailBody = `
-                                  <h3>Cher ${result[0].userNameMedecin}!</h3>
-                                  <p>nous sommes désolés que vous rencontriez des problèmes pour utiliser votre compte, entrez ce lien pour réinitialiser votre mot de passe:</p>
-                                  <a href='${url}'>${url}</a>
-                                  <p> ce lien ne fonctionne que pendant les 2 prochaines heures </p>
-                                  <p>Cordialement,</p>
-                                  <p>L'équipe de Sina.</p>`;
-            const msg = {
-              to: value.email, // Change to your recipient
-              from: "sina.app.pfe@outlook.fr", // Change to your verified sender
-              subject: "Restaurer votre mot de passe ✔",
-              text: "Sina support team",
-              html: emailBody,
-            };
-            const { error } = await sendMail(
-              value.email,
-              "Restaurer votre mot de passe ✔",
-              emailBody
-            );
-            if (error) res.status(500).send({ error: "internal_server_error" });
-            else res.end();
-          }
-        } else res.status(400).send({ error: "no_account_found" });
-      }
-    });
+  try {
+    const value = await validateBody("validMail", req.body);
+
+    const medecin = await selectMedecinByMail(value.email);
+
+    if (medecin?.idMedecin) {
+      const { idMedecin, userNameMedecin } = medecin;
+      const token = await generateToken(
+        { id: idMedecin, username: userNameMedecin },
+        {
+          expiresIn: "2h",
+        }
+      );
+      const url = `http://localhost:3000/medecin/restorepassword/${token}`;
+      const emailBody = `
+                              <h3>Cher ${userNameMedecin}!</h3>
+                              <p>nous sommes désolés que vous rencontriez des problèmes pour utiliser votre compte, entrez ce lien pour réinitialiser votre mot de passe:</p>
+                              <a href='${url}'>${url}</a>
+                              <p> ce lien ne fonctionne que pendant les 2 prochaines heures </p>
+                              <p>Cordialement,</p>
+                              <p>L'équipe de Sina.</p>`;
+
+      await sendMail(value.email, "Restaurer votre mot de passe ✔", emailBody);
+      res.end();
+    } else res.status(400).send({ type: "no_account_found" });
+  } catch (error) {
+    console.log(error);
+    if (error.type == "validation_error") res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
@@ -411,15 +334,14 @@ const medecinResetPassword = async (req, res) => {
 };
 
 const getDoctorInfoById = async (req, res) => {
-  const { error, value } = await validateBody("validId", req.params);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement =
-      "SELECT nomMedecin,prenomMedecin,NumTlfMedecin,mailMedecin,nomDaira,nomCommune,nomWilaya FROM medecin m,daira d,commune c,wilaya w WHERE m.idMedecin=? and m.idDaira=d.idDaira and d.idWilaya=w.idWilaya;";
-    dbPool.query(statement, value.id, (dbErr, result) => {
-      if (dbErr) res.status(500).send({ error: "internal_server_error" });
-      else res.send({ results: result[0] });
-    });
+  try {
+    const value = await validateBody("validId", req.params);
+    const medecin = await selectMedecinById(value.id);
+    delete medecin.dataValues.passwordMedecin;
+    res.send(medecin);
+  } catch (error) {
+    if (error.type == "validation_error") res.status(400).send(error);
+    else res.status(500).send({ error: "internal_server_error" });
   }
 };
 
@@ -434,6 +356,63 @@ const medecinGetMyInfo = (req, res) => {
       else res.send({ results: result });
     }
   );
+};
+
+const medecinGetMail = async (req, res) => {
+  try {
+    const { mailMedecin } = await selectMedecinById(req.params.id);
+    res.send({ mailMedecin });
+  } catch (error) {
+    res.sendStatus(500);
+  }
+};
+
+const medecinGetUsername = async (req, res) => {
+  try {
+    const { userNameMedecin } = await selectMedecinById(req.params.id);
+    res.send({ userNameMedecin });
+  } catch (error) {
+    res.sendStatus(500);
+  }
+};
+
+const medecinGetName = async (req, res) => {
+  try {
+    const { nomMedecin, prenomMedecin } = await selectMedecinById(
+      req.params.id
+    );
+    res.send({ nomMedecin, prenomMedecin });
+  } catch (error) {
+    res.sendStatus(500);
+  }
+};
+
+const medecinGetNumber = async (req, res) => {
+  try {
+    const { NumTlfMedecin } = await selectMedecinById(req.params.id);
+    res.send({ NumTlfMedecin });
+  } catch (error) {
+    res.sendStatus(500);
+  }
+};
+
+const medecinGetAutoAccept = async (req, res) => {
+  try {
+    const { autoAccept } = await selectMedecinById(req.params.id);
+    res.send({ autoAccept });
+  } catch (error) {
+    res.sendStatus(500);
+  }
+};
+
+const medecinGetDaira = async (req, res) => {
+  try {
+    const { daira } = await selectMedecinById(req.params.id);
+    delete daira.dataValues.wilaya;
+    res.send(daira);
+  } catch (error) {
+    res.sendStatus(500);
+  }
 };
 
 module.exports = {
@@ -455,4 +434,10 @@ module.exports = {
   medecinResetPassword,
   getDoctorInfoById,
   medecinGetMyInfo,
+  medecinGetMail,
+  medecinGetUsername,
+  medecinGetName,
+  medecinGetNumber,
+  medecinGetAutoAccept,
+  medecinGetDaira,
 };

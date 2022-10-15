@@ -102,9 +102,7 @@ app.use("/ecg", ecgRouter);
 // alert route
 app.use("/alert", alertRouter);
 
-app.use("*", (req, res) => {
-  res.status(404).send({ error: "NOT_FOUND" });
-});
+app.use("*", (req, res) => res.sendStatus(404));
 
 // handling unknown errors -- tested
 app.use((err, req, res, next) => {
