@@ -64,7 +64,7 @@ const medecinSignUp = async (req, res) => {
       error.type == "validation_error"
     )
       res.status(400).send(error);
-    else res.status(500).send({ error: "internal_server_error" });
+    else res.status(500);
   }
 };
 
@@ -72,7 +72,6 @@ const medecinSignIn = async (req, res) => {
   try {
     const body = await validateBody("medecinSignIn", req.body);
     const medecinExist = await selectMedecinByUsername(body.username);
-    console.log(medecinExist.idMedecin);
     if (medecinExist) {
       const correctPassword = await comparePassword(
         body.password,
@@ -97,9 +96,12 @@ const medecinSignIn = async (req, res) => {
 };
 
 const medecinValidateAccount = async (req, res) => {
-  const { error, valid } = await validateToken(req.params.token);
-  if (error) res.status(403);
-  else res.end();
+  try {
+    await validateToken(req.params.token);
+    res.end();
+  } catch (error) {
+    res.status(403);
+  }
 };
 
 const medecinDeleteAccount = async (req, res) => {
@@ -251,27 +253,24 @@ const medecinModifyDaira = async (req, res) => {
 
 const medecinGetPatientList = async (req, res) => {
   try {
-    const patientList = await selectMedecinsPatientList(req.autData.id);
+    const patientList = await selectMedecinsPatientList(req.params.id);
     res.send({ results: patientList });
   } catch (error) {
-    if (error.type == "validation_error" || error.type == "invalid_data")
-      res.status(400).send(error);
-    else res.status(500).send({ error: "internal_server_error" });
+    res.status(500);
   }
 };
 
 const medecinRemovePatient = async (req, res) => {
   try {
-    const idMedecin = await selectMedecinByPatientId(req.params.id);
+    const idMedecin = await selectMedecinByPatientId(req.params.idPatient);
 
-    if (idMedecin == req.autData.id) {
+    if (idMedecin == req.params.idMedecin) {
       await updatePatient({ idMedecin: null }, { idPatient: req.params.id });
       res.sendStatus(204);
-    } else res.status(400).send({ error: "patient_not_found" });
+    } else res.status(400).send({ type: "patient_not_found" });
   } catch (error) {
-    console.log(error);
     if (error.type == "invalid_data") res.status(400).send(error);
-    else res.status(500).send({ error: "internal_server_error" });
+    else res.status(500);
   }
 };
 
@@ -279,7 +278,7 @@ const getListOfDoctors = async (req, res) => {
   try {
     res.send({ results: await selectAllMedecin() });
   } catch (error) {
-    res.status(500).send({ error: "internal_server_error" });
+    res.status(500);
   }
 };
 
@@ -360,8 +359,8 @@ const medecinGetMyInfo = (req, res) => {
 
 const medecinGetMail = async (req, res) => {
   try {
-    const { mailMedecin } = await selectMedecinById(req.params.id);
-    res.send({ mailMedecin });
+    const medecin = await selectMedecinById(req.params.id);
+    res.send({ mailMedecin: medecin?.mailMedecin });
   } catch (error) {
     res.sendStatus(500);
   }
@@ -369,19 +368,21 @@ const medecinGetMail = async (req, res) => {
 
 const medecinGetUsername = async (req, res) => {
   try {
-    const { userNameMedecin } = await selectMedecinById(req.params.id);
-    res.send({ userNameMedecin });
+    const medecin = await selectMedecinById(req.params.id);
+    res.send({ userNameMedecin: medecin?.userNameMedecin });
   } catch (error) {
+    console.log(error);
     res.sendStatus(500);
   }
 };
 
 const medecinGetName = async (req, res) => {
   try {
-    const { nomMedecin, prenomMedecin } = await selectMedecinById(
-      req.params.id
-    );
-    res.send({ nomMedecin, prenomMedecin });
+    const medecin = await selectMedecinById(req.params.id);
+    res.send({
+      nomMedecin: medecin?.nomMedecin,
+      prenomMedecin: medecin?.prenomMedecin,
+    });
   } catch (error) {
     res.sendStatus(500);
   }
@@ -389,8 +390,8 @@ const medecinGetName = async (req, res) => {
 
 const medecinGetNumber = async (req, res) => {
   try {
-    const { NumTlfMedecin } = await selectMedecinById(req.params.id);
-    res.send({ NumTlfMedecin });
+    const medecin = await selectMedecinById(req.params.id);
+    res.send({ NumTlfMedecin: medecin?.NumTlfMedecin });
   } catch (error) {
     res.sendStatus(500);
   }
@@ -398,8 +399,8 @@ const medecinGetNumber = async (req, res) => {
 
 const medecinGetAutoAccept = async (req, res) => {
   try {
-    const { autoAccept } = await selectMedecinById(req.params.id);
-    res.send({ autoAccept });
+    const medecin = await selectMedecinById(req.params.id);
+    res.send({ autoAccept: medecin?.autoAccept });
   } catch (error) {
     res.sendStatus(500);
   }
@@ -407,9 +408,9 @@ const medecinGetAutoAccept = async (req, res) => {
 
 const medecinGetDaira = async (req, res) => {
   try {
-    const { daira } = await selectMedecinById(req.params.id);
-    delete daira.dataValues.wilaya;
-    res.send(daira);
+    const medecin = await selectMedecinById(req.params.id);
+    delete medecin?.daira?.dataValues?.wilaya;
+    res.send(medecin?.daira);
   } catch (error) {
     res.sendStatus(500);
   }

@@ -25,7 +25,12 @@ const {
   medecinGetAutoAccept,
   medecinGetDaira,
 } = require("./controllers");
-const { tokenAuthorization } = require("../../Middlewares/middlewares");
+const {
+  tokenAuthorization,
+  medecinOnly,
+  patientOnly,
+  private,
+} = require("../../Middlewares/middlewares");
 
 const Router = express.Router();
 
@@ -45,59 +50,125 @@ Router.post("/token", medecinSignIn);
 // validate account endpoint
 Router.head("/validation/:token", medecinValidateAccount);
 
-// Get the doctor's patient list endpoint
-Router.get("/patientlist", tokenAuthorization, medecinGetPatientList);
-
-// Send restore doctor password link endpoint
+// Send password restoration link endpoint
 Router.post("/restorelink", medecinSendRestoreLink);
 
 // Delete account endpoint
-Router.get("/:id", tokenAuthorization, getDoctorInfoById);
+Router.get("/:id", tokenAuthorization, medecinOnly, getDoctorInfoById);
 
 // Delete account endpoint
-Router.delete("/:id", tokenAuthorization, medecinDeleteAccount);
+Router.delete(
+  "/:id",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinDeleteAccount
+);
+
+// Get the doctor's patient list endpoint
+Router.get(
+  "/:id/patientlist",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinGetPatientList
+);
+
+// Delete patient from the patient list endpoint
+Router.delete(
+  "/:id/patientlist/:idPatient",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinRemovePatient
+);
 
 // Get doctor's mail endpoint
 Router.get("/:id/mail", tokenAuthorization, medecinGetMail);
 
 // Modify doctor's mail endpoint
-Router.put("/:id/mail", tokenAuthorization, medecinModifyMail);
+Router.put(
+  "/:id/mail",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinModifyMail
+);
 
 // Get doctor's username endpoint
 Router.get("/:id/username", tokenAuthorization, medecinGetUsername);
 
 // Modify doctor's username endpoint
-Router.put("/:id/username", tokenAuthorization, medecinModifyUsername);
+Router.put(
+  "/:id/username",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinModifyUsername
+);
 
 // Modify doctor's password endpoint
-Router.put("/:id/password", tokenAuthorization, medecinModifyPassword);
+Router.put(
+  "/:id/password",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinModifyPassword
+);
 
-// Modify doctor's first and last name endpoint
+// Get doctor's first and last name endpoint
 Router.get("/:id/name", tokenAuthorization, medecinGetName);
 
 // Modify doctor's first and last name endpoint
-Router.put("/:id/name", tokenAuthorization, medecinModifyName);
+Router.put(
+  "/:id/name",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinModifyName
+);
 
-// Modify doctor's phone number endpoint
+// Get doctor's phone number endpoint
 Router.get("/:id/number", tokenAuthorization, medecinGetNumber);
 
 // Modify doctor's phone number endpoint
-Router.put("/:id/number", tokenAuthorization, medecinModifyNumber);
+Router.put(
+  "/:id/number",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinModifyNumber
+);
+
+// Get doctor's auto accept endpoint
+Router.get(
+  "/:id/accept-method",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinGetAutoAccept
+);
 
 // Modify doctor's auto accept endpoint
-Router.get("/:id/accept-method", tokenAuthorization, medecinGetAutoAccept);
+Router.put(
+  "/:id/accept-method",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinModifyAutoAccept
+);
 
-// Modify doctor's auto accept endpoint
-Router.put("/:id/accept-method", tokenAuthorization, medecinModifyAutoAccept);
-
-// Modify doctor's daira endpoint
+// Get doctor's daira endpoint
 Router.get("/:id/daira", tokenAuthorization, medecinGetDaira);
 
 // Modify doctor's daira endpoint
-Router.put("/:id/daira", tokenAuthorization, medecinModifyDaira);
-
-// Delete patient from the patient list endpoint
-Router.delete("/patientlist/:id", tokenAuthorization, medecinRemovePatient);
+Router.put(
+  "/:id/daira",
+  tokenAuthorization,
+  medecinOnly,
+  private,
+  medecinModifyDaira
+);
 
 // // ================================================ need to split this into multiple requests
 // // doctor get his info endpoint

@@ -1,74 +1,29 @@
-# Steps
+# Sina
 
-## Setting up the environment
+Sina is a medical mobile and web application, developed for medical telemonitoring of cardiac patients.
+This is my Master's end-of-studies project. I had the honor to work with the instrumentation laboratory of the Faculty of Electrical Engineering in my university, where i used their on-board electronic device for continuous data acquisition to receive real-time data via bluetooth, analyze it, trace it in the mobile application and the web application if the patient's doctor is watching and then send it to the server to be stored in the database when the monitoring is stopped.
 
-### Cloning and pulling
+## features
 
-Clone this repo using this command:
+- Calculate the heart rate in real-time
+- Real-time ECG tracing in mobile application for the patient and in the web application for the doctor.
+- Arythmia detection and alert system.
+- ECG archiving.
+- Medical reports archiving.
 
-```bash
-git clone https://github.com/youcefislam/Sina-Server.git
-```
+## Installation
 
-### Installing packages
+[Old version](/ReadMe/InstalationOld.md)
+[New version](/ReadMe/Instalation.md)
 
-Open terminal and install packages (only when you clone/pull):
+## Documentation
 
-```bash
-npm install
-```
+[Sina API Documentation](/ReadMe/Documentation/Doccumentation.md)
 
-### Database Configuration
+### Future features
 
-1- Open MySQL Workbench and login with the root user.
-2- Create the sina admin user for our database
-
-```mysql
-CREATE USER 'sina' IDENTIFIED WITH mysql_native_password BY 'password';
-GRANT ALL PRIVILEGES ON Sina.* TO 'sina';
-```
-
-3- Login with Sina admin.
-4- Import the sql file from the sql-file folder and execute it.
-
-## Usage
-
-A- Before making any changes make sure you are in the secondary branch, to do so, follow these steps:
-
-1- Open the directory where you clone this repo
-2- Open git bash there.
-3- add a new branch and name with the feature you are working on
-
-```bash
-git branch <your branch name>
-```
-
-```bash
-git checkout <your branch name>
-```
-
-4- Now you can modify freely.
-
-B- After finishing and testing your code, you can push it to the secondary branch with these steps:
-
-1- Open the directory where you clone this repo
-2- Open git bash there (make sure you are in the correct branch).
-3- Add the changes to the staging area:
-
-```bash
-git add .
-```
-
-4- Commit the changes that are in the staging area:
-
-```bash
-git commit -m "title of the commit"
-```
-
-5- Push the changes to the secondary branch
-
-```bash
-git push origin <your branch name>
-```
-
-6- Done!
+- Communication system between doctor - patient and doctor - patient's relative.
+- Medication reminder system.
+- Implementation of teleconsulting.
+- Notes.
+- Appointment management system.

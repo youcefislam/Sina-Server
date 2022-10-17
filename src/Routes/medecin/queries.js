@@ -82,6 +82,7 @@ const selectMedecinById = async (idMedecin) => {
       },
     });
   } catch (error) {
+    console.log(error);
     throw new Error(error);
   }
 };
