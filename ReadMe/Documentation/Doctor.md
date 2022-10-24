@@ -1,6 +1,6 @@
-# Medecin Route
+# Doctor Route
 
-`{{Route}}={{BASE_URL}}/medecin`
+`{{Route}}={{BASE_URL}}/doctor`
 
 ## Table of matters
 
@@ -333,22 +333,32 @@ search doctor by username or mail, one of the values is required (and more than 
 {
     "results": [
         {
-            "idPatient": 1,
-            "userNamePatient": "patienttest",
-            "nomPatient": "Hamaidi",
-            "prenomPatient": "youcef islam",
-            "sexePatient": false,
-            "autoAccept": false,
-            "dateNaisPatient": "1998-01-26T00:00:00.000Z",
-            "dateInscriptionPatient": "2022-10-15T00:00:00.000Z",
-            "NumTlfPatient": "790110064",
-            "lienJournalMedicament": "/public/uploads/MedicalJournal/1-1650754800.txt",
-            "lienHistoriqueRV": "/public/uploads/ECGfiles/1-1650754800.txt",
-            "mailPatient": "hamaidi.yo@gmail.com",
-            "idTypeMaladie": 1,
-            "idCommune": 2,
-            "idMedecin": 6,
-            "idProche": 1
+            "id": 1,
+            "username": "patient",
+            "mail": "hamaidi.yo@gmail.com",
+            "first_name": "Hamaidi",
+            "last_name": "Youcef",
+            "sex": 0,
+            "birth_date": "2022-10-23T23:00:00.000Z",
+            "address": "my address",
+            "photo": null,
+            "severity": 1,
+            "created_at": "2022-10-23T23:00:00.000Z",
+            "phone_number": "790150064",
+            "id_illness_type": 1,
+            "illness_type": "type 1",
+            "id_commune": 1,
+            "commune_name": "commune 1",
+            "id_daira": 1,
+            "daira_name": "Daira 1",
+            "id_wilaya": 1,
+            "wliaya_name": "wilaya 1",
+            "id_doctor": 12,
+            "id_relative": null,
+            "relative_first_name": null,
+            "relative_last_name": null,
+            "relative_phone_number": null,
+            "relative_mail": null
         },
         ...
     ]

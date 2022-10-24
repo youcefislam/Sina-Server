@@ -12,7 +12,7 @@ A REST API which expose endpoints for [Sina](../../README.md#sina).
 
 ## Routes
 
-#### [1. Medecin route](/ReadMe/Documentation/Medecin.md)
+#### [1. doctor route](/ReadMe/Documentation/Doctor.md)
 
 #### [2. Patient route (soon)](/ReadMe/Documentation/Patient.md)
 

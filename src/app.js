@@ -58,7 +58,7 @@ app.use(bodyParser.json());
 
 // Routes
 // Medecin route
-app.use("/medecin", medecinRouter);
+app.use("/doctor", medecinRouter);
 
 // Patient route
 app.use("/patient", patientRouter);
