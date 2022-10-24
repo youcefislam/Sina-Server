@@ -3,7 +3,6 @@ const { createServer } = require("http");
 require("dotenv").config();
 
 require("./database/connection");
-require("./database/Initialize");
 
 const app = require("./app");
 const httpServer = createServer(app);

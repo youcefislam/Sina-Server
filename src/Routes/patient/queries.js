@@ -1,24 +1,33 @@
-const sequelize = require("sequelize");
-const patient = require("../../Models/Patient");
+const dbPool = require("../../Database/connection");
 
 function queryErrorHandler(type, error) {
   this.type = type;
   this.path = error.path;
 }
 
-const updatePatient = async (newValues, options) => {
-  try {
-    await patient.update(newValues, {
-      where: options,
+const updatePatient = async (newValues, options) =>
+  new Promise((resolve, reject) => {
+    let statement = `UPDATE patient SET ? WHERE ?;`;
+    dbPool.query(statement, [newValues, options], (dbErr, result) => {
+      if (dbErr) {
+        if (dbErr.errno == 1062)
+          reject(
+            new queryErrorHandler(
+              "duplicated_entry_error",
+              dbErr.sqlMessage.replace("doctor.", "")
+            )
+          );
+        else if (dbErr.errno == 1452)
+          reject(
+            new queryErrorHandler(
+              "invalid_data",
+              `no data found with the entered data`
+            )
+          );
+        else reject(dbErr);
+      } else resolve(result);
     });
-  } catch (error) {
-    if (error instanceof sequelize.UniqueConstraintError)
-      throw new queryErrorHandler("duplicated_entry_error", error.errors[0]);
-    else if (error instanceof sequelize.ForeignKeyConstraintError)
-      throw new queryErrorHandler("invalid_data", { path: error.fields[0] });
-    else throw new Error(error);
-  }
-};
+  });
 
 module.exports = {
   updatePatient,

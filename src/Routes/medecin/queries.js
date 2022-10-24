@@ -1,172 +1,149 @@
-const sequelize = require("sequelize");
+const mysql = require("mysql");
+const moment = require("moment");
+const dbPool = require("../../Database/connection");
 
-const medecinNonVerifie = require("../../Models/medecinNonVerifie");
-const medecin = require("../../Models/Medecin");
-const daira = require("../../Models/Daira");
-const wilaya = require("../../Models/Wilaya");
-const patient = require("../../Models/Patient");
-
-function queryErrorHandler(type, error) {
+function queryErrorHandler(type, message, path) {
   this.type = type;
-  this.path = error.path;
+  this.message = message;
+  this.path = path;
 }
 
-const insertMedecin = async (
-  userNameMedecin,
-  passwordMedecin,
-  mailMedecin,
-  nomMedecin,
-  prenomMedecin,
-  sexeMedecin,
-  photoMedecin,
-  NumTlfMedecin,
-  idDaira
-) => {
-  try {
-    const values = {
-      userNameMedecin,
-      passwordMedecin,
-      mailMedecin,
-      nomMedecin,
-      prenomMedecin,
-      sexeMedecin,
-      photoMedecin,
-      dateInscriptientMedecin: sequelize.fn("CURDATE"),
-      NumTlfMedecin,
-      idDaira,
-    };
-    return await medecin.create(values);
-  } catch (error) {
-    if (error instanceof sequelize.UniqueConstraintError)
-      throw new queryErrorHandler("duplicated_entry_error", error.errors[0]);
-    else throw new Error(error);
-  }
-};
+const insertMedecin = (info) =>
+  new Promise((resolve, reject) => {
+    info.created_at = moment().format();
+    delete info.repeat_password;
 
-const insertNotVerifiedMedecin = async ({ idMedecin }) => {
-  try {
-    return await medecinNonVerifie.create({
-      idMedecin,
+    let statement = `INSERT INTO doctor SET ?;`;
+
+    dbPool.query(statement, info, (dbErr, result) => {
+      if (dbErr) {
+        if (dbErr.errno == 1062)
+          reject(
+            new queryErrorHandler(
+              "duplicated_entry_error",
+              dbErr.sqlMessage.replace("doctor.", "")
+            )
+          );
+        else reject(dbErr);
+      } else resolve(result.insertId);
     });
-  } catch (error) {
-    medecin.destroy();
-    throw new Error(error);
-  }
-};
+  });
 
-const selectMedecinByUsername = async (usernameMedecin) => {
-  try {
-    return await medecin.findOne({
-      where: {
-        usernameMedecin,
-      },
+const insertNotVerifiedMedecin = async (idMedecin) =>
+  new Promise((resolve, reject) => {
+    statement = "INSERT INTO doctor_account_validation VALUES(?);";
+    dbPool.query(statement, idMedecin, (dbErr, result) => {
+      if (dbErr) reject(dbErr);
+      else resolve(result.insertId);
     });
-  } catch (error) {
-    throw new Error(error);
-  }
-};
+  });
 
-const selectMedecinById = async (idMedecin) => {
-  try {
-    return await medecin.findOne({
-      where: {
-        idMedecin,
-      },
-      include: {
-        model: daira,
-        as: "daira",
-        include: {
-          model: wilaya,
-          as: "wilaya",
+const selectMedecinByUsername = (usernameMedecin) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      return await medecin.findOne({
+        where: {
+          usernameMedecin,
         },
-      },
-    });
-  } catch (error) {
-    console.log(error);
-    throw new Error(error);
-  }
-};
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
+  });
 
-const selectMedecinByMail = async (mailMedecin) => {
-  try {
-    return await medecin.findOne({
-      where: {
-        mailMedecin,
-      },
-      include: {
-        model: daira,
-        as: "daira",
-        include: {
-          model: wilaya,
-          as: "wilaya",
-        },
-      },
-    });
-  } catch (error) {
-    throw new Error(error);
-  }
-};
+const selectMedecinById = async (idMedecin) =>
+  new Promise((resolve, reject) => {
+    // const statement = `SELECT * FROM doctorView`
+    // dbPool.query
+    // try {
+    //   return await medecin.findOne({
+    //     where: {
+    //       idMedecin,
+    //     },
+    //     include: {
+    //       model: daira,
+    //       as: "daira",
+    //       include: {
+    //         model: wilaya,
+    //         as: "wilaya",
+    //       },
+    //     },
+    //   });
+    // } catch (error) {
+    //   console.log(error);
+    //   throw new Error(error);
+    // }
+  });
 
-const selectAllMedecin = async () => {
-  try {
-    return await medecin.findAll({
-      attributes: { exclude: ["passwordMedecin"] },
-      nest: false,
-      include: {
-        model: daira,
-        as: "daira",
-        include: {
-          model: wilaya,
-          as: "wilaya",
-        },
-      },
+const selectDoctor_sensitive = (query) =>
+  new Promise((resolve, reject) => {
+    let statement = `SELECT * FROM doctor WHERE ?;`;
+    dbPool.query(statement, query, (dbErr, result) => {
+      if (dbErr) reject(dbErr);
+      else resolve(result[0]);
     });
-  } catch (error) {
-    throw new Error(error);
-  }
-};
+  });
 
-const deleteMedecinAccount = async (idMedecin) => {
-  try {
-    await medecin.destroy({
-      where: {
-        idMedecin,
-      },
+const selectMedecinByMail = (mail) =>
+  new Promise((resolve, reject) => {
+    let statement = `SELECT * FROM doctorView where mail=?;`;
+    dbPool.query(statement, mail, (dbErr, result) => {
+      if (dbErr) reject(dbErr);
+      else resolve(result[0]);
     });
-  } catch (error) {
-    throw new Error(error);
-  }
-};
+  });
 
-const updateMedecin = async (newValues, options) => {
-  try {
-    await medecin.update(newValues, {
-      where: options,
+const selectAllMedecin = () =>
+  new Promise((resolve, reject) => {
+    let statement = "SELECT * FROM doctorView;";
+    dbPool.query(statement, (dbErr, result) => {
+      if (dbErr) reject(dbErr);
+      else resolve(result);
     });
-  } catch (error) {
-    if (error instanceof sequelize.UniqueConstraintError)
-      throw new queryErrorHandler("duplicated_entry_error", error.errors[0]);
-    else if (error instanceof sequelize.ForeignKeyConstraintError)
-      throw new queryErrorHandler("invalid_data", { path: error.fields[0] });
-    else throw new Error(error);
-  }
-};
+  });
 
-const selectMedecinsPatientList = async (idMedecin) => {
-  try {
-    const patientList = await patient.findAll({
-      attributes: {
-        exclude: ["passwordPatient"],
-      },
-      where: {
-        idMedecin,
-      },
+const deleteMedecinAccount = (idMedecin) =>
+  new Promise((resolve, reject) => {
+    const statement = `DELETE FROM doctor WHERE id=?;`;
+    dbPool.query(statement, idMedecin, (dbErr, result) => {
+      if (dbErr) reject();
+      else resolve();
     });
-    return patientList;
-  } catch (error) {
-    throw new Error(error);
-  }
-};
+  });
+
+const updateMedecin = (newValue, options) =>
+  new Promise((resolve, reject) => {
+    let statement = `UPDATE doctor SET ? WHERE ?;`;
+    dbPool.query(statement, [newValue, options], (dbErr, result) => {
+      if (dbErr) {
+        console.log(dbErr);
+        if (dbErr.errno == 1062)
+          reject(
+            new queryErrorHandler(
+              "duplicated_entry_error",
+              dbErr.sqlMessage.replace("doctor.", "")
+            )
+          );
+        else if (dbErr.errno == 1452)
+          reject(
+            new queryErrorHandler(
+              "invalid_data",
+              `no data found with the entered data`
+            )
+          );
+        else reject(dbErr);
+      } else resolve(result);
+    });
+  });
+
+const selectMedecinsPatientList = (id) =>
+  new Promise((resolve, reject) => {
+    const statement = `SELECT * FROM patientView WHERE id_doctor=?;`;
+    dbPool.query(statement, id, (dbErr, results) => {
+      if (dbErr) reject(dbErr);
+      else resolve(results);
+    });
+  });
 
 const selectMedecinByPatientId = async (idPatient) => {
   try {
@@ -182,6 +159,26 @@ const selectMedecinByPatientId = async (idPatient) => {
   }
 };
 
+const validateAccount = (id) =>
+  new Promise((resolve, reject) => {
+    let statement = `DELETE FROM doctor_account_validation WHERE id=?;`;
+    dbPool.query(statement, id, (dbErr, result) => {
+      if (dbErr) reject(dbErr);
+      else resolve(result);
+    });
+  });
+
+const searchDoctor = (query) =>
+  new Promise((resolve, reject) => {
+    let statement = mysql
+      .format(`SELECT * FROM doctorView WHERE ?;`, query)
+      .replace(",", ` AND`);
+    dbPool.query(statement, (dbErr, result) => {
+      if (dbErr) reject(dbErr);
+      else resolve(result);
+    });
+  });
+
 module.exports = {
   insertMedecin,
   insertNotVerifiedMedecin,
@@ -193,4 +190,7 @@ module.exports = {
   selectMedecinsPatientList,
   selectMedecinByPatientId,
   selectMedecinByMail,
+  selectDoctor_sensitive,
+  validateAccount,
+  searchDoctor,
 };

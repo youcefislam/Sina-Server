@@ -6,14 +6,13 @@ const validations = {
     username: joi.string().alphanum().min(6).required(),
     password: joi.string().alphanum().min(8).required(),
     repeat_password: joi.ref("password"),
-    email: joi.string().email().required(),
-    nom: joi.string().max(50).required(),
-    prenom: joi.string().max(50).required(),
-    numeroTlf: joi.number().max(1000000000).required(),
+    mail: joi.string().email().required(),
+    first_name: joi.string().max(50).required(),
+    last_name: joi.string().max(50).required(),
+    phone_number: joi.number().max(1000000000).required(),
     sex: joi.number().max(1).required(),
     address: joi.string().max(400).required(),
-    wilaya: joi.number().required(),
-    daira: joi.number().required(),
+    id_daira: joi.number().required(),
   }),
   medecinSignIn: joi.object({
     username: joi.string().alphanum().min(6).required(),
@@ -45,7 +44,7 @@ const validations = {
     password: joi.string().alphanum().min(8).required(),
   }),
   validMail: joi.object({
-    email: joi.string().email().required(),
+    mail: joi.string().email().required(),
   }),
   validUsername: joi.object({ username: joi.string().min(6).required() }),
   validNewPassword: joi.object({
@@ -53,15 +52,15 @@ const validations = {
     repeat_password: joi.ref("password"),
   }),
   validName: joi.object({
-    nom: joi.string().max(50).required(),
-    prenom: joi.string().max(50).required(),
+    first_name: joi.string().max(50).required(),
+    last_name: joi.string().max(50).required(),
   }),
   validNumber: joi.object({
-    numeroTlf: joi.string().max(10).required(),
+    phone_number: joi.string().min(9).max(10).required(),
   }),
-  validAccept: joi.object({ auto: joi.bool().required() }),
+  validAccept: joi.object({ auto_accept: joi.bool().required() }),
   validDaira: joi.object({
-    daira: joi.number().required(),
+    id_daira: joi.number().required(),
   }),
   validPatientApproval: joi.object({
     idPatient: joi.number().required(),
@@ -113,6 +112,12 @@ const validations = {
     latitude: joi.number().required(),
     longitude: joi.number().required(),
   }),
+  doctorSearchQuery: joi
+    .object({
+      username: joi.string().alphanum(),
+      mail: joi.string().email(),
+    })
+    .or("username", "mail"),
 };
 
 function validationErrorHandler(error) {

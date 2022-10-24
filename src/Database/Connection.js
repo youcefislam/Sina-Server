@@ -1,30 +1,15 @@
-// const mysql = require("mysql");
-
-// // ### Connection with the database ### -- tested
-// var dbPool = mysql.createPool({
-//   connectionLimit: 30,
-//   host: "localhost",
-//   user: "sina",
-//   password: "password",
-//   database: "sina",
-//   multipleStatements: true,
-// });
-
-// module.exports = dbPool;
-
-const { Sequelize } = require("sequelize");
+const mysql = require("mysql");
 
 require("dotenv").config();
 
-const sequelize = new Sequelize(
-  process.env.DATABASE,
-  process.env.DATABASE_USER,
-  process.env.DATABASE_PASSWORD,
-  {
-    host: "localhost",
-    dialect: "mysql",
-    logging: false,
-  }
-);
+// ### Connection with the database ### -- tested
+var dbPool = mysql.createPool({
+  connectionLimit: 30,
+  host: "localhost",
+  user: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE,
+  multipleStatements: true,
+});
 
-module.exports = sequelize;
+module.exports = dbPool;

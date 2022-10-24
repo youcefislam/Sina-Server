@@ -15,15 +15,8 @@ const {
   medecinRemovePatient,
   getListOfDoctors,
   medecinSendRestoreLink,
-  medecinResetPassword,
   getDoctorInfoById,
-  medecinGetMyInfo,
-  medecinGetMail,
-  medecinGetUsername,
-  medecinGetName,
-  medecinGetNumber,
-  medecinGetAutoAccept,
-  medecinGetDaira,
+  searchForDoctor,
 } = require("./controllers");
 const {
   tokenAuthorization,
@@ -53,8 +46,11 @@ Router.head("/validation/:token", medecinValidateAccount);
 // Send password restoration link endpoint
 Router.post("/restorelink", medecinSendRestoreLink);
 
-// Delete account endpoint
-Router.get("/:id", tokenAuthorization, medecinOnly, getDoctorInfoById);
+// search account by username endpoint
+Router.get("/search", searchForDoctor);
+
+// get account endpoint
+Router.get("/:id", tokenAuthorization, getDoctorInfoById);
 
 // Delete account endpoint
 Router.delete(
@@ -83,9 +79,6 @@ Router.delete(
   medecinRemovePatient
 );
 
-// Get doctor's mail endpoint
-Router.get("/:id/mail", tokenAuthorization, medecinGetMail);
-
 // Modify doctor's mail endpoint
 Router.put(
   "/:id/mail",
@@ -94,9 +87,6 @@ Router.put(
   private,
   medecinModifyMail
 );
-
-// Get doctor's username endpoint
-Router.get("/:id/username", tokenAuthorization, medecinGetUsername);
 
 // Modify doctor's username endpoint
 Router.put(
@@ -116,9 +106,6 @@ Router.put(
   medecinModifyPassword
 );
 
-// Get doctor's first and last name endpoint
-Router.get("/:id/name", tokenAuthorization, medecinGetName);
-
 // Modify doctor's first and last name endpoint
 Router.put(
   "/:id/name",
@@ -128,9 +115,6 @@ Router.put(
   medecinModifyName
 );
 
-// Get doctor's phone number endpoint
-Router.get("/:id/number", tokenAuthorization, medecinGetNumber);
-
 // Modify doctor's phone number endpoint
 Router.put(
   "/:id/number",
@@ -138,15 +122,6 @@ Router.put(
   medecinOnly,
   private,
   medecinModifyNumber
-);
-
-// Get doctor's auto accept endpoint
-Router.get(
-  "/:id/accept-method",
-  tokenAuthorization,
-  medecinOnly,
-  private,
-  medecinGetAutoAccept
 );
 
 // Modify doctor's auto accept endpoint
@@ -158,9 +133,6 @@ Router.put(
   medecinModifyAutoAccept
 );
 
-// Get doctor's daira endpoint
-Router.get("/:id/daira", tokenAuthorization, medecinGetDaira);
-
 // Modify doctor's daira endpoint
 Router.put(
   "/:id/daira",
@@ -169,9 +141,5 @@ Router.put(
   private,
   medecinModifyDaira
 );
-
-// // ================================================ need to split this into multiple requests
-// // doctor get his info endpoint
-// Router.get("/my-info", tokenAuthorization, medecinGetMyInfo);
 
 module.exports = Router;

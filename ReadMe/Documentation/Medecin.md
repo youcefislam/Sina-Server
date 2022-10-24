@@ -12,20 +12,15 @@
 - [Patient list](#patient-list)
 - [Delete from the doctor's patient list](#delete-patient-from-patient-list)
 - [Account restoration link](#account-restoration-link)
-- [Doctor's info](#doctors-information)
+- [Doctor's info (by ID)](#doctors-information)
+- [Search for Doctor's info (by username or email)](#search-doctors)
 - [Delete account](#delete-account)
-- [Doctor's mail](#doctors-mail)
 - [Update doctor's mail](#update-doctors-mail)
-- [Doctor's username](#doctors-username)
 - [Update doctor's username](#update-doctors-username)
 - [Update doctor's password](#update-doctors-password)
-- [Doctor's name](#doctors-name)
 - [Update doctor's name](#update-doctors-name)
-- [Doctor's phone number](#doctors-phone-number)
 - [Update doctor's phone number](#update-doctors-phone-number)
-- [Get doctor's Accept method](#doctors-accept-method)
 - [Update doctor's Accept method](#update-doctors-accept-method)
-- [get doctor's daira](#doctors-daira)
 - [Update doctor's daira](#update-doctors-daira)
 
 ---
@@ -44,25 +39,19 @@ Return the list of all the doctor's
 {
     "results":[
         {
-            "idMedecin": 6,
-            "userNameMedecin": "test",
-            "nomMedecin": "Hamaidi",
-            "prenomMedecin": "Youcef",
-            "sexeMedecin": false, // false = Male, true = Female
-            "autoAccept": false,
-            "dateInscriptientMedecin": "2022-10-15T00:00:00.000Z",
-            "NumTlfMedecin": "790030013",
-            "mailMedecin": "hamaidisyo938o@hotmail.com",
-            "idDaira": 2,
-            "daira": {
-                "idDaira": 2,
-                "nomDaira": "Daira 2",
-                "idWilaya": 1,
-                "wilaya": {
-                    "idWilaya": 1,
-                    "nomWilaya": "wilaya 1"
-                }
-            }
+            "id": 6,
+            "username": "test",
+            "first_name": "Hamaidi",
+            "last_name": "Youcef",
+            "sexe": false, // false = Male, true = Female
+            "auto_accept": false,
+            "created_at": "2022-10-15T00:00:00.000Z",
+            "phone_number": "790030013",
+            "mail": "hamaidisyo938o@hotmail.com",
+            "id_daira": 2,
+            "nomDaira": "Daira 2",
+            "idWilaya": 1,
+            "nomWilaya": "wilaya 1"
         },
         ...
     ]
@@ -86,14 +75,14 @@ Create new doctor account
 | username        | string | yes      | length>6          |
 | password        | string | yes      | length>8          |
 | repeat_password | string | yes      | equal to password |
-| email           | string | yes      | valid mail        |
-| nom             | string | yes      | length<50         |
-| prenom          | string | yes      | length<50         |
-| numeroTlf       | string | yes      | length <= 10      |
+| mail            | string | yes      | valid mail        |
+| first_name      | string | yes      | length<50         |
+| last_name       | string | yes      | length<50         |
+| phone_number    | string | yes      | length <= 10      |
 | sex             | string | yes      | length=1          |
 | address         | string | yes      | length<400        |
-| wilaya          | number | yes      | -                 |
-| daira           | number | yes      | -                 |
+| id_wilaya       | number | yes      | -                 |
+| id_daira        | number | yes      | -                 |
 
 #### Response status
 
@@ -107,10 +96,11 @@ Create new doctor account
 
 ##### `HTTP STATUS 400`
 
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
+| Key     | Value  |
+| ------- | ------ |
+| type    | string |
+| path    | string |
+| message | string |
 
 ##### `HTTP STATUS 500`
 
@@ -188,13 +178,152 @@ Validate new account
 
 Return the doctor's list of patients
 
-`GET {{Route}}/:id/patientlist`
+`GET {{Route}}/:id_doctor/patientlist`
 
 #### In parameters
 
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| id_doctor | number | yes      |
+
+#### Response status
+
+##### `HTTP STATUS 200`
+
+```
+{
+    "results": [
+        {
+            "id": 1,
+            "username": "patient",
+            "mail": "hamaidi.yo@gmail.com",
+            "first_name": "Hamaidi",
+            "last_name": "Youcef",
+            "sex": 0,
+            "birth_date": "2022-10-23T23:00:00.000Z",
+            "address": "my address",
+            "photo": null,
+            "severity": 1,
+            "created_at": "2022-10-23T23:00:00.000Z",
+            "phone_number": "0000010001",
+            "id_illness_type": 1,
+            "illness_type": "type 1",
+            "id_commune": 1,
+            "commune_name": "commune 1",
+            "id_daira": 1,
+            "daira_name": "Daira 1",
+            "id_wilaya": 1,
+            "wliaya_name": "wilaya 1",
+            "id_doctor": 12,
+            "id_relative": null,
+            "relative_first_name": null,
+            "relative_last_name": null,
+            "relative_phone_number": null,
+            "relative_mail": null
+        },
+        ...
+    ]
+}
+```
+
+##### `HTTP STATUS 401/403/500`
+
+---
+
+### Delete patient from patient list
+
+Remove a patient from the doctor's patient list
+
+`DELETE {{Route}}/:id_doctor/patientlist/:idPatient`
+
+#### In parameters
+
+| Field      | Type   | Required |
+| ---------- | ------ | -------- |
+| id_doctor  | number | yes      |
+| id_patient | number | yes      |
+
+#### Response status
+
+##### `HTTP STATUS 204`
+
+##### `HTTP STATUS 400`
+
+| Key  | Value  |
+| ---- | ------ |
+| type | string |
+| path | string |
+
+##### `HTTP STATUS 401/403/500`
+
+---
+
+### Account restoration link
+
+Send password restoration link
+
+`POST {{Route}}/restorelink`
+
+#### In parameters
+
+| Field | Type   | Required | validation |
+| ----- | ------ | -------- | ---------- |
+| mail  | string | yes      | Valid mail |
+
+#### Response status
+
+##### `HTTP STATUS 200`
+
+##### `HTTP STATUS 400`
+
+| Key  | Value  |
+| ---- | ------ |
+| type | string |
+| path | string |
+
+##### `HTTP STATUS 500`
+
+---
+
+### Doctors information
+
+Return a doctor's information
+
+`GET {{Route}}/:id_doctor`
+
+#### In parameters
+
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| id_doctor | number | yes      |
+
+#### Response status
+
+##### `HTTP STATUS 200`
+
+##### `HTTP STATUS 400`
+
+| Key  | Value  |
+| ---- | ------ |
+| type | string |
+| path | string |
+
+##### `HTTP STATUS 401/500`
+
+---
+
+### Search doctors
+
+search doctor by username or mail, one of the values is required (and more than one is allowed)
+
+`GET {{Route}}/?mail=:mail&username=:username`
+
+#### In parameters
+
+| Field    | Type   | Required |
+| -------- | ------ | -------- |
+| username | number | no       |
+| mail     | number | no       |
 
 #### Response status
 
@@ -226,87 +355,13 @@ Return the doctor's list of patients
 }
 ```
 
-##### `HTTP STATUS 401/403/500`
-
----
-
-### Delete patient from patient list
-
-Remove a patient from the doctor's patient list
-
-`DELETE {{Route}}/:id/patientlist/:idPatient`
-
-#### In parameters
-
-| Field     | Type   | Required |
-| --------- | ------ | -------- |
-| id        | number | yes      |
-| idPatient | number | yes      |
-
-#### Response status
-
-##### `HTTP STATUS 204`
-
 ##### `HTTP STATUS 400`
 
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
-
-##### `HTTP STATUS 401/403/500`
-
----
-
-### Account restoration link
-
-Send password restoration link
-
-`POST {{Route}}/restorelink`
-
-#### In parameters
-
-| Field | Type   | Required | validation |
-| ----- | ------ | -------- | ---------- |
-| email | string | yes      | Valid mail |
-
-#### Response status
-
-##### `HTTP STATUS 200`
-
-##### `HTTP STATUS 400`
-
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
-
-##### `HTTP STATUS 500`
-
----
-
-### Doctors information
-
-Return a doctor's information
-
-`GET {{Route}}/:id`
-
-#### In parameters
-
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
-
-#### Response status
-
-##### `HTTP STATUS 200`
-
-##### `HTTP STATUS 400`
-
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
+| Key     | Value  |
+| ------- | ------ |
+| type    | string |
+| path    | string |
+| message | string |
 
 ##### `HTTP STATUS 401/500`
 
@@ -316,13 +371,13 @@ Return a doctor's information
 
 Delete doctor's account
 
-`DELETE {{Route}}/:id`
+`DELETE {{Route}}/:id_doctor`
 
 #### In parameters
 
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| id_doctor | number | yes      |
 
 #### Response status
 
@@ -330,38 +385,13 @@ Delete doctor's account
 
 ##### `HTTP STATUS 400`
 
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
+| Key     | Value  |
+| ------- | ------ |
+| type    | string |
+| path    | string |
+| message | string |
 
 ##### `HTTP STATUS 401/403/500`
-
----
-
-### Doctor's mail
-
-Return a doctor's e-mail
-
-`GET {{Route}}/:id/mail`
-
-#### In parameters
-
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
-
-#### Response status
-
-##### `HTTP STATUS 200`
-
-```
-{
-    "mailMedecin": "hamaidisyo938o@hotmail.com"
-}
-```
-
-##### `HTTP STATUS 401/500`
 
 ---
 
@@ -369,13 +399,13 @@ Return a doctor's e-mail
 
 Update doctor's e-mail
 
-`PUT {{Route}}/:id/mail`
+`PUT {{Route}}/:id_doctor/mail`
 
 #### In parameters
 
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| id_doctor | number | yes      |
 
 #### In body
 
@@ -389,38 +419,13 @@ Update doctor's e-mail
 
 ##### `HTTP STATUS 400`
 
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
+| Key     | Value  |
+| ------- | ------ |
+| type    | string |
+| path    | string |
+| message | string |
 
 ##### `HTTP STATUS 401/403/500`
-
----
-
-### Doctor's username
-
-Return a doctor's username
-
-`GET {{Route}}/:id/username`
-
-#### In parameters
-
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
-
-#### Response status
-
-##### `HTTP STATUS 200`
-
-```
-{
-    "userNameMedecin": "patienttest"
-}
-```
-
-##### `HTTP STATUS 401/500`
 
 ---
 
@@ -428,13 +433,13 @@ Return a doctor's username
 
 Update doctor's username
 
-`PUT {{Route}}/:id/username`
+`PUT {{Route}}/:id_doctor/username`
 
 #### In parameters
 
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| id_doctor | number | yes      |
 
 #### In body
 
@@ -448,10 +453,11 @@ Update doctor's username
 
 ##### `HTTP STATUS 400`
 
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
+| Key     | Value  |
+| ------- | ------ |
+| type    | string |
+| path    | string |
+| message | string |
 
 ##### `HTTP STATUS 401/403/500`
 
@@ -461,13 +467,13 @@ Update doctor's username
 
 Update doctor's password
 
-`PUT {{Route}}/:id/password`
+`PUT {{Route}}/:id_doctor/password`
 
 #### In parameters
 
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| id_doctor | number | yes      |
 
 #### In body
 
@@ -482,39 +488,13 @@ Update doctor's password
 
 ##### `HTTP STATUS 400`
 
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
+| Key     | Value  |
+| ------- | ------ |
+| type    | string |
+| path    | string |
+| message | string |
 
 ##### `HTTP STATUS 401/403/500`
-
----
-
-### Doctor's name
-
-Return a doctor's first and last name
-
-`GET {{Route}}/:id/name`
-
-#### In parameters
-
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
-
-#### Response status
-
-##### `HTTP STATUS 200`
-
-```
-{
-    "nomMedecin": "Hamaidi"
-    "prenomMedecin": "Youcef Islam"
-}
-```
-
-##### `HTTP STATUS 401/500`
 
 ---
 
@@ -522,20 +502,20 @@ Return a doctor's first and last name
 
 Update doctor's first and last name
 
-`PUT {{Route}}/:id/name`
+`PUT {{Route}}/:id_doctor/name`
 
 #### In parameters
 
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| id_doctor | number | yes      |
 
 #### In body
 
-| Field  | Type   | Required | validation |
-| ------ | ------ | -------- | ---------- |
-| nom    | string | yes      | length<50  |
-| prenom | string | yes      | length<50  |
+| Field      | Type   | Required | validation |
+| ---------- | ------ | -------- | ---------- |
+| first_name | string | yes      | length<50  |
+| last_name  | string | yes      | length<50  |
 
 #### Response status
 
@@ -543,38 +523,13 @@ Update doctor's first and last name
 
 ##### `HTTP STATUS 400`
 
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
+| Key     | Value  |
+| ------- | ------ |
+| type    | string |
+| path    | string |
+| message | string |
 
 ##### `HTTP STATUS 401/403/500`
-
----
-
-### Doctor's phone number
-
-Return a doctor's phone number
-
-`GET {{Route}}/:id/number`
-
-#### In parameters
-
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
-
-#### Response status
-
-##### `HTTP STATUS 200`
-
-```
-{
-    "NumTlfMedecin": "790110064"
-}
-```
-
-##### `HTTP STATUS 401/500`
 
 ---
 
@@ -582,19 +537,19 @@ Return a doctor's phone number
 
 Update doctor's phone number
 
-`PUT {{Route}}/:id/number`
+`PUT {{Route}}/:id_doctor/number`
 
 #### In parameters
 
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| id_doctor | number | yes      |
 
 #### In body
 
-| Field     | Type   | Required | validation |
-| --------- | ------ | -------- | ---------- |
-| numeroTlf | string | yes      | length<=10 |
+| Field        | Type   | Required | validation        |
+| ------------ | ------ | -------- | ----------------- |
+| phone_number | string | yes      | 9 <= length <= 10 |
 
 #### Response status
 
@@ -602,38 +557,13 @@ Update doctor's phone number
 
 ##### `HTTP STATUS 400`
 
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
+| Key     | Value  |
+| ------- | ------ |
+| type    | string |
+| path    | string |
+| message | string |
 
 ##### `HTTP STATUS 401/403/500`
-
----
-
-### Doctor's accept method
-
-Return a doctor's accept method
-
-`GET {{Route}}/:id/accept-method`
-
-#### In parameters
-
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
-
-#### Response status
-
-##### `HTTP STATUS 200`
-
-```
-{
-    "autoAccept": false
-}
-```
-
-##### `HTTP STATUS 401/500`
 
 ---
 
@@ -641,19 +571,19 @@ Return a doctor's accept method
 
 Update doctor's accept method
 
-`PUT {{Route}}/:id/accept-method`
+`PUT {{Route}}/:id_doctor/accept-method`
 
 #### In parameters
 
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| id_doctor | number | yes      |
 
 #### In body
 
-| Field         | Type    | Required |
-| ------------- | ------- | -------- |
-| accept-method | boolean | yes      |
+| Field       | Type    | Required |
+| ----------- | ------- | -------- |
+| auto_accept | boolean | yes      |
 
 #### Response status
 
@@ -661,40 +591,13 @@ Update doctor's accept method
 
 ##### `HTTP STATUS 400`
 
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
+| Key     | Value  |
+| ------- | ------ |
+| type    | string |
+| path    | string |
+| message | string |
 
 ##### `HTTP STATUS 401/403/500`
-
----
-
-### Doctor's daira
-
-Return a doctor's daira
-
-`GET {{Route}}/:id/daira`
-
-#### In parameters
-
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
-
-#### Response status
-
-##### `HTTP STATUS 200`
-
-```
-{
-    "idDaira": 2,
-    "nomDaira": "Daira 2",
-    "idWilaya": 1
-}
-```
-
-##### `HTTP STATUS 401/500`
 
 ---
 
@@ -702,19 +605,19 @@ Return a doctor's daira
 
 Update doctor's daira
 
-`PUT {{Route}}/:id/daira`
+`PUT {{Route}}/:id_doctor/daira`
 
 #### In parameters
 
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| id    | number | yes      |
+| Field     | Type   | Required |
+| --------- | ------ | -------- |
+| id_doctor | number | yes      |
 
 #### In body
 
-| Field | Type   | Required |
-| ----- | ------ | -------- |
-| daira | number | yes      |
+| Field    | Type   | Required |
+| -------- | ------ | -------- |
+| id_daira | number | yes      |
 
 #### Response status
 
@@ -722,9 +625,10 @@ Update doctor's daira
 
 ##### `HTTP STATUS 400`
 
-| Key  | Value  |
-| ---- | ------ |
-| type | string |
-| path | string |
+| Key     | Value  |
+| ------- | ------ |
+| type    | string |
+| path    | string |
+| message | string |
 
 ##### `HTTP STATUS 401/403/500`

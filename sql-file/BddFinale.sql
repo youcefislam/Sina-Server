@@ -1,176 +1,307 @@
 drop database sina;
+
 create schema if not exists sina;
+
 use sina;
-Create table Wilaya (
-    idWilaya INT NOT NULL AUTO_INCREMENT, 
-    nomWilaya VARCHAR(50),
-    primary key(idWilaya)
+
+Create table wilaya (
+     id INT NOT NULL AUTO_INCREMENT,
+     name VARCHAR(50),
+     primary key(id)
 );
 
-Create table Daira (
-     idDaira INT NOT NULL AUTO_INCREMENT, 
-     nomDaira VARCHAR(50),
-     idWilaya INT,
-     primary key (idDaira),
-     Constraint FK_daira_IdWil FOREIGN KEY (idWilaya) references Wilaya(idWilaya)
-     ON DELETE CASCADE
+Create table daira (
+     id INT NOT NULL AUTO_INCREMENT,
+     name VARCHAR(50),
+     id_wilaya INT,
+     primary key (id),
+     Constraint FK_daira_wilaya FOREIGN KEY (id_wilaya) references wilaya(id) ON DELETE CASCADE
 );
 
-Create table Commune (
-     idCommune INT NOT NULL AUTO_INCREMENT, 
-     nomCommune VARCHAR(50), 
-     idDaira INT,
-     primary key(idCommune),
-     Constraint FK_com_IdDa FOREIGN KEY (idDaira) references Daira (idDaira)
-     ON DELETE CASCADE
+Create table commune (
+     id INT NOT NULL AUTO_INCREMENT,
+     name VARCHAR(50),
+     id_daira INT,
+     primary key(id),
+     Constraint FK_comune_daira FOREIGN KEY (id_daira) references daira (id) ON DELETE CASCADE
 );
 
-Create table Hopital (
-     idHopital INT NOT NULL AUTO_INCREMENT, 
-     nomHopital VARCHAR(50), 
-     adressHopital VARCHAR(255), 
-     numTlfHopital VARCHAR(10), 
-     idCommune INT,
-     primary key(idHopital),
-     Constraint FK_hopital_idCommun FOREIGN KEY (idCommune) references Commune (idCommune) ON DELETE CASCADE,
-     Constraint Unq_hopital_num UNIQUE(numTlfHopital)
+Create table hospital (
+     id INT NOT NULL AUTO_INCREMENT,
+     name VARCHAR(50),
+     address VARCHAR(255),
+     phone_number VARCHAR(10),
+     id_commune INT,
+     primary key(id),
+     Constraint FK_hospital_commune FOREIGN KEY (id_commune) references commune (id) ON DELETE CASCADE,
+     Constraint Unq_hospital_phone_number UNIQUE(phone_number)
 );
 
-Create table TypeMaladie (
-     idTypeMaladie INT NOT NULL AUTO_INCREMENT, 
-     TypeMaladie VARCHAR(50),
-     primary key(idTypeMaladie)
+Create table illness_type (
+     id INT NOT NULL AUTO_INCREMENT,
+     type VARCHAR(50),
+     primary key(id)
 );
 
-Create table Medicament (
-     idMedicament INT NOT NULL AUTO_INCREMENT,
-     nomMedicament VARCHAR(50),
-     primary key(idMedicament)
+Create table medication (
+     id INT NOT NULL AUTO_INCREMENT,
+     name VARCHAR(50),
+     primary key(id)
 );
 
-Create table Proche (
-     idProche INT NOT NULL AUTO_INCREMENT,
-     nomProche VARCHAR(50),
-     prenomProche VARCHAR(50), 
-     NumTlfProche VARCHAR(10), 
-     mailProche VARCHAR(255), 
-     primary key(idProche),
-     Constraint Unq_Proche_Num UNIQUE (NumTlfProche),
-     Constraint Unq_Proche_Mail UNIQUE (mailProche)
+Create table relative (
+     id INT NOT NULL AUTO_INCREMENT,
+     first_name VARCHAR(50),
+     last_name VARCHAR(50),
+     phone_number VARCHAR(10),
+     mail VARCHAR(255),
+     primary key(id),
+     Constraint Unq_relative_phone_number UNIQUE (phone_number),
+     Constraint Unq_relative_mail UNIQUE (mail)
 );
 
-Create table Medecin(
-     idMedecin INT NOT NULL AUTO_INCREMENT, 
-     userNameMedecin VARCHAR(50) NOT NULL, 
-     passwordMedecin VARCHAR(255) NOT NULL, 
-     mailMedecin VARCHAR(255) NOT NULL, 
-     nomMedecin VARCHAR(50), 
-     prenomMedecin VARCHAR(50), 
-     sexeMedecin TINYINT, 
-     photoMedecin VARCHAR(255), 
-     dateInscriptientMedecin DATETIME, 
-     NumTlfMedecin VARCHAR(10) NOT NULL, 
-     autoAccept TINYINT default 0,
-     idDaira INT,
-     primary key (idMedecin),
-     Constraint Fk_Med_IdDaira FOREIGN KEY (idDaira) references Daira(idDaira) ON DELETE SET NULL,
-     Constraint Unq_Med_user UNIQUE (userNameMedecin),
-     Constraint Unq_Med_mail UNIQUE (mailMedecin),
-     Constraint Unq_Med_Num UNIQUE (NumTlfMedecin)
+Create table doctor(
+     id INT NOT NULL AUTO_INCREMENT,
+     username VARCHAR(50) NOT NULL,
+     password VARCHAR(255) NOT NULL,
+     mail VARCHAR(255) NOT NULL,
+     first_name VARCHAR(50),
+     last_name VARCHAR(50),
+     sex TINYINT,
+     photo VARCHAR(255),
+     created_at DATETIME,
+     phone_number VARCHAR(10) NOT NULL,
+     auto_accept TINYINT default 0,
+     id_daira INT,
+     address VARCHAR(255),
+     primary key (id),
+     Constraint Unq_doctor_username UNIQUE (username),
+     Constraint Unq_doctor_mail UNIQUE (mail),
+     Constraint Unq_doctor_phone_number UNIQUE (phone_number),
+     Constraint Fk_doctor_daira FOREIGN KEY (id_daira) references daira(id) ON DELETE
+     SET
+          NULL
 );
 
-Create table Patient (
-     idPatient int NOT NULL AUTO_INCREMENT, 
-     userNamePatient VARCHAR(50) NOT NULL, 
-     passwordPatient VARCHAR(255) NOT NULL, 
-     mailPatient VARCHAR(255) NOT NULL,
-     nomPatient VARCHAR(50), 
-     prenomPatient VARCHAR(50), 
-     sexePatient TINYINT, 
-     dateNaisPatient DATE,
-     adressPatient VARCHAR(255),
-     photoPatient VARCHAR(255), 
-     degreGravite TINYINT, 
-     dateInscriptionPatient DATETIME, 
-     statusPatient TINYINT default 0, 
-     lienJournalMedicament VARCHAR(255), 
-     lienHistoriqueRV VARCHAR(255), 
-     NumTlfPatient VARCHAR(10), 
-     idTypeMaladie INT,
-     idCommune INT,
-     idMedecin INT,
-     idProche INT,
-     Primary key (idPatient),
-     Constraint FK_pat_PatTypeMal FOREIGN KEY (idTypeMaladie) references TypeMaladie(idTypeMaladie) ON DELETE SET NULL,
-     Constraint FK_pat_idCommune FOREIGN KEY (idCommune) references Commune(idCommune) ON DELETE SET NULL,
-     Constraint FK_pat_idMed FOREIGN KEY (idMedecin) references Medecin (idMedecin) ON DELETE SET NULL,
-     Constraint FK_pat_idProche FOREIGN KEY (idProche) references Proche (idProche) ON DELETE SET NULL,
-     Constraint Unq_Pat_user UNIQUE (userNamePatient),
-     Constraint Unq_Pat_mail UNIQUE (mailPatient),
-     Constraint Unq_Pat_Num UNIQUE (NumTlfPatient)
+Create table patient (
+     id int NOT NULL AUTO_INCREMENT,
+     username VARCHAR(50) NOT NULL,
+     password VARCHAR(255) NOT NULL,
+     mail VARCHAR(255) NOT NULL,
+     first_name VARCHAR(50),
+     last_name VARCHAR(50),
+     sex TINYINT,
+     birth_date DATE,
+     address VARCHAR(255),
+     photo VARCHAR(255),
+     severity TINYINT,
+     created_at DATETIME,
+     phone_number VARCHAR(10),
+     id_illness_type INT,
+     id_commune INT,
+     id_doctor INT,
+     id_relative INT,
+     Primary key (id),
+     Constraint FK_patient_illness_typel FOREIGN KEY (id_illness_type) references illness_type(id) ON DELETE
+     SET
+          NULL,
+          Constraint FK_patient_commune FOREIGN KEY (id_commune) references Commune(id) ON DELETE
+     SET
+          NULL,
+          Constraint FK_patient_doctor FOREIGN KEY (id_doctor) references doctor (id) ON DELETE
+     SET
+          NULL,
+          Constraint FK_patient_relative FOREIGN KEY (id_relative) references relative (id) ON DELETE
+     SET
+          NULL,
+          Constraint Unq_Patient_username UNIQUE (username),
+          Constraint Unq_Patien_mail UNIQUE (mail),
+          Constraint Unq_patient_phone_number UNIQUE (phone_number)
 );
 
-Create table FichierECG (
-     idFichierECG INT NOT NULL AUTO_INCREMENT, 
-     lienFichier VARCHAR(255), 
-     dateCreation DATETIME,
-     idPatient INT,
-     primary key(idFichierECG),
-     Constraint FK_FichEcg_IdPa FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
+create table MedicationJournal(
+     id int NOT NULL AUTO_INCREMENT,
+     date DATETIME,
+     id_patient INT,
+     Primary key (id),
+     Constraint FK_med_journal_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
-Create table Rendezvous (
-     idRendezVous INT NOT NULL AUTO_INCREMENT,
-     dateRV DATETIME, 
-     idPatient int NOT NULL,
-     primary key(idRendezVous),
-     Constraint FK_RDV_IdPaa FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
+create table appointementJournal(
+     id int NOT NULL AUTO_INCREMENT,
+     date DATETIME,
+     id_patient INT,
+     Primary key (id),
+     Constraint FK_appointement_journal_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
-Create table ListAtt(
-     idMedecin INT primary key,
-     idPatient INT NOT NULL,
-     Constraint FK_listAtt_IdPatient FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE,
-     Constraint FK_listAtt_IdMede FOREIGN KEY (idMedecin) references Medecin (idMedecin) ON DELETE CASCADE
+Create table ecg_file (
+     id INT NOT NULL AUTO_INCREMENT,
+     lik VARCHAR(255),
+     created_at DATETIME,
+     id_patient INT,
+     primary key(id),
+     Constraint FK_ECGFile_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
-Create table ListMedicament (
-     dateDebut DATETIME, 
-     posologie INT,
-     idPatient INT NOT NULL,
-     idMedicament int NOT NULL,
-     Constraint FK_listMed_IdPatie FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE,
-     Constraint FK_listMed_IdMedicament FOREIGN KEY (idMedicament) references medicament (idMedicament) ON DELETE CASCADE,
-     Primary KEY (idPatient,idMedicament)
+Create table appointement (
+     id INT NOT NULL AUTO_INCREMENT,
+     date DATETIME,
+     id_patient int NOT NULL,
+     primary key(id),
+     Constraint FK_appointment_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
-Create table Rapport (
-     idRapport INT NOT NULL AUTO_INCREMENT, 
-     lienRapport VARCHAR(200), 
-     dateRapport DATETIME,
-     idPatient int NOT NULL,
-     primary key (idRapport),
-     Constraint FK_Rap_IdPati FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
+Create table patient_request(
+     id_doctor INT NOT NULL,
+     id_patient INT NOT NULL,
+     primary key(id_doctor, id_patient),
+     Constraint FK_patient_request_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE,
+     Constraint FK_patient_request_doctor FOREIGN KEY (id_doctor) references doctor (id) ON DELETE CASCADE
 );
 
-Create table NoteMedecin (
-     idNote INT NOT NULL AUTO_INCREMENT, 
-     DateNote DATETIME, 
-     NoteMedecin VARCHAR(1000), 
-     idPatient int NOT NULL,
-     primary key (idNote),
-     Constraint FK_Note_IdP FOREIGN KEY (idPatient) references Patient (idPatient) ON DELETE CASCADE
+Create table medication_list (
+     start_date DATETIME,
+     dosage VARCHAR(50),
+     id_patient INT NOT NULL,
+     id_medication int NOT NULL,
+     Primary KEY (id_patient, id_medication),
+     Constraint FK_medication_list_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE,
+     Constraint FK_medication_list_medication FOREIGN KEY (id_medication) references medication (id) ON DELETE CASCADE
 );
 
-CREATE TABLE patientNonVerifie(
-     idPatient INT NOT NULL,
-     validationCode INT NOT NULL,
-     PRIMARY KEY (idPatient),
-     CONSTRAINT FK_patNonVerif_IdP FOREIGN KEY (idPatient) REFERENCES Patient (idPatient) ON DELETE CASCADE
+Create table medical_report (
+     id INT NOT NULL AUTO_INCREMENT,
+     link VARCHAR(200),
+     created_at DATETIME,
+     id_patient int NOT NULL,
+     primary key (id),
+     Constraint FK_report_patient FOREIGN KEY (id) references patient (id) ON DELETE CASCADE
 );
 
-CREATE TABLE medecinNonVerifie(
-     idMedecin INT NOT NULL,
-     PRIMARY KEY (idMedecin),
-     CONSTRAINT FK_medNonVerif_IdP FOREIGN KEY (idMedecin) REFERENCES Medecin (idMedecin) ON DELETE CASCADE
+Create table medical_note (
+     id INT NOT NULL AUTO_INCREMENT,
+     created_at DATETIME,
+     description VARCHAR(2000),
+     id_patient int NOT NULL,
+     primary key (id),
+     Constraint FK_medical_note_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
+
+CREATE TABLE patient_account_validation(
+     id_patient INT NOT NULL,
+     validation_code INT NOT NULL,
+     PRIMARY KEY (id_patient),
+     CONSTRAINT FK_account_validation_patient FOREIGN KEY (id_patient) REFERENCES Patient (id) ON DELETE CASCADE
+);
+
+CREATE TABLE doctor_account_validation(
+     id INT NOT NULL,
+     PRIMARY KEY (id),
+     CONSTRAINT FK_account_validation_doctor FOREIGN KEY (id) REFERENCES doctor (id) ON DELETE CASCADE ON UPDATE NO ACTION
+);
+
+CREATE
+OR REPLACE VIEW doctorView AS
+SELECT
+     doctor.id,
+     username,
+     first_name,
+     last_name,
+     sex,
+     auto_accept,
+     created_at,
+     phone_number,
+     mail,
+     daira.id as id_daira,
+     daira.name as daira_name,
+     wilaya.id as id_wilaya,
+     wilaya.name as wilaya_name
+FROM
+     doctor,
+     daira,
+     wilaya
+WHERE
+     daira.id_wilaya = wilaya.id
+     AND daira.id = doctor.id_daira;
+
+CREATE
+OR REPLACE VIEW patientView AS
+SELECT
+     patient.id,
+     username,
+     password,
+     patient.mail,
+     patient.first_name,
+     patient.last_name,
+     sex,
+     birth_date,
+     address,
+     photo,
+     severity,
+     created_at,
+     patient.phone_number,
+     id_illness_type,
+     illness_type.type as "illness_type",
+     id_commune,
+     commune.name as "commune_name",
+     daira.id as "id_daira",
+     daira.name as "daira_name",
+     wilaya.id as "id_wilaya",
+     wilaya.name as "wliaya_name",
+     id_doctor,
+     id_relative,
+     relative.first_name as "relative_first_name",
+     relative.last_name as "relative_last_name",
+     relative.phone_number "relative_phone_number",
+     relative.mail as "relative_mail"
+FROM
+     patient,
+     commune,
+     daira,
+     wilaya,
+     relative,
+     illness_type
+WHERE
+     patient.id_illness_type = illness_type.id
+     AND patient.id_commune = commune.id
+     AND patient.id_relative = relative.id
+     AND commune.id_daira = daira.id
+     AND daira.id_wilaya = wilaya.id;
+
+CREATE
+OR REPLACE VIEW patientView AS
+SELECT
+     p.id,
+     username,
+     p.mail,
+     p.first_name,
+     p.last_name,
+     sex,
+     birth_date,
+     address,
+     photo,
+     severity,
+     created_at,
+     p.phone_number,
+     id_illness_type,
+     i.type as "illness_type",
+     id_commune,
+     c.name as "commune_name",
+     d.id as "id_daira",
+     d.name as "daira_name",
+     w.id as "id_wilaya",
+     w.name as "wliaya_name",
+     id_doctor,
+     id_relative,
+     r.first_name as "relative_first_name",
+     r.last_name as "relative_last_name",
+     r.phone_number "relative_phone_number",
+     r.mail as "relative_mail"
+FROM
+     patient as p
+     left join commune as c on p.id_commune = c.id
+     left join daira as d on c.id_daira = d.id
+     left join wilaya as w on d.id_wilaya = w.id
+     left join relative as r on p.id_relative = r.id
+     left join illness_type as i on p.id_illness_type = i.id;
