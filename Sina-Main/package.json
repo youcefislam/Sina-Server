@@ -1,0 +1,44 @@
+{
+  "name": "sina-server",
+  "version": "1.0.0",
+  "description": "Server side of Sina's app",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "nodemon src/server.js",
+    "stop": "taskkill -f -im node.exe"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youcefislam/Sina-Server.git"
+  },
+  "author": "Youcef, Sarah",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/youcefislam/Sina-Server/issues"
+  },
+  "homepage": "https://github.com/youcefislam/Sina-Server#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.15",
+    "telegram": "^2.9.8"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
+    "apicache": "^1.6.3",
+    "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.0.3",
+    "express": "^4.17.3",
+    "express-rate-limit": "^6.6.0",
+    "joi": "^17.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.3",
+    "multer": "^1.4.4",
+    "mysql": "^2.18.1",
+    "mz": "^2.7.0",
+    "nodemailer": "^6.7.3",
+    "socket.io": "^4.5.1",
+    "twilio": "^3.80.1",
+    "uuid": "^8.3.2"
+  }
+}

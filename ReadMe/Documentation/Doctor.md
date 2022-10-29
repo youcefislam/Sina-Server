@@ -168,7 +168,7 @@ Validate new account
 
 #### Response status
 
-##### `HTTP STATUS 200`
+##### `HTTP STATUS 204`
 
 ##### `HTTP STATUS 401/500`
 
@@ -272,7 +272,7 @@ Send password restoration link
 
 #### Response status
 
-##### `HTTP STATUS 200`
+##### `HTTP STATUS 204`
 
 ##### `HTTP STATUS 400`
 
