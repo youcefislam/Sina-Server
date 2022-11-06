@@ -12,4 +12,11 @@ const dbPool = mysql.createPool({
   multipleStatements: true,
 });
 
-module.exports = dbPool;
+const formulateAndQuery = (statement, query) => {
+  return mysql.format(statement, query).replace(",", ` AND`);
+};
+
+module.exports = {
+  formulateAndQuery,
+  dbPool,
+};

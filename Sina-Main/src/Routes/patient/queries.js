@@ -1,6 +1,6 @@
 const mysql = require("mysql");
 const moment = require("moment");
-const dbPool = require("../../Database/connection");
+const { dbPool } = require("../../Database/connection");
 
 function queryErrorHandler(type, message) {
   this.type = type;

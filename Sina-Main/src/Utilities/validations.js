@@ -107,6 +107,21 @@ const validations = {
     id: joi.number().required(),
     id_patient: joi.number().required(),
   }),
+  validIdDoctor: joi.object({
+    id_doctor: joi.number().required(),
+  }),
+  validPatientRequest: joi.object({
+    id_doctor: joi.number().required(),
+    id_patient: joi.number().required(),
+  }),
+  validIdPatient: joi.object({
+    id_patient: joi.number().required(),
+  }),
+  validAcceptTicket: joi.object({
+    id_patient: joi.number().required(),
+    severity: joi.number().max(5).required(),
+    id_illness_type: joi.number().required(),
+  }),
 };
 
 function validationErrorHandler(error) {

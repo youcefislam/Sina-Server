@@ -1,115 +1,79 @@
-const dbPool = require("../../Database/Connection");
 const validateBody = require("../../Utilities/validations");
-const {
-  hashPassword,
-  generateToken,
-  validateToken,
-  sendMail,
-  comparePassword,
-} = require("../../Utilities/utility");
+const query = require("./queries");
+const patientQuery = require("../patient/queries.js");
 
-const getWaitingList = (req, res) => {
-  console.log(req.autData.id);
-  let statement =
-    "SELECT p.idPatient,p.nomPatient,p.prenomPatient FROM listatt l,patient p WHERE l.idMedecin=? and l.idPatient=p.idPatient;";
-  dbPool.query(statement, req.autData.id, (dberr, results) => {
-    if (dberr) res.status(500).send({ error: "internal_server_error" });
-    else res.send({ results });
-  });
-};
-
-const addPatientRequest = async (req, res) => {
-  // validate the data form
-  const { error, value } = await validateBody("validId", req.body);
-  if (error) res.send(error.details);
-  else {
-    let statement = "INSERT INTO listAtt VALUES (?,?);";
-    dbPool.query(statement, [value.id, req.autData.id], (dbErr, result) => {
-      if (dbErr) res.status(500).send("internal_server_error");
-      else res.end();
-    });
+const getWaitingList = async (req, res) => {
+  try {
+    res.send({ results: await query.selectWaitingList(req.params.id) });
+  } catch (error) {
+    res.sendStatus(500);
   }
 };
 
-const acceptPatientRequest = async (req, res) => {
-  // received data form validation
-  const { error, value } = await validateBody("validPatientApproval", req.body);
-  if (error) res.send(400).send(error.details);
-  else {
-    let statement = "SELECT idMedecin FROM ListAtt WHERE idPatient=?  LIMIT 1;";
-    dbPool.query(statement, value.idPatient, (dberr, result) => {
-      if (dberr) {
-        // database error
-        console.log("##dberr##", dberr);
-        res.status(500).send({ error: "internal_server_error" });
-      } else {
-        if (result[0]?.idMedecin == req.autData.id) {
-          statement =
-            "UPDATE patient SET idMedecin=?,idTypeMaladie=?,degreGravite=? WHERE idPatient=?;";
-          dbPool.query(
-            statement,
-            [
-              result[0].idMedecin,
-              value.idTypeMaladie,
-              value.degreGravite,
-              value.idPatient,
-            ],
-            (dberr, result) => {
-              if (dberr) {
-                // database doctor
-                console.log("## db err ##", dberr);
-                res.status(500).send({ error: "internal_server_error" });
-              } else {
-                // we delete the patient from the doctor's waiting list
-                statement =
-                  "DELETE FROM ListAtt WHERE idPatient=? && idMedecin=?";
-                dbPool.query(
-                  statement,
-                  [value.idPatient, req.autData.id],
-                  (dberr, result) => {
-                    if (dberr) {
-                      // database error
-                      console.log("## db err ##", dberr);
-                      res.status(500).send({ error: "internal_server_error" });
-                    } else res.end();
-                  }
-                );
-              }
-            }
-          );
-        } else res.status(400).send({ error: "request_not_found" });
-      }
+const addRequest = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+
+    await query.insertRequest({
+      id_doctor: params.id,
+      id_patient: req.autData.id,
     });
+    res.sendStatus(204);
+  } catch (error) {
+    console.log(error);
+    if (error.type == "validation_error" || error.type == "invalid_data")
+      return res.status(400).send(error);
+    res.sendStatus(500);
   }
 };
 
-const refusePatientRequest = async (req, res) => {
-  const { error, value } = await validateBody("validPatientId", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement = "SELECT idMedecin FROM listatt WHERE idPatient=? LIMIT 1;";
-    dbPool.query(statement, value.idPatient, (dberr, result) => {
-      if (dberr) {
-        console.log("## db error", dberr);
-        res.status(500).send({ error: "internal_server_error" });
-      } else {
-        if (result[0]?.idMedecin == req.autData.id) {
-          statement = "DELETE FROM listatt WHERE  idPatient=?;";
-          dbPool.query(statement, value.idPatient, (dberr, result) => {
-            if (dberr) {
-              console.log("## db error ## ", dberr);
-              res.status(500).send({ error: "internal_server_error" });
-            } else res.end();
-          });
-        } else res.status(400).send({ error: "request_not_found" });
-      }
+const acceptRequest = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+    const body = await validateBody("validAcceptTicket", req.body);
+
+    const deletedRecord = await query.deleteRequest({
+      id_doctor: params.id,
+      id_patient: body.id_patient,
     });
+    if (deletedRecord.affectedRows == 0)
+      return res.status(400).send({ type: "request_not_found" });
+    const updatedRecord = await patientQuery.updatePatientInfo(
+      {
+        id_doctor: params.id,
+        severity: body.severity,
+        id_illness_type: body.id_illness_type,
+      },
+      { id: body.id_patient }
+    );
+    res.sendStatus(204);
+  } catch (error) {
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
+  }
+};
+
+const rejectRequest = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+    const body = await validateBody("validIdPatient", req.body);
+
+    const deletedRecord = await query.deleteRequest({
+      id_doctor: params.id,
+      ...body,
+    });
+    if (deletedRecord.affectedRows == 0)
+      return res.status(400).send({ type: "request_not_found" });
+    res.sendStatus(204);
+  } catch (error) {
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
   }
 };
 
 module.exports = {
   getWaitingList,
-  addPatientRequest,
-  acceptPatientRequest,
-  refusePatientRequest,
+  addRequest,
+  acceptRequest,
+  rejectRequest,
 };

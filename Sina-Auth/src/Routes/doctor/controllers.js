@@ -18,6 +18,7 @@ const signUp = async (req, res) => {
     );
 
     const url = `http://localhost:4000/doctor/verify_account/${validation_token}`;
+    console.log(validation_token);
     const emailBody = `
                 <h3>Cher ${body.username}!</h3>
                 <p>TVeuillez cliquer sur le lien de confirmation ci-dessous pour vérifier votre adresse e-mail et créer votre compte:</p>
@@ -156,7 +157,8 @@ const validateAccount = async (req, res) => {
     await query.validateDoctorAccount(params.id);
     res.sendStatus(204);
   } catch (error) {
-    if (error.name == "JsonWebTokenError")
+    console.log(error.name);
+    if (error.name == "JsonWebTokenError" || error.name == "TokenExpiredError")
       return res
         .status(400)
         .send({ type: "not_valid", message: "invalid link" });

@@ -18,18 +18,18 @@ const tokenAuthorization = async (req, res, next) => {
 };
 
 const doctorOnly = async (req, res, next) => {
-  if (req.autData.patient) res.sendStatus(403);
-  else next();
+  if (req.autData.patient) return res.status(400).send({ type: "doctor_only" });
+  next();
 };
 
 const patientOnly = async (req, res, next) => {
-  if (req.autData.patient) next();
-  else res.sendStatus(403);
+  if (req.autData.patient) return next();
+  res.status(400).send({ type: "patient_only" });
 };
 
 const private = async (req, res, next) => {
-  if (req.autData.id == req.params.id) next();
-  else res.sendStatus(403);
+  if (req.autData?.id == req.params?.id) return next();
+  res.status(400).send({ type: "private_access" });
 };
 
 module.exports = {

@@ -1,5 +1,5 @@
 const mysql = require("mysql");
-const dbPool = require("../../Database/connection");
+const { dbPool } = require("../../Database/connection");
 
 function queryErrorHandler(type, message, path) {
   this.type = type;
@@ -40,21 +40,22 @@ const updateDoctor = (newValue, options) =>
     dbPool.query(statement, [newValue, options], (dbErr, result) => {
       if (dbErr) {
         if (dbErr.errno == 1062)
-          reject(
+          return reject(
             new queryErrorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("doctor.", "")
             )
           );
         else if (dbErr.errno == 1452)
-          reject(
+          return reject(
             new queryErrorHandler(
               "invalid_data",
               `no data found with the entered data`
             )
           );
-        else reject(dbErr);
-      } else resolve(result);
+        return reject(dbErr);
+      }
+      return resolve(result);
     });
   });
 

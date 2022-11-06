@@ -77,7 +77,7 @@ app.use("/doctor", medecinRouter);
 app.use("/patient", patientRouter);
 
 // waiting list route
-app.use("/waitinglist", waitingListRouter);
+app.use("/waiting_list", waitingListRouter);
 
 // relative route
 app.use("/relative", relativeRouter);

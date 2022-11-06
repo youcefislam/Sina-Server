@@ -1,25 +1,43 @@
 const express = require("express");
-const {
-  getWaitingList,
-  addPatientRequest,
-  acceptPatientRequest,
-  refusePatientRequest,
-} = require("./controllers");
-const { tokenAuthorization } = require("../../Middlewares/middlewares");
+const controller = require("./controllers");
+const middleware = require("../../Middlewares/middlewares");
 
 const Router = express.Router();
 
-// Waiting list route == not tested yet --- previous /medecin/waitinglist/
+// Waiting list route
 // Get the waiting list of the doctor endpoint
-Router.get("/", tokenAuthorization, getWaitingList);
+Router.get(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.doctorOnly,
+  middleware.private,
+  controller.getWaitingList
+);
 
-// Insert a patient request to the doctor's waiting list --- previous /medecin/waitinglist/add
-Router.post("/request", tokenAuthorization, addPatientRequest);
+// Insert a patient request to the doctor's waiting list
+Router.post(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.patientOnly,
+  controller.addRequest
+);
+
+// Reject a patient on waiting list endpoint
+Router.delete(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.doctorOnly,
+  middleware.private,
+  controller.rejectRequest
+);
 
 // Accept a patient request endpoint
-Router.post("/accept", tokenAuthorization, acceptPatientRequest);
-
-// Refuse a patient on waiting list endpoint
-Router.post("/refuse", tokenAuthorization, refusePatientRequest);
+Router.post(
+  "/:id/accept",
+  middleware.tokenAuthorization,
+  middleware.doctorOnly,
+  middleware.private,
+  controller.acceptRequest
+);
 
 module.exports = Router;
