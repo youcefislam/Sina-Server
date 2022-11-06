@@ -45,7 +45,7 @@ const deletePatientAccount = (id) =>
     });
   });
 
-const updatePatientInfo = async (newValues, options) =>
+const updatePatient = async (newValues, options) =>
   new Promise((resolve, reject) => {
     let statement = `UPDATE patient SET ? WHERE ?;`;
     dbPool.query(statement, [newValues, options], (dbErr, result) => {
@@ -93,6 +93,6 @@ module.exports = {
   insertNotVerifiedPatient,
   selectPatient_sensitive,
   searchPatient,
-  updatePatientInfo,
+  updatePatient,
   deletePatientAccount,
 };

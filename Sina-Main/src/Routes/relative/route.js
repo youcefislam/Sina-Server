@@ -1,29 +1,56 @@
 const express = require("express");
-const {
-  modifyRelativeMail,
-  modifyRelativeNumber,
-  modifyRelativeName,
-  addRelativeInfo,
-  getRelativeInfo,
-} = require("./controllers");
-const { tokenAuthorization } = require("../../Middlewares/middlewares");
+const controllers = require("./controllers");
+const middleware = require("../../Middlewares/middlewares");
 
 const Router = express.Router();
 
-// relative route -- previous /patient/relative/
+// relative route
+// get relative info by patient id endpoint
+Router.get("/:id", middleware.tokenAuthorization, controllers.getRelativeInfo);
+
 // Add patient's relative endpoint
-Router.post("/add", tokenAuthorization, addRelativeInfo);
+Router.post(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.patientOnly,
+  middleware.private,
+  controllers.addRelative
+);
 
-// Modify the relative's mail Route -- need tests
-Router.post("/modify/email", tokenAuthorization, modifyRelativeMail);
+// delete patient's relative endpoint
+Router.delete(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.patientOnly,
+  middleware.private,
+  controllers.deleteRelative
+);
 
-// Modify the relative's phone number endpoint -- need test
-Router.post("/modify/number", tokenAuthorization, modifyRelativeNumber);
+// Modify the relative's mail endpoint
+Router.put(
+  "/:id/mail",
+  middleware.tokenAuthorization,
+  middleware.patientOnly,
+  middleware.private,
+  controllers.modifyMail
+);
 
-// Modify the relative's name endpoint -- need test
-Router.post("/modify/name", tokenAuthorization, modifyRelativeName);
+// Modify the relative's phone number endpoint
+Router.put(
+  "/:id/phone_number",
+  middleware.tokenAuthorization,
+  middleware.patientOnly,
+  middleware.private,
+  controllers.modifyNumber
+);
 
-// get relative info by id endpoint
-Router.get("/:id", tokenAuthorization, getRelativeInfo);
+// Modify the relative's name endpoint
+Router.put(
+  "/:id/name",
+  middleware.tokenAuthorization,
+  middleware.patientOnly,
+  middleware.private,
+  controllers.modifyName
+);
 
 module.exports = Router;

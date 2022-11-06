@@ -15,7 +15,7 @@ const addInfo = async (req, res) => {
       return res.status(400).send({ type: "no_account_found" });
 
     body.birth_date = moment.parseZone(body.birth_date).format();
-    await query.updatePatientInfo(body, params);
+    await query.updatePatient(body, params);
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") res.status(400).send(error);
@@ -44,7 +44,7 @@ const modifyMail = async (req, res) => {
     if (patient == null)
       return res.status(400).send({ type: "no_account_found" });
 
-    await query.updatePatientInfo(body, params);
+    await query.updatePatient(body, params);
     res.sendStatus(204);
   } catch (error) {
     if (
@@ -66,7 +66,7 @@ const modifyUsername = async (req, res) => {
     if (patient == null)
       return res.status(400).send({ type: "no_account_found" });
 
-    await query.updatePatientInfo(body, req.params);
+    await query.updatePatient(body, req.params);
     res.sendStatus(204);
   } catch (error) {
     if (
@@ -100,7 +100,7 @@ const modifyPassword = async (req, res) => {
 
     const newPassword = await utility.hashPassword(body.password);
 
-    await query.updatePatientInfo({ password: newPassword }, params);
+    await query.updatePatient({ password: newPassword }, params);
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") return res.status(400).send(error);
@@ -118,7 +118,7 @@ const modifyName = async (req, res) => {
     if (patient == null)
       return res.status(400).send({ type: "no_account_found" });
 
-    await query.updatePatientInfo(body, params);
+    await query.updatePatient(body, params);
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") return res.status(400).send(error);
@@ -153,7 +153,7 @@ const modifyNumber = async (req, res) => {
 
     body.phone_number = Number(body.phone_number);
 
-    await query.updatePatientInfo(body, params);
+    await query.updatePatient(body, params);
     res.sendStatus(204);
   } catch (error) {
     if (
@@ -175,7 +175,7 @@ const modifyAddress = async (req, res) => {
     if (patient == null)
       return res.status(400).send({ type: "no_account_found" });
 
-    await query.updatePatientInfo(body, params);
+    await query.updatePatient(body, params);
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error" || error.type == "invalid_data")
