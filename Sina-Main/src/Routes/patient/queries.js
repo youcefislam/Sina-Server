@@ -7,35 +7,6 @@ function queryErrorHandler(type, message) {
   this.message = message;
 }
 
-const insertPatient = (info) =>
-  new Promise((resolve, reject) => {
-    info.created_at = moment().format();
-    delete info?.repeat_password;
-
-    let statement = "INSERT INTO patient SET ?;";
-    dbPool.query(statement, info, (dbErr, result) => {
-      if (dbErr) {
-        if (dbErr.errno == 1062)
-          reject(
-            new queryErrorHandler(
-              "duplicated_entry_error",
-              dbErr.sqlMessage.replace("patient.", "")
-            )
-          );
-        else reject(dbErr);
-      } else resolve(result.insertId);
-    });
-  });
-
-const insertNotVerifiedPatient = (id, validation_code) =>
-  new Promise((resolve, reject) => {
-    let statement = "INSERT INTO patient_account_validation VALUES (?,?);";
-    dbPool.query(statement, [id, validation_code], (dbErr, result) => {
-      if (dbErr) reject(dbErr);
-      else resolve(result.insertId);
-    });
-  });
-
 const deletePatientAccount = (id) =>
   new Promise((resolve, reject) => {
     let statement = "DELETE FROM patient WHERE id = ?;";
@@ -89,8 +60,6 @@ const searchPatient = (query) =>
   });
 
 module.exports = {
-  insertPatient,
-  insertNotVerifiedPatient,
   selectPatient_sensitive,
   searchPatient,
   updatePatient,

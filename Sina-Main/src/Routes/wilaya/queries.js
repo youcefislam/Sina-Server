@@ -25,6 +25,13 @@ const insertWilaya = (wilaya) =>
               dbErr.sqlMessage.replace("wilaya.", "")
             )
           );
+        else if (dbErr.errno == 1452)
+          return reject(
+            new queryErrorHandler(
+              "invalid_data",
+              `no data found with the entered data`
+            )
+          );
         return reject(dbErr);
       }
       resolve(result);

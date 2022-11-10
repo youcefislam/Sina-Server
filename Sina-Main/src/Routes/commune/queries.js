@@ -5,24 +5,24 @@ function queryErrorHandler(type, message) {
   this.message = message;
 }
 
-const selectAllDaira = () =>
+const selectAllCommune = () =>
   new Promise((resolve, reject) => {
-    let statement = "SELECT * FROM daira;";
+    let statement = "SELECT * FROM commune;";
     dbPool.query(statement, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result);
     });
   });
-const insertDaira = (daira) =>
+const insertCommune = (commune) =>
   new Promise((resolve, reject) => {
-    let statement = "INSERT INTO daira SET ?";
-    dbPool.query(statement, daira, (dbErr, result) => {
+    let statement = "INSERT INTO commune SET ?";
+    dbPool.query(statement, commune, (dbErr, result) => {
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
             new queryErrorHandler(
               "duplicated_entry_error",
-              dbErr.sqlMessage.replace("daira.", "")
+              dbErr.sqlMessage.replace("commune.", "")
             )
           );
         else if (dbErr.errno == 1452)
@@ -37,16 +37,16 @@ const insertDaira = (daira) =>
       resolve(result);
     });
   });
-const updateDaira = (newValues, options) =>
+const updateCommune = (newValues, options) =>
   new Promise((resolve, reject) => {
-    let statement = "update daira SET ? WHERE ?;";
+    let statement = "update commune SET ? WHERE ?;";
     dbPool.query(statement, [newValues, options], (dbErr, result) => {
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
             new queryErrorHandler(
               "duplicated_entry_error",
-              dbErr.sqlMessage.replace("daira.", "")
+              dbErr.sqlMessage.replace("commune.", "")
             )
           );
         return reject(dbErr);
@@ -54,17 +54,17 @@ const updateDaira = (newValues, options) =>
       resolve(result);
     });
   });
-const deleteDaira = (id) =>
+const deleteCommune = (id) =>
   new Promise((resolve, reject) => {
-    let statement = "DELETE FROM daira WHERE id=?;";
+    let statement = "DELETE FROM commune WHERE id=?;";
     dbPool.query(statement, id, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result);
     });
   });
 module.exports = {
-  selectAllDaira,
-  insertDaira,
-  updateDaira,
-  deleteDaira,
+  selectAllCommune,
+  insertCommune,
+  updateCommune,
+  deleteCommune,
 };

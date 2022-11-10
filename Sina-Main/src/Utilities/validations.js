@@ -85,6 +85,10 @@ const validations = {
     id_wilaya: joi.number().required(),
     name: joi.string().max(1000).required(),
   }),
+  newCommune: joi.object({
+    id_daira: joi.number().required(),
+    name: joi.string().max(1000).required(),
+  }),
   validNote: joi.object({
     id: joi.number().required(),
     note: joi.string().max(1000).required(),

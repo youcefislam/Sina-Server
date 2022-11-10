@@ -19,7 +19,8 @@ const addWilaya = async (req, res) => {
   } catch (error) {
     if (
       error.type == "validation_error" ||
-      error.type == "duplicated_entry_error"
+      error.type == "duplicated_entry_error" ||
+      error.type == "invalid_data"
     )
       return res.status(400).send(error);
     res.sendStatus(500);

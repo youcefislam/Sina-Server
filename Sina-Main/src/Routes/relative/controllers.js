@@ -73,7 +73,8 @@ const addRelative = async (req, res) => {
     if (relative) await query.deleteRelative(relative.insertId);
     if (
       error.type == "validation_error" ||
-      error.type == "duplicated_entry_error"
+      error.type == "duplicated_entry_error" ||
+      error.type == "invalid_data"
     )
       return res.status(400).send(error);
     res.sendStatus(500);
