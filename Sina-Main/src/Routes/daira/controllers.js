@@ -1,25 +1,65 @@
 const dbPool = require("../../Database/Connection");
-const {
-  hashPassword,
-  generateToken,
-  validateToken,
-  sendMail,
-  comparePassword,
-} = require("../../Utilities/utility");
+const query = require("./queries");
 const validateBody = require("../../Utilities/validations");
 
 const getDairaList = async (req, res) => {
-  const { error, value } = await validateBody("validId", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement = "SELECT idDaira,nomDaira FROM daira WHERE idWilaya=?;";
-    dbPool.query(statement, value.id, (dbErr, result) => {
-      if (dbErr) res.status(500).send({ error: "internal_server_error" });
-      else res.send({ results: result });
-    });
+  try {
+    res.send({ results: await query.selectAllDaira() });
+  } catch (error) {
+    res.sendStatus(500);
   }
 };
 
+const addDaira = async (req, res) => {
+  try {
+    const body = await validateBody("newDaira", req.body);
+
+    await query.insertDaira(body);
+    res.sendStatus(204);
+  } catch (error) {
+    if (
+      error.type == "validation_error" ||
+      error.type == "duplicated_entry_error"
+    )
+      return res.status(400).send(error);
+    res.sendStatus(500);
+  }
+};
+
+const updateDaira = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+    const body = await validateBody("name", req.body);
+
+    const updatedDaira = await query.updateDaira(body, params);
+    if (updatedDaira.affectedRows == 0)
+      return res.status(400).send({ type: "raw_not_found" });
+    res.sendStatus(204);
+  } catch (error) {
+    if (
+      error.type == "duplicated_entry_error" ||
+      error.type == "validation_error"
+    )
+      return res.status(400).send(error);
+    res.sendStatus(500);
+  }
+};
+const deleteDaira = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+
+    const deletedDaira = await query.deleteDaira(params.id);
+    if (deletedDaira.affectedRows == 0)
+      return res.status(400).send({ type: "raw_not_found" });
+    res.sendStatus(204);
+  } catch (error) {
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
+  }
+};
 module.exports = {
   getDairaList,
+  addDaira,
+  updateDaira,
+  deleteDaira,
 };
