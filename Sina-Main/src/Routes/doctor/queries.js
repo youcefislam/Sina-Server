@@ -1,5 +1,4 @@
-const mysql = require("mysql");
-const { dbPool } = require("../../Database/connection");
+const { dbPool, formulateAndQuery } = require("../../Database/connection");
 
 function queryErrorHandler(type, message, path) {
   this.type = type;
@@ -70,9 +69,10 @@ const selectPatientList = (id_doctor) =>
 
 const searchDoctor = (query) =>
   new Promise((resolve, reject) => {
-    let statement = mysql
-      .format(`SELECT * FROM doctorView WHERE ?;`, query)
-      .replace(",", ` AND`);
+    let statement = formulateAndQuery(
+      `SELECT * FROM doctorView WHERE ?;`,
+      query
+    );
     dbPool.query(statement, (dbErr, result) => {
       if (dbErr) reject(dbErr);
       else resolve(result);

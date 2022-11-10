@@ -4,32 +4,35 @@ use sina;
 
 CREATE TABLE IF NOT EXISTS wilaya (
      id INT NOT NULL AUTO_INCREMENT,
-     name VARCHAR(50),
-     primary key(id)
+     name VARCHAR(50) NOT NULL,
+     primary key(id),
+     Constraint Unq_wilaya_name UNIQUE(name)
 );
 
 CREATE TABLE IF NOT EXISTS daira (
      id INT NOT NULL AUTO_INCREMENT,
-     name VARCHAR(50),
-     id_wilaya INT,
+     name VARCHAR(50) NOT NULL,
+     id_wilaya INT NOT NULL,
      primary key (id),
-     Constraint FK_daira_wilaya FOREIGN KEY (id_wilaya) references wilaya(id) ON DELETE CASCADE
+     Constraint FK_daira_wilaya FOREIGN KEY (id_wilaya) references wilaya(id) ON DELETE CASCADE,
+     Constraint Unq_daira_name UNIQUE(name)
 );
 
 CREATE TABLE IF NOT EXISTS commune (
      id INT NOT NULL AUTO_INCREMENT,
-     name VARCHAR(50),
-     id_daira INT,
+     name VARCHAR(50) NOT NULL,
+     id_daira INT NOT NULL,
      primary key(id),
-     Constraint FK_comune_daira FOREIGN KEY (id_daira) references daira (id) ON DELETE CASCADE
+     Constraint FK_comune_daira FOREIGN KEY (id_daira) references daira (id) ON DELETE CASCADE,
+     Constraint Unq_commune_name UNIQUE(name)
 );
 
 CREATE TABLE IF NOT EXISTS hospital (
      id INT NOT NULL AUTO_INCREMENT,
-     name VARCHAR(50),
-     address VARCHAR(255),
-     phone_number VARCHAR(10),
-     id_commune INT,
+     name VARCHAR(50) NOT NULL,
+     address VARCHAR(255) NOT NULL,
+     phone_number VARCHAR(10) NOT NULL,
+     id_commune INT NOT NULL,
      primary key(id),
      Constraint FK_hospital_commune FOREIGN KEY (id_commune) references commune (id) ON DELETE CASCADE,
      Constraint Unq_hospital_phone_number UNIQUE(phone_number)

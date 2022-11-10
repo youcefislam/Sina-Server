@@ -1,12 +1,5 @@
 const dbPool = require("../../Database/Connection");
 const validateBody = require("../../Utilities/validations");
-const {
-  hashPassword,
-  generateToken,
-  validateToken,
-  sendMail,
-  comparePassword,
-} = require("../../Utilities/utility");
 const query = require("./queries");
 const patientQuery = require("../patient/queries");
 
@@ -16,7 +9,7 @@ const modifyMail = async (req, res) => {
 
     const updatedRelative = await query.updateRelative(body, req.params);
     if (updatedRelative.affectedRows == 0)
-      return res.status(400).send({ type: "relative_not_found" });
+      return res.status(400).send({ type: "raw_not_found" });
     res.sendStatus(204);
   } catch (error) {
     if (

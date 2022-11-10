@@ -78,6 +78,9 @@ const validations = {
     id: joi.number().required(),
     name: joi.string().max(50).required(),
   }),
+  name: joi.object({
+    name: joi.string().max(50).required(),
+  }),
   validNote: joi.object({
     id: joi.number().required(),
     note: joi.string().max(1000).required(),
