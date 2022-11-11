@@ -10,6 +10,17 @@ const getCommuneList = async (req, res) => {
   }
 };
 
+const getCommune = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+
+    res.send({ result: await query.selectCommune(params.id) });
+  } catch (error) {
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
+  }
+};
+
 const addCommune = async (req, res) => {
   try {
     const body = await validateBody("newCommune", req.body);
@@ -60,6 +71,7 @@ const deleteCommune = async (req, res) => {
 };
 module.exports = {
   getCommuneList,
+  getCommune,
   addCommune,
   updateCommune,
   deleteCommune,

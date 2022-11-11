@@ -13,6 +13,14 @@ const selectAllCommune = () =>
       resolve(result);
     });
   });
+const selectCommune = (id) =>
+  new Promise((resolve, reject) => {
+    let statement = "SELECT * FROM commune WHERE id=?;";
+    dbPool.query(statement, id, (dbErr, result) => {
+      if (dbErr) return reject(dbErr);
+      resolve(result);
+    });
+  });
 const insertCommune = (commune) =>
   new Promise((resolve, reject) => {
     let statement = "INSERT INTO commune SET ?";

@@ -12,6 +12,9 @@ Router.get("/", middleware.tokenAuthorization, controllers.getCommuneList);
 // add commune endpoint -- admin only (privileges to be added)
 Router.post("/", middleware.tokenAuthorization, controllers.addCommune);
 
+// Get the commune's info endpoint
+Router.get("/:id", middleware.tokenAuthorization, controllers.getCommune);
+
 // update commune endpoint -- admin only (privileges to be added)
 Router.put("/:id", middleware.tokenAuthorization, controllers.updateCommune);
 

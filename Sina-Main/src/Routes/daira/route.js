@@ -12,6 +12,9 @@ Router.get("/", middleware.tokenAuthorization, controllers.getDairaList);
 // add daira endpoint -- admin only (privileges to be added)
 Router.post("/", middleware.tokenAuthorization, controllers.addDaira);
 
+// Get the daira's info endpoint
+Router.get("/:id", middleware.tokenAuthorization, controllers.getDaira);
+
 // update daira endpoint -- admin only (privileges to be added)
 Router.put("/:id", middleware.tokenAuthorization, controllers.updateDaira);
 

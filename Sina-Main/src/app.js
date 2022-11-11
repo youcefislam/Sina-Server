@@ -4,11 +4,11 @@ const bodyParser = require("body-parser");
 // const apicache = require("apicache");
 
 const alertRouter = require("./Routes/alerts/route");
-const medecinRouter = require("./Routes/doctor/route");
+const doctorRouter = require("./Routes/doctor/route");
 const patientRouter = require("./Routes/patient/route");
 const waitingListRouter = require("./Routes/waitingList/route");
 const relativeRouter = require("./Routes/relative/route");
-const maladieRouter = require("./Routes/maladie/route");
+const illnessRouter = require("./Routes/illness/route");
 const wilayaRouter = require("./Routes/wilaya/route");
 const dairaRouter = require("./Routes/daira/route");
 const communeRouter = require("./Routes/commune/route");
@@ -70,8 +70,8 @@ app.use(bodyParser.json());
 // let cache = apicache.middleware;
 
 // Routes
-// Medecin route
-app.use("/doctor", medecinRouter);
+// doctor route
+app.use("/doctor", doctorRouter);
 
 // Patient route
 app.use("/patient", patientRouter);
@@ -83,7 +83,7 @@ app.use("/waiting_list", waitingListRouter);
 app.use("/relative", relativeRouter);
 
 // maladie route
-app.use("/maladie", maladieRouter);
+app.use("/illness_type", illnessRouter);
 
 // Wilaya route
 app.use("/wilaya", wilayaRouter);

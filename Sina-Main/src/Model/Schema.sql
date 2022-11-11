@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS wilaya (
      id INT NOT NULL AUTO_INCREMENT,
      name VARCHAR(50) NOT NULL,
      primary key(id),
-     Constraint Unq_wilaya_name UNIQUE(name)
+     UNIQUE(name)
 );
 
 CREATE TABLE IF NOT EXISTS daira (
@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS daira (
      name VARCHAR(50) NOT NULL,
      id_wilaya INT NOT NULL,
      primary key (id),
-     Constraint FK_daira_wilaya FOREIGN KEY (id_wilaya) references wilaya(id) ON DELETE CASCADE,
-     Constraint Unq_daira_name UNIQUE(name)
+     FOREIGN KEY (id_wilaya) references wilaya(id) ON DELETE CASCADE,
+     UNIQUE(name)
 );
 
 CREATE TABLE IF NOT EXISTS commune (
@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS commune (
      name VARCHAR(50) NOT NULL,
      id_daira INT NOT NULL,
      primary key(id),
-     Constraint FK_comune_daira FOREIGN KEY (id_daira) references daira (id) ON DELETE CASCADE,
-     Constraint Unq_commune_name UNIQUE(name)
+     FOREIGN KEY (id_daira) references daira (id) ON DELETE CASCADE,
+     UNIQUE(name)
 );
 
 CREATE TABLE IF NOT EXISTS hospital (
@@ -34,20 +34,22 @@ CREATE TABLE IF NOT EXISTS hospital (
      phone_number VARCHAR(10) NOT NULL,
      id_commune INT NOT NULL,
      primary key(id),
-     Constraint FK_hospital_commune FOREIGN KEY (id_commune) references commune (id) ON DELETE CASCADE,
-     Constraint Unq_hospital_phone_number UNIQUE(phone_number)
+     FOREIGN KEY (id_commune) references commune (id) ON DELETE CASCADE,
+     UNIQUE(phone_number)
 );
 
 CREATE TABLE IF NOT EXISTS illness_type (
      id INT NOT NULL AUTO_INCREMENT,
-     type VARCHAR(50),
-     primary key(id)
+     type VARCHAR(50) NOT NULL,
+     primary key(id),
+     UNIQUE(type)
 );
 
 CREATE TABLE IF NOT EXISTS medication (
      id INT NOT NULL AUTO_INCREMENT,
-     name VARCHAR(50),
-     primary key(id)
+     name VARCHAR(50) NOT NULL,
+     primary key(id),
+     UNIQUE(name)
 );
 
 CREATE TABLE IF NOT EXISTS relative (
@@ -57,8 +59,8 @@ CREATE TABLE IF NOT EXISTS relative (
      phone_number VARCHAR(10),
      mail VARCHAR(255),
      primary key(id),
-     Constraint Unq_relative_phone_number UNIQUE (phone_number),
-     Constraint Unq_relative_mail UNIQUE (mail)
+     UNIQUE (phone_number),
+     UNIQUE (mail)
 );
 
 CREATE TABLE IF NOT EXISTS doctor(
@@ -76,10 +78,10 @@ CREATE TABLE IF NOT EXISTS doctor(
      id_daira INT,
      address VARCHAR(255),
      primary key (id),
-     Constraint Unq_doctor_username UNIQUE (username),
-     Constraint Unq_doctor_mail UNIQUE (mail),
-     Constraint Unq_doctor_phone_number UNIQUE (phone_number),
-     Constraint Fk_doctor_daira FOREIGN KEY (id_daira) references daira(id) ON DELETE
+     UNIQUE (username),
+     UNIQUE (mail),
+     UNIQUE (phone_number),
+     FOREIGN KEY (id_daira) references daira(id) ON DELETE
      SET
           NULL
 );
@@ -103,21 +105,21 @@ CREATE TABLE IF NOT EXISTS patient (
      id_doctor INT,
      id_relative INT,
      Primary key (id),
-     Constraint FK_patient_illness_typel FOREIGN KEY (id_illness_type) references illness_type(id) ON DELETE
+     FOREIGN KEY (id_illness_type) references illness_type(id) ON DELETE
      SET
           NULL,
-          Constraint FK_patient_commune FOREIGN KEY (id_commune) references Commune(id) ON DELETE
+          FOREIGN KEY (id_commune) references Commune(id) ON DELETE
      SET
           NULL,
-          Constraint FK_patient_doctor FOREIGN KEY (id_doctor) references doctor (id) ON DELETE
+          FOREIGN KEY (id_doctor) references doctor (id) ON DELETE
      SET
           NULL,
-          Constraint FK_patient_relative FOREIGN KEY (id_relative) references relative (id) ON DELETE
+          FOREIGN KEY (id_relative) references relative (id) ON DELETE
      SET
           NULL,
-          Constraint Unq_Patient_username UNIQUE (username),
-          Constraint Unq_Patien_mail UNIQUE (mail),
-          Constraint Unq_patient_phone_number UNIQUE (phone_number)
+          UNIQUE (username),
+          UNIQUE (mail),
+          UNIQUE (phone_number)
 );
 
 CREATE TABLE IF NOT EXISTS patient_login_info(
@@ -127,7 +129,7 @@ CREATE TABLE IF NOT EXISTS patient_login_info(
      ip varchar(15),
      id_patient INT NOT NULL,
      PRIMARY KEY (id),
-     CONSTRAINT fk_login_patient FOREIGN KEY (id_patient) REFERENCES patient(id) ON DELETE CASCADE,
+     FOREIGN KEY (id_patient) REFERENCES patient(id) ON DELETE CASCADE,
      INDEX (id_patient)
 );
 
@@ -138,16 +140,16 @@ CREATE TABLE IF NOT EXISTS doctor_login_info(
      ip varchar(15),
      id_doctor INT NOT NULL,
      PRIMARY KEY (id),
-     CONSTRAINT fk_login_doctor FOREIGN KEY (id_doctor) REFERENCES doctor(id) ON DELETE CASCADE,
+     FOREIGN KEY (id_doctor) REFERENCES doctor(id) ON DELETE CASCADE,
      INDEX (id_doctor)
 );
 
 CREATE TABLE IF NOT EXISTS medication_journal(
      id int NOT NULL AUTO_INCREMENT,
      date DATETIME,
-     id_patient INT,
+     id_patient INT NOT NULL,
      Primary key (id),
-     Constraint FK_med_journal_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS appointement_journal(
@@ -155,7 +157,7 @@ CREATE TABLE IF NOT EXISTS appointement_journal(
      date DATETIME,
      id_patient INT,
      Primary key (id),
-     Constraint FK_appointement_journal_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS ecg_file (
@@ -164,7 +166,7 @@ CREATE TABLE IF NOT EXISTS ecg_file (
      created_at DATETIME,
      id_patient INT,
      primary key(id),
-     Constraint FK_ECGFile_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS appointement (
@@ -172,15 +174,15 @@ CREATE TABLE IF NOT EXISTS appointement (
      date DATETIME,
      id_patient int NOT NULL,
      primary key(id),
-     Constraint FK_appointment_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS patient_request(
      id_doctor INT NOT NULL,
      id_patient INT NOT NULL,
      primary key(id_doctor, id_patient),
-     Constraint FK_patient_request_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE,
-     Constraint FK_patient_request_doctor FOREIGN KEY (id_doctor) references doctor (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE,
+     FOREIGN KEY (id_doctor) references doctor (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS medication_list (
@@ -189,8 +191,8 @@ CREATE TABLE IF NOT EXISTS medication_list (
      id_patient INT NOT NULL,
      id_medication int NOT NULL,
      Primary KEY (id_patient, id_medication),
-     Constraint FK_medication_list_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE,
-     Constraint FK_medication_list_medication FOREIGN KEY (id_medication) references medication (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE,
+     FOREIGN KEY (id_medication) references medication (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS medical_report (
@@ -199,7 +201,7 @@ CREATE TABLE IF NOT EXISTS medical_report (
      created_at DATETIME,
      id_patient int NOT NULL,
      primary key (id),
-     Constraint FK_report_patient FOREIGN KEY (id) references patient (id) ON DELETE CASCADE
+     FOREIGN KEY (id) references patient (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS medical_note (
@@ -208,20 +210,20 @@ CREATE TABLE IF NOT EXISTS medical_note (
      description VARCHAR(2000),
      id_patient int NOT NULL,
      primary key (id),
-     Constraint FK_medical_note_patient FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS patient_account_validation(
      id_patient INT NOT NULL,
      validation_code INT NOT NULL,
      PRIMARY KEY (id_patient),
-     CONSTRAINT FK_account_validation_patient FOREIGN KEY (id_patient) REFERENCES Patient (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) REFERENCES Patient (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS doctor_account_validation(
      id INT NOT NULL,
      PRIMARY KEY (id),
-     CONSTRAINT FK_account_validation_doctor FOREIGN KEY (id) REFERENCES doctor (id) ON DELETE CASCADE ON UPDATE NO ACTION
+     FOREIGN KEY (id) REFERENCES doctor (id) ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 CREATE

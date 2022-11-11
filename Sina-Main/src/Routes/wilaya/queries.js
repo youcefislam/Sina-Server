@@ -13,6 +13,15 @@ const selectAllWilaya = () =>
       resolve(result);
     });
   });
+
+const selectWilaya = (id) =>
+  new Promise((resolve, reject) => {
+    let statement = "SELECT * FROM wilaya WHERE id=?;";
+    dbPool.query(statement, id, (dbErr, result) => {
+      if (dbErr) return reject(dbErr);
+      resolve(result);
+    });
+  });
 const insertWilaya = (wilaya) =>
   new Promise((resolve, reject) => {
     let statement = "INSERT INTO wilaya SET ?";
@@ -64,6 +73,7 @@ const deleteWilaya = (id) =>
   });
 module.exports = {
   selectAllWilaya,
+  selectWilaya,
   insertWilaya,
   updateWilaya,
   deleteWilaya,

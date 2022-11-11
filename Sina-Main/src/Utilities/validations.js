@@ -45,7 +45,7 @@ const validations = {
     severity: joi.number().max(10).required(),
     id_type_illness: joi.number().required(),
   }),
-  validDiseaseType: joi.object({
+  type: joi.object({
     type: joi.string().max(50).required(),
   }),
   validPatientId: joi.object({ id: joi.number().required() }),

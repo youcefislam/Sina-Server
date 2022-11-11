@@ -10,6 +10,17 @@ const getDairaList = async (req, res) => {
   }
 };
 
+const getDaira = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+
+    res.send({ result: await query.selectDaria(params.id) });
+  } catch (error) {
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
+  }
+};
+
 const addDaira = async (req, res) => {
   try {
     const body = await validateBody("newDaira", req.body);
@@ -60,6 +71,7 @@ const deleteDaira = async (req, res) => {
 };
 module.exports = {
   getDairaList,
+  getDaira,
   addDaira,
   updateDaira,
   deleteDaira,

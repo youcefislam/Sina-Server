@@ -10,6 +10,17 @@ const getWilayaList = async (req, res) => {
   }
 };
 
+const getWilaya = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+
+    res.send({ result: await query.selectWilaya(params.id) });
+  } catch (error) {
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
+  }
+};
+
 const addWilaya = async (req, res) => {
   try {
     const body = await validateBody("name", req.body);
@@ -60,6 +71,7 @@ const deleteWilaya = async (req, res) => {
 };
 module.exports = {
   getWilayaList,
+  getWilaya,
   addWilaya,
   updateWilaya,
   deleteWilaya,

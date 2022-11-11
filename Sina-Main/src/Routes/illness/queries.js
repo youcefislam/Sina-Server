@@ -5,39 +5,24 @@ function queryErrorHandler(type, message) {
   this.message = message;
 }
 
-const selectAllDaira = () =>
+const selectAllIllnessTypes = () =>
   new Promise((resolve, reject) => {
-    let statement = "SELECT * FROM daira;";
+    let statement = "SELECT * FROM illness_type;";
     dbPool.query(statement, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result);
     });
   });
-const selectDaira = (id) =>
+const insertIllnessType = (values) =>
   new Promise((resolve, reject) => {
-    let statement = "SELECT * FROM daira WHERE id=?;";
-    dbPool.query(statement, id, (dbErr, result) => {
-      if (dbErr) return reject(dbErr);
-      resolve(result);
-    });
-  });
-const insertDaira = (daira) =>
-  new Promise((resolve, reject) => {
-    let statement = "INSERT INTO daira SET ?";
-    dbPool.query(statement, daira, (dbErr, result) => {
+    let statement = "INSERT INTO illness_type SET ?;";
+    dbPool.query(statement, values, (dbErr, result) => {
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
             new queryErrorHandler(
               "duplicated_entry_error",
-              dbErr.sqlMessage.replace("daira.", "")
-            )
-          );
-        else if (dbErr.errno == 1452)
-          return reject(
-            new queryErrorHandler(
-              "invalid_data",
-              `no data found with the entered data`
+              dbErr.sqlMessage.replace("illness_type.", "")
             )
           );
         return reject(dbErr);
@@ -45,16 +30,25 @@ const insertDaira = (daira) =>
       resolve(result);
     });
   });
-const updateDaira = (newValues, options) =>
+const selectIllnessType = (id) =>
   new Promise((resolve, reject) => {
-    let statement = "update daira SET ? WHERE ?;";
+    let statement = "SELECT type FROM illness_type WHERE id=?;";
+    dbPool.query(statement, id, (dbErr, result) => {
+      if (dbErr) return reject(dbErr);
+      resolve(result[0]);
+    });
+  });
+
+const updateIllness = (newValues, options) =>
+  new Promise((resolve, reject) => {
+    let statement = "UPDATE illness_type SET ? WHERE ?;";
     dbPool.query(statement, [newValues, options], (dbErr, result) => {
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
             new queryErrorHandler(
               "duplicated_entry_error",
-              dbErr.sqlMessage.replace("daira.", "")
+              dbErr.sqlMessage.replace("illness_type.", "")
             )
           );
         return reject(dbErr);
@@ -62,17 +56,18 @@ const updateDaira = (newValues, options) =>
       resolve(result);
     });
   });
-const deleteDaira = (id) =>
+const deleteIllness = (id) =>
   new Promise((resolve, reject) => {
-    let statement = "DELETE FROM daira WHERE id=?;";
+    let statement = "DELETE FROM illness_type WHERE id=?;";
     dbPool.query(statement, id, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result);
     });
   });
 module.exports = {
-  selectAllDaira,
-  insertDaira,
-  updateDaira,
-  deleteDaira,
+  selectAllIllnessTypes,
+  insertIllnessType,
+  selectIllnessType,
+  deleteIllness,
+  updateIllness,
 };

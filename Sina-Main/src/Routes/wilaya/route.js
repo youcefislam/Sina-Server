@@ -11,6 +11,9 @@ Router.get("/", middleware.tokenAuthorization, controllers.getWilayaList);
 // add wilaya endpoint -- admin only (privileges to be added)
 Router.post("/", middleware.tokenAuthorization, controllers.addWilaya);
 
+// Get the wilaya's info endpoint
+Router.get("/:id", middleware.tokenAuthorization, controllers.getWilaya);
+
 // update wilaya endpoint -- admin only (privileges to be added)
 Router.put("/:id", middleware.tokenAuthorization, controllers.updateWilaya);
 
