@@ -41,13 +41,19 @@ CREATE TABLE IF NOT EXISTS hospital (
 CREATE TABLE IF NOT EXISTS illness_type (
      id INT NOT NULL AUTO_INCREMENT,
      type VARCHAR(50) NOT NULL,
+     description VARCHAR(50),
      primary key(id),
      UNIQUE(type)
 );
 
-CREATE TABLE IF NOT EXISTS medication (
+CREATE TABLE IF NOT EXISTS drug (
      id INT NOT NULL AUTO_INCREMENT,
      name VARCHAR(50) NOT NULL,
+     company VARCHAR(100),
+     description VARCHAR(1000),
+     adult_dosage VARCHAR(300),
+     children_dosage VARCHAR(300),
+     warnings VARCHAR(1000),
      primary key(id),
      UNIQUE(name)
 );
@@ -144,12 +150,16 @@ CREATE TABLE IF NOT EXISTS doctor_login_info(
      INDEX (id_doctor)
 );
 
-CREATE TABLE IF NOT EXISTS medication_journal(
+CREATE TABLE IF NOT EXISTS drugs_journal(
      id int NOT NULL AUTO_INCREMENT,
      date DATETIME,
      id_patient INT NOT NULL,
+     id_drug INT NOT NULL,
      Primary key (id),
-     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE,
+     FOREIGN KEY (id_drug) references drug (id) ON DELETE CASCADE,
+     INDEX (id_patient),
+     INDEX (id_patient, id_drug)
 );
 
 CREATE TABLE IF NOT EXISTS appointement_journal(
@@ -157,7 +167,8 @@ CREATE TABLE IF NOT EXISTS appointement_journal(
      date DATETIME,
      id_patient INT,
      Primary key (id),
-     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE,
+     INDEX (id_patient)
 );
 
 CREATE TABLE IF NOT EXISTS ecg_file (
@@ -185,14 +196,13 @@ CREATE TABLE IF NOT EXISTS patient_request(
      FOREIGN KEY (id_doctor) references doctor (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS medication_list (
-     start_date DATETIME,
-     dosage VARCHAR(50),
+CREATE TABLE IF NOT EXISTS drugs_list (
      id_patient INT NOT NULL,
-     id_medication int NOT NULL,
-     Primary KEY (id_patient, id_medication),
+     id_drug int NOT NULL,
+     Primary KEY (id_patient, id_drug),
      FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE,
-     FOREIGN KEY (id_medication) references medication (id) ON DELETE CASCADE
+     FOREIGN KEY (id_drug) references drug (id) ON DELETE CASCADE,
+     INDEX (id_patient)
 );
 
 CREATE TABLE IF NOT EXISTS medical_report (

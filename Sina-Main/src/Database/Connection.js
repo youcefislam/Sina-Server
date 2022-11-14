@@ -13,10 +13,17 @@ const dbPool = mysql.createPool({
 });
 
 const formulateAndQuery = (statement, query) => {
-  return mysql.format(statement, query).replace(",", ` AND`);
+  return mysql.format(statement, query).replace(/,/g, ` AND`);
 };
+
+function queryErrorHandler(type, message, path) {
+  this.type = type;
+  this.message = message;
+  this.path = path;
+}
 
 module.exports = {
   formulateAndQuery,
   dbPool,
+  queryErrorHandler,
 };

@@ -4,8 +4,12 @@ const validateBody = require("../../Utilities/validations");
 
 const getCommuneList = async (req, res) => {
   try {
-    res.send({ results: await query.selectAllCommune() });
+    const options = await validateBody("page", req.query);
+
+    res.send({ results: await query.selectAllCommune(options?.page) });
   } catch (error) {
+    console.log(error);
+    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };

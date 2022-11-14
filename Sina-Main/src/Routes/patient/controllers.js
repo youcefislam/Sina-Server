@@ -9,13 +9,11 @@ const addInfo = async (req, res) => {
     const body = await validateBody("patientInfo", req.body);
     const params = await validateBody("validId", req.params);
 
-    const patient = await query.selectPatient_sensitive(req.params);
-
-    if (patient == null)
-      return res.status(400).send({ type: "no_account_found" });
-
     body.birth_date = moment.parseZone(body.birth_date).format();
-    await query.updatePatient(body, params);
+    const updatedPatient = await query.updatePatient(body, params);
+
+    if (updatedPatient.affectedRows == 0)
+      return res.status(400).send({ type: "raw_not_found" });
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") res.status(400).send(error);
@@ -25,8 +23,24 @@ const addInfo = async (req, res) => {
 
 const deleteAccount = async (req, res) => {
   try {
-    const value = await validateBody("validId", req.params);
-    await query.deletePatientAccount(value.id);
+    const body = await validateBody("validPassword", req.body);
+    const params = await validateBody("validId", req.params);
+
+    const patient = await query.selectPatient_sensitive(params);
+
+    if (patient == null) return res.status(400).send({ type: "raw_not_found" });
+
+    const validPassword = await utility.comparePassword(
+      body.password,
+      doctor.password
+    );
+
+    if (!validPassword)
+      return res
+        .status(400)
+        .send({ type: "incorrect_information", path: "password" });
+
+    await query.deletePatientAccount(params.id);
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") res.status(400).send(error);
@@ -39,12 +53,11 @@ const modifyMail = async (req, res) => {
     const body = await validateBody("validMail", req.body);
     const params = await validateBody("validId", req.params);
 
-    const patient = await query.selectPatient_sensitive(req.params);
+    const updatedPatient = await query.updatePatient(body, params);
 
-    if (patient == null)
-      return res.status(400).send({ type: "no_account_found" });
+    if (updatedPatient.affectedRows == 0)
+      return res.status(400).send({ type: "raw_not_found" });
 
-    await query.updatePatient(body, params);
     res.sendStatus(204);
   } catch (error) {
     if (
@@ -61,12 +74,11 @@ const modifyUsername = async (req, res) => {
     const body = await validateBody("validUsername", req.body);
     const params = await validateBody("validId", req.params);
 
-    const patient = await query.selectPatient_sensitive(req.params);
+    const updatedPatient = await query.updatePatient(body, req.params);
 
-    if (patient == null)
-      return res.status(400).send({ type: "no_account_found" });
+    if (updatedPatient.affectedRows == 0)
+      return res.status(400).send({ type: "raw_not_found" });
 
-    await query.updatePatient(body, req.params);
     res.sendStatus(204);
   } catch (error) {
     if (
@@ -83,11 +95,6 @@ const modifyPassword = async (req, res) => {
     const body = await validateBody("validNewPassword", req.body);
     const params = await validateBody("validId", req.params);
 
-    const patient = await query.selectPatient_sensitive(req.params);
-
-    if (patient == null)
-      return res.status(400).send({ type: "no_account_found" });
-
     const correctOldPassword = await utility.comparePassword(
       body.old_password,
       patient.password
@@ -100,7 +107,14 @@ const modifyPassword = async (req, res) => {
 
     const newPassword = await utility.hashPassword(body.password);
 
-    await query.updatePatient({ password: newPassword }, params);
+    const updatedPatient = await query.updatePatient(
+      { password: newPassword },
+      params
+    );
+
+    if (updatedPatient.affectedRows == 0)
+      return res.status(400).send({ type: "raw_not_found" });
+
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") return res.status(400).send(error);
@@ -113,31 +127,15 @@ const modifyName = async (req, res) => {
     const body = await validateBody("validName", req.body);
     const params = await validateBody("validId", req.params);
 
-    const patient = await query.selectPatient_sensitive(params);
+    const updatedPatient = await query.updatePatient(body, params);
 
-    if (patient == null)
-      return res.status(400).send({ type: "no_account_found" });
+    if (updatedPatient.affectedRows == 0)
+      return res.status(400).send({ type: "raw_not_found" });
 
-    await query.updatePatient(body, params);
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
-  }
-
-  const { error, value } = await validateBody("validName", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement =
-      "UPDATE patient SET nomPatient=?,prenomPatient=? WHERE idPatient=?";
-    dbPool.query(
-      statement,
-      [value.nom, value.prenom, req.autData.id],
-      (dbErr, result) => {
-        if (dbErr) res.status(500).send({ error: "internal_server_error" });
-        else res.end();
-      }
-    );
   }
 };
 
@@ -146,14 +144,13 @@ const modifyNumber = async (req, res) => {
     const body = await validateBody("validNumber", req.body);
     const params = await validateBody("validId", req.params);
 
-    const patient = await query.selectPatient_sensitive(params);
-
-    if (patient == null)
-      return res.status(400).send({ type: "no_account_found" });
-
     body.phone_number = Number(body.phone_number);
 
-    await query.updatePatient(body, params);
+    const updatedPatient = await query.updatePatient(body, params);
+
+    if (updatedPatient.affectedRows == 0)
+      return res.status(400).send({ type: "raw_not_found" });
+
     res.sendStatus(204);
   } catch (error) {
     if (
@@ -170,12 +167,11 @@ const modifyAddress = async (req, res) => {
     const body = await validateBody("validPatientAddress", req.body);
     const params = await validateBody("validId", req.params);
 
-    const patient = await query.selectPatient_sensitive(params);
+    const updatedPatient = await query.updatePatient(body, params);
 
-    if (patient == null)
-      return res.status(400).send({ type: "no_account_found" });
+    if (updatedPatient.affectedRows == 0)
+      return res.status(400).send({ type: "raw_not_found" });
 
-    await query.updatePatient(body, params);
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error" || error.type == "invalid_data")
@@ -186,8 +182,18 @@ const modifyAddress = async (req, res) => {
 
 const getPatientInfo = async (req, res) => {
   try {
-    const value = await validateBody("validId", req.params);
-    res.send({ result: await query.searchPatient(value) });
+    const params = await validateBody("validId", req.params);
+    res.send({ result: await query.searchPatient(params) });
+  } catch (error) {
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
+  }
+};
+
+const getAllPatient = async (req, res) => {
+  try {
+    const options = await validateBody("page", req.query);
+    res.send({ result: await query.selectAllPatient(options?.page) });
   } catch (error) {
     if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
@@ -204,4 +210,5 @@ module.exports = {
   modifyNumber,
   modifyAddress,
   getPatientInfo,
+  getAllPatient,
 };

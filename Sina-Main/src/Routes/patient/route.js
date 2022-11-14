@@ -7,6 +7,9 @@ const Router = express.Router();
 
 // patient router
 // patient get patient info endpoint
+Router.get("/", middleware.tokenAuthorization, controllers.getAllPatient);
+
+// patient get patient info endpoint
 Router.get("/:id", middleware.tokenAuthorization, controllers.getPatientInfo);
 
 // Add patient's information endpoint

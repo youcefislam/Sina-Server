@@ -13,7 +13,7 @@ const wilayaRouter = require("./Routes/wilaya/route");
 const dairaRouter = require("./Routes/daira/route");
 const communeRouter = require("./Routes/commune/route");
 const appointmentRouter = require("./Routes/appointment/route");
-const medicationRouter = require("./Routes/medication/route");
+const drugsRouter = require("./Routes/drugs/route");
 const noteRouter = require("./Routes/note/route");
 const hospitalRouter = require("./Routes/hospital/route");
 const medicalReportRouter = require("./Routes/medicalReport/route");
@@ -98,7 +98,7 @@ app.use("/commune", communeRouter);
 app.use("/appointment", appointmentRouter);
 
 // appointment route
-app.use("/medication", medicationRouter);
+app.use("/drugs", drugsRouter);
 
 // note route
 app.use("/note", noteRouter);

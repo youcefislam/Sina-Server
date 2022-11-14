@@ -5,10 +5,11 @@ function queryErrorHandler(type, message) {
   this.message = message;
 }
 
-const selectAllWilaya = () =>
+const selectAllWilaya = (page = 1) =>
   new Promise((resolve, reject) => {
-    let statement = "SELECT * FROM wilaya;";
-    dbPool.query(statement, (dbErr, result) => {
+    let pagination = page * 5 - 5;
+    let statement = "SELECT * FROM wilaya ORDER BY name LIMIT ?,5;";
+    dbPool.query(statement, pagination, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result);
     });
@@ -38,7 +39,7 @@ const insertWilaya = (wilaya) =>
           return reject(
             new queryErrorHandler(
               "invalid_data",
-              `no data found with the entered data`
+              `The entered data might be incorrect`
             )
           );
         return reject(dbErr);

@@ -126,38 +126,255 @@ VALUES
 
 -- Medicament
 INSERT INTO
-    `sina`.`medication`(`id`, `name`)
+    `sina`.`drug`(
+        `name`,
+        `adult_dosage`,
+        `children_dosage`,
+        `description`,
+        `warnings`,
+        `company`
+    )
 VALUES
-    (1, "Medicament 1"),
-    (2, "Medicament 2"),
-    (3, "Medicament 3"),
-    (4, "Medicament 4"),
-    (5, "Medicament 5"),
-    (6, "Medicament 6"),
-    (7, "Medicament 7"),
-    (8, "Medicament 8"),
-    (9, "Medicament 9"),
-    (10, "Medicament 10"),
-    (11, "Medicament 11"),
-    (12, "Medicament 12"),
-    (13, "Medicament 13"),
-    (14, "Medicament 14"),
-    (15, "Medicament 15"),
-    (16, "Medicament 16"),
-    (17, "Medicament 17"),
-    (18, "Medicament 18"),
-    (19, "Medicament 19"),
-    (20, "Medicament 20"),
-    (21, "Medicament 21"),
-    (22, "Medicament 22"),
-    (23, "Medicament 23"),
-    (24, "Medicament 24"),
-    (25, "Medicament 25"),
-    (26, "Medicament 26"),
-    (27, "Medicament 27"),
-    (28, "Medicament 28"),
-    (29, "Medicament 29"),
-    (30, "Medicament 30");
+    (
+        "Medicament 1",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 1"
+    ),
+    (
+        "Medicament 2",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 2"
+    ),
+    (
+        "Medicament 3",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 3"
+    ),
+    (
+        "Medicament 4",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 4"
+    ),
+    (
+        "Medicament 5",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 5"
+    ),
+    (
+        "Medicament 6",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 6"
+    ),
+    (
+        "Medicament 7",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 7"
+    ),
+    (
+        "Medicament 8",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 8"
+    ),
+    (
+        "Medicament 9",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 9"
+    ),
+    (
+        "Medicament 10",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 10"
+    ),
+    (
+        "Medicament 11",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 11"
+    ),
+    (
+        "Medicament 12",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 12"
+    ),
+    (
+        "Medicament 13",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 13"
+    ),
+    (
+        "Medicament 14",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 14"
+    ),
+    (
+        "Medicament 15",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 15"
+    ),
+    (
+        "Medicament 16",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 16"
+    ),
+    (
+        "Medicament 17",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 17"
+    ),
+    (
+        "Medicament 18",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 18"
+    ),
+    (
+        "Medicament 19",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 19"
+    ),
+    (
+        "Medicament 20",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 20"
+    ),
+    (
+        "Medicament 21",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 21"
+    ),
+    (
+        "Medicament 22",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 22"
+    ),
+    (
+        "Medicament 23",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 23"
+    ),
+    (
+        "Medicament 24",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 24"
+    ),
+    (
+        "Medicament 25",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 25"
+    ),
+    (
+        "Medicament 26",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 26"
+    ),
+    (
+        "Medicament 27",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 27"
+    ),
+    (
+        "Medicament 28",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 28"
+    ),
+    (
+        "Medicament 29",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 29"
+    ),
+    (
+        "Medicament 30",
+        "dosage adult",
+        "dosage children",
+        "this is a descirption",
+        "this is a warning",
+        "company 30"
+    );
 
 INSERT INTO
     `sina`.`illness_type`(`type`)

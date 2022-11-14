@@ -5,10 +5,11 @@ function queryErrorHandler(type, message) {
   this.message = message;
 }
 
-const selectAllIllnessTypes = () =>
+const selectAllIllnessTypes = (page = 1) =>
   new Promise((resolve, reject) => {
-    let statement = "SELECT * FROM illness_type;";
-    dbPool.query(statement, (dbErr, result) => {
+    const pagination = page * 5 - 5;
+    let statement = "SELECT * FROM illness_type ORDER BY type LIMIT ?,5;";
+    dbPool.query(statement, pagination, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result);
     });

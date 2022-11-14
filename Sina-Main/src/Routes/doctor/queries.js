@@ -15,10 +15,12 @@ const selectDoctor_sensitive = (query) =>
     });
   });
 
-const selectAllDoctor = () =>
+const selectAllDoctor = (page = 1) =>
   new Promise((resolve, reject) => {
-    let statement = "SELECT * FROM doctorView;";
-    dbPool.query(statement, (dbErr, result) => {
+    const pagination = page * 5 - 5;
+    let statement =
+      "SELECT * FROM doctorView ORDER BY first_name, last_name LIMIT ?,5;";
+    dbPool.query(statement, pagination, (dbErr, result) => {
       if (dbErr) reject(dbErr);
       else resolve(result);
     });
@@ -49,7 +51,7 @@ const updateDoctor = (newValue, options) =>
           return reject(
             new queryErrorHandler(
               "invalid_data",
-              `no data found with the entered data`
+              `The entered data might be incorrect`
             )
           );
         return reject(dbErr);
@@ -58,10 +60,11 @@ const updateDoctor = (newValue, options) =>
     });
   });
 
-const selectPatientList = (id_doctor) =>
+const selectPatientList = (id_doctor, page = 1) =>
   new Promise((resolve, reject) => {
-    const statement = `SELECT * FROM patientView WHERE id_doctor=?;`;
-    dbPool.query(statement, id_doctor, (dbErr, results) => {
+    const pagination = page * 5 - 5;
+    const statement = `SELECT * FROM patientView WHERE id_doctor=? ORDER BY first_name, last_name LIMIT ?,5;`;
+    dbPool.query(statement, [id_doctor, pagination], (dbErr, results) => {
       if (dbErr) reject(dbErr);
       else resolve(results);
     });
@@ -69,11 +72,14 @@ const selectPatientList = (id_doctor) =>
 
 const searchDoctor = (query) =>
   new Promise((resolve, reject) => {
+    let pagination = query.page ? query.page : 1 * 5 - 5;
+    delete query.page;
     let statement = formulateAndQuery(
-      `SELECT * FROM doctorView WHERE ?;`,
+      `SELECT * FROM doctorView WHERE ?`,
       query
     );
-    dbPool.query(statement, (dbErr, result) => {
+    statement += " ORDER BY first_name,last_name LIMIT ?,5;";
+    dbPool.query(statement, pagination, (dbErr, result) => {
       if (dbErr) reject(dbErr);
       else resolve(result);
     });

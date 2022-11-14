@@ -69,7 +69,6 @@ const addRelative = async (req, res) => {
     );
     res.sendStatus(204);
   } catch (error) {
-    console.log(error);
     if (relative) await query.deleteRelative(relative.insertId);
     if (
       error.type == "validation_error" ||
@@ -88,7 +87,6 @@ const getRelativeInfo = async (req, res) => {
 
     res.send({ result: relative });
   } catch (error) {
-    console.log(error);
     if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
@@ -102,7 +100,6 @@ const deleteRelative = async (req, res) => {
       return res.status(400).send({ type: "relative_not_found" });
     res.sendStatus(204);
   } catch (error) {
-    console.log(error);
     res.sendStatus(500);
   }
 };

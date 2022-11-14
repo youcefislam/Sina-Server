@@ -24,7 +24,7 @@ Router.delete(
   controllers.deleteDoctor
 );
 
-// Get the doctor's patient list endpoint -- testing needed
+// Get the doctor's patient list endpoint
 Router.get(
   "/:id/patient_list",
   middleware.tokenAuthorization,
@@ -33,7 +33,7 @@ Router.get(
   controllers.getPatientList
 );
 
-// Delete patient from the patient list endpoint -- testing needed
+// Delete patient from the patient list endpoint
 Router.delete(
   "/:id/patient_list/:id_patient",
   middleware.tokenAuthorization,

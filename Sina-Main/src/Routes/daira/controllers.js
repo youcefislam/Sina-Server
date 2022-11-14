@@ -4,8 +4,11 @@ const validateBody = require("../../Utilities/validations");
 
 const getDairaList = async (req, res) => {
   try {
-    res.send({ results: await query.selectAllDaira() });
+    const option = await validateBody("page", req.query);
+
+    res.send({ results: await query.selectAllDaira(option?.page) });
   } catch (error) {
+    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };

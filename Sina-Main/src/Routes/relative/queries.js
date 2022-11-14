@@ -42,7 +42,7 @@ const deleteRelative = (id_relative) =>
 const deleteMyRelative = (id_patient) =>
   new Promise((resolve, reject) => {
     let statement =
-      "DELETE FROM relative WHERE id IN (select id_relative from patient where patient.id=4);";
+      "DELETE FROM relative WHERE id IN (select id_relative from patient where patient.id=?);";
     dbPool.query(statement, id_patient, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result);

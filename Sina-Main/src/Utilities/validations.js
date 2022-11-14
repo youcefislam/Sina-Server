@@ -38,63 +38,87 @@ const validations = {
   }),
   validAccept: joi.object({ auto_accept: joi.bool().required() }),
   validDaira: joi.object({
-    id_daira: joi.number().required(),
+    id_daira: joi.number().min(1).required(),
   }),
   validPatientApproval: joi.object({
-    id_patient: joi.number().required(),
+    id_patient: joi.number().min(1).required(),
     severity: joi.number().max(10).required(),
-    id_type_illness: joi.number().required(),
+    id_type_illness: joi.number().min(1).required(),
   }),
   type: joi.object({
     type: joi.string().max(50).required(),
   }),
-  validPatientId: joi.object({ id: joi.number().required() }),
-  validId: joi.object({ id: joi.number().required() }),
+  validId: joi.object({ id: joi.number().min(1).required() }),
   validPatientAddress: joi.object({
-    id_commune: joi.number().required(),
+    id_commune: joi.number().min(1).required(),
     address: joi.string().max(255).required(),
   }),
   validDoctorAddress: joi.object({
-    id_daira: joi.number().required(),
+    id_daira: joi.number().min(1).required(),
     address: joi.string().max(255).required(),
   }),
   validAppointment: joi.object({
-    id: joi.number().required(),
+    id: joi.number().min(1).required(),
     date: joi.date().required(),
   }),
   validMedication: joi.object({
-    id: joi.number().required(),
-    id_medication: joi.number().required(),
+    id: joi.number().min(1).required(),
+    id_medication: joi.number().min(1).required(),
     dosage: joi.string().required(),
   }),
   validMedicationId: joi.object({
-    id: joi.number().required(),
-    id_medication: joi.number().required(),
+    id: joi.number().min(1).required(),
+    id_medication: joi.number().min(1).required(),
   }),
-  validMedicationName: joi.object({
+  drug: joi.object({
     name: joi.string().max(50).required(),
+    company: joi.string().max(100).required(),
+    description: joi.string().max(1000),
+    adult_dosage: joi.string().max(300),
+    children_dosage: joi.string().max(300),
+    warnings: joi.string().max(1000),
+  }),
+  validIdDrug: joi.object({
+    id_drug: joi.number().min(1).required(),
+  }),
+  validDrugListItem: joi.object({
+    id_drug: joi.number().min(1).required(),
+    id_patient: joi.number().min(1).required(),
+  }),
+  drugJournalDeletion: joi.object({
+    id: joi.number().min(1).required(),
+    id_drug: joi.number().min(1).required(),
+    id_patient: joi.number().min(1).required(),
+  }),
+  drugUpdate: joi.object({
+    name: joi.string().max(50),
+    company: joi.string().max(100),
+    description: joi.string().max(1000),
+    adult_dosage: joi.string().max(300),
+    children_dosage: joi.string().max(300),
+    warnings: joi.string().max(1000),
   }),
   validNameMedication: joi.object({
-    id: joi.number().required(),
+    id: joi.number().min(1).required(),
     name: joi.string().max(50).required(),
   }),
   name: joi.object({
-    name: joi.string().max(50).required(),
+    name: joi.string().max(50).min(1).required(),
   }),
   newDaira: joi.object({
-    id_wilaya: joi.number().required(),
+    id_wilaya: joi.number().min(1).required(),
     name: joi.string().max(1000).required(),
   }),
   newCommune: joi.object({
-    id_daira: joi.number().required(),
+    id_daira: joi.number().min(1).required(),
     name: joi.string().max(1000).required(),
   }),
   validNote: joi.object({
-    id: joi.number().required(),
+    id: joi.number().min(1).required(),
     note: joi.string().max(1000).required(),
   }),
   validHospital: joi.object({
-    id: joi.number().required(),
+    id: joi.number().min(1).required(),
     name: joi.string().max(50).required(),
     address: joi.string().max(255).required(),
     phone_number: joi.string().max(10).required(),
@@ -109,29 +133,33 @@ const validations = {
     .object({
       username: joi.string().alphanum(),
       mail: joi.string().email(),
+      page: joi.number(),
     })
     .or("username", "mail"),
   validPassword: joi.object({
     password: joi.string().alphanum().min(8).required(),
   }),
   validPatientFromList: joi.object({
-    id: joi.number().required(),
-    id_patient: joi.number().required(),
+    id: joi.number().min(1).required(),
+    id_patient: joi.number().min(1).required(),
   }),
   validIdDoctor: joi.object({
-    id_doctor: joi.number().required(),
+    id_doctor: joi.number().min(1).required(),
   }),
   validPatientRequest: joi.object({
-    id_doctor: joi.number().required(),
-    id_patient: joi.number().required(),
+    id_doctor: joi.number().min(1).required(),
+    id_patient: joi.number().min(1).required(),
   }),
   validIdPatient: joi.object({
-    id_patient: joi.number().required(),
+    id_patient: joi.number().min(1).required(),
   }),
   validAcceptTicket: joi.object({
-    id_patient: joi.number().required(),
+    id_patient: joi.number().min(1).required(),
     severity: joi.number().max(5).required(),
-    id_illness_type: joi.number().required(),
+    id_illness_type: joi.number().min(1).required(),
+  }),
+  page: joi.object({
+    page: joi.number(),
   }),
 };
 

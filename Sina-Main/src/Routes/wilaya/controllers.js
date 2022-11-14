@@ -4,8 +4,11 @@ const validateBody = require("../../Utilities/validations");
 
 const getWilayaList = async (req, res) => {
   try {
-    res.send({ results: await query.selectAllWilaya() });
+    const options = await validateBody("page", req.query);
+
+    res.send({ results: await query.selectAllWilaya(options?.page) });
   } catch (error) {
+    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
