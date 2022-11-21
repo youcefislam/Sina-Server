@@ -10,7 +10,7 @@ const deleteDoctor = async (req, res) => {
 
     const doctor = await selectDoctor_sensitive(params);
 
-    if (doctor == null) return res.status(400).send({ type: "raw_not_found" });
+    if (doctor == null) return res.status(400).send({ type: "row_not_found" });
 
     const validPassword = await utility.comparePassword(
       body.password,
@@ -38,7 +38,7 @@ const modifyMail = async (req, res) => {
     const updatedDoctor = await query.updateDoctor(body, params);
 
     if (updatedDoctor.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -80,7 +80,7 @@ const modifyPassword = async (req, res) => {
 
     const doctor = await query.selectDoctor_sensitive(params);
 
-    if (doctor == null) return res.status(400).send({ type: "raw_not_found" });
+    if (doctor == null) return res.status(400).send({ type: "row_not_found" });
 
     const correctOldPassword = await utility.comparePassword(
       body.old_password,
@@ -110,7 +110,7 @@ const modifyName = async (req, res) => {
     const updatedDoctor = await query.updateDoctor(body, params);
 
     if (updatedDoctor.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -129,7 +129,7 @@ const modifyNumber = async (req, res) => {
     const updatedDoctor = await query.updateDoctor(body, params);
 
     if (updatedDoctor.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -150,7 +150,7 @@ const modifyAutoAccept = async (req, res) => {
     const updatedDoctor = await query.updateDoctor(body, params);
 
     if (updatedDoctor.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -166,7 +166,7 @@ const getPatientList = async (req, res) => {
 
     const doctor = await query.selectDoctor_sensitive(params);
 
-    if (doctor == null) return res.status(400).send({ type: "raw_not_found" });
+    if (doctor == null) return res.status(400).send({ type: "row_not_found" });
 
     res.send({
       results: await query.selectPatientList(req.params.id, options?.page),
@@ -244,7 +244,7 @@ const modifyAddress = async (req, res) => {
     const updatedDoctor = await query.updateDoctor(body, params);
 
     if (updatedDoctor.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {

@@ -13,7 +13,7 @@ const addInfo = async (req, res) => {
     const updatedPatient = await query.updatePatient(body, params);
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") res.status(400).send(error);
@@ -28,7 +28,7 @@ const deleteAccount = async (req, res) => {
 
     const patient = await query.selectPatient_sensitive(params);
 
-    if (patient == null) return res.status(400).send({ type: "raw_not_found" });
+    if (patient == null) return res.status(400).send({ type: "row_not_found" });
 
     const validPassword = await utility.comparePassword(
       body.password,
@@ -56,7 +56,7 @@ const modifyMail = async (req, res) => {
     const updatedPatient = await query.updatePatient(body, params);
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -77,7 +77,7 @@ const modifyUsername = async (req, res) => {
     const updatedPatient = await query.updatePatient(body, req.params);
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -113,7 +113,7 @@ const modifyPassword = async (req, res) => {
     );
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -130,7 +130,7 @@ const modifyName = async (req, res) => {
     const updatedPatient = await query.updatePatient(body, params);
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -149,7 +149,7 @@ const modifyNumber = async (req, res) => {
     const updatedPatient = await query.updatePatient(body, params);
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -170,7 +170,7 @@ const modifyAddress = async (req, res) => {
     const updatedPatient = await query.updatePatient(body, params);
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {

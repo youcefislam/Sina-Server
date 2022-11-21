@@ -1,25 +1,27 @@
 const express = require("express");
 
-const {
-  getAllNotesOfPatient,
-  addNoteToPatient,
-  modifyNotePatient,
-  deleteNotePatient,
-} = require("./controllers");
-const { tokenAuthorization } = require("../../Middlewares/middlewares");
+const controllers = require("./controllers");
+const middleware = require("../../Middlewares/middlewares");
 const Router = express.Router();
 
 // Note router
+// Get a note endpoint
+Router.post("/", middleware.tokenAuthorization, controllers.addNote);
+
+// Get a note endpoint
+Router.get("/:id", middleware.tokenAuthorization, controllers.getNote);
+
+// update a note endpoint
+Router.put("/:id", middleware.tokenAuthorization, controllers.updateNote);
+
+// Delete a note endpoint
+Router.delete("/:id", middleware.tokenAuthorization, controllers.deleteNote);
+
 // Get note list of a patient list endpoint
-Router.get("/list/:id", tokenAuthorization, getAllNotesOfPatient);
-
-// Add a note to a patient endpoint
-Router.post("/list/:id/add", tokenAuthorization, addNoteToPatient);
-
-// Modify a patient note endpoint
-Router.post("/modify", tokenAuthorization, modifyNotePatient);
-
-// Delete a patient note endpoint
-Router.post("/delete", tokenAuthorization, deleteNotePatient);
+Router.get(
+  "/list/:id_patient",
+  middleware.tokenAuthorization,
+  controllers.getNotesList
+);
 
 module.exports = Router;

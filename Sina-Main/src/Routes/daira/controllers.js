@@ -48,7 +48,7 @@ const updateDaira = async (req, res) => {
 
     const updatedDaira = await query.updateDaira(body, params);
     if (updatedDaira.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
     if (
@@ -65,7 +65,7 @@ const deleteDaira = async (req, res) => {
 
     const deletedDaira = await query.deleteDaira(params.id);
     if (deletedDaira.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") return res.status(400).send(error);

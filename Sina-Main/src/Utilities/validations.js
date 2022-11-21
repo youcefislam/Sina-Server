@@ -113,9 +113,15 @@ const validations = {
     id_daira: joi.number().min(1).required(),
     name: joi.string().max(1000).required(),
   }),
+  createNote: joi.object({
+    id_patient: joi.number().min(1).required(),
+    description: joi.string().max(1000).required(),
+  }),
+  updateNote: joi.object({
+    description: joi.string().max(1000).required(),
+  }),
   validNote: joi.object({
-    id: joi.number().min(1).required(),
-    note: joi.string().max(1000).required(),
+    description: joi.string().max(1000).required(),
   }),
   validHospital: joi.object({
     id: joi.number().min(1).required(),

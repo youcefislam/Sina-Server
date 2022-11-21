@@ -44,7 +44,7 @@ const deleteFromDugList = async (req, res) => {
     const deletedItem = await query.deleteFromDrugList(params);
 
     if (deletedItem.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -96,7 +96,7 @@ const updateDrug = async (req, res) => {
     const updatedDrug = await query.updatedDrug(body, params);
     console.log(updatedDrug);
     if (updatedDrug.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -117,7 +117,7 @@ const deleteDrug = async (req, res) => {
 
     console.log(deletedDrug);
     if (deletedDrug.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -178,7 +178,7 @@ const deleteDrugFromJournal = async (req, res) => {
     const deletedItem = await query.deleteFromJournal(params);
 
     if (deletedItem.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {

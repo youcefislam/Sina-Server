@@ -1,74 +1,84 @@
-const dbPool = require("../../Database/Connection");
-const {
-  hashPassword,
-  generateToken,
-  validateToken,
-  sendMail,
-  comparePassword,
-} = require("../../Utilities/utility");
+const moment = require("moment");
 const validateBody = require("../../Utilities/validations");
+const query = require("./queries");
 
-const getAllNotesOfPatient = async (req, res) => {
-  const { error, value } = await validateBody("validId", req.params);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement =
-      "SELECT idNote,DateNote,NoteMedecin FROM notemedecin WHERE idPatient=?;";
-    dbPool.query(
-      statement,
-      value.id ? value.id : req.autData.id,
-      (dbErr, result) => {
-        if (dbErr) res.status(500).send({ error: "internal_server_error" });
-        else res.send({ results: result });
-      }
-    );
+const getNotesList = async (req, res) => {
+  try {
+    const params = await validateBody("validIdPatient", req.params);
+
+    res.send({ results: await query.selectNoteList(params.id_patient) });
+  } catch (error) {
+    console.log(error);
+    if (error.type == 0) return res.status(400).send(error);
+    res.sendStatus(500);
   }
 };
 
-const addNoteToPatient = async (req, res) => {
-  const { error, value } = await validateBody("validNote", {
-    ...req.params,
-    ...req.body,
-  });
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement =
-      "insert into notemedecin(datenote,notemedecin,idPatient) values(curdate(),?,?);";
-    dbPool.query(statement, [value.note, value.id], (dbErr, result) => {
-      if (dbErr) res.status(500).send({ error: "internal_server_error" });
-      else res.end();
-    });
+const addNote = async (req, res) => {
+  try {
+    const body = await validateBody("createNote", req.body);
+
+    body.created_at = moment().format();
+
+    await query.insertNote(body);
+    res.sendStatus(201);
+  } catch (error) {
+    console.log(error);
+    if (error.type == "validation_error" || error.type == "invalid_data")
+      return res.status(400).send(error);
+    res.sendStatus(500);
   }
 };
 
-const modifyNotePatient = async (req, res) => {
-  const { error, value } = await validateBody("validNote", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement =
-      "UPDATE notemedecin SET datenote=curdate(),notemedecin=? WHERE idNote=?;";
-    dbPool.query(statement, [value.note, value.id], (dbErr, result) => {
-      if (dbErr) res.status(500).send({ error: "internal_server_error" });
-      else res.end();
-    });
+const updateNote = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+    const body = await validateBody("validNote", req.body);
+
+    const queryResult = await query.updateNote(body, params);
+
+    if (queryResult?.affectedRows == 0)
+      return res.status(400).send({ type: "row_not_found" });
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.log(error);
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
   }
 };
 
-const deleteNotePatient = async (req, res) => {
-  const { error, value } = await validateBody("validId", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement = "DELETE FROM notemedecin WHERE idNote=?;";
-    dbPool.query(statement, value.id, (dbErr, result) => {
-      if (dbErr) res.status(500).send({ error: "internal_server_error" });
-      else res.end();
-    });
+const deleteNote = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+
+    const queryResult = await query.deleteNote(params.id);
+
+    if (queryResult.affectedRows == 0)
+      return res.status(400).send({ type: "row_not_found" });
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.log(error);
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
   }
 };
+const getNote = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
 
+    res.send({ result: await query.selectNoteById(params.id) });
+  } catch (error) {
+    console.log(error);
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
+  }
+};
 module.exports = {
-  getAllNotesOfPatient,
-  addNoteToPatient,
-  modifyNotePatient,
-  deleteNotePatient,
+  getNotesList,
+  addNote,
+  updateNote,
+  deleteNote,
+  getNote,
 };

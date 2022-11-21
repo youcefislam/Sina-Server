@@ -49,7 +49,7 @@ const updateCommune = async (req, res) => {
 
     const updatedCommune = await query.updateCommune(body, params);
     if (updatedCommune.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
     if (
@@ -66,7 +66,7 @@ const deleteCommune = async (req, res) => {
 
     const deletedCommune = await query.deleteCommune(params.id);
     if (deletedCommune.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") return res.status(400).send(error);

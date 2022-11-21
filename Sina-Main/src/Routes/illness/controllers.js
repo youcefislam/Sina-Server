@@ -47,7 +47,7 @@ const updateIllness = async (req, res) => {
 
     const updatedIllness = await query.updateIllness(body, params);
     if (updatedIllness.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
     console.log(error);
@@ -66,7 +66,7 @@ const deleteIllness = async (req, res) => {
 
     const deletedIllness = await query.deleteIllness(params.id);
     if (deletedIllness.affectedRows == 0)
-      return res.status(400).send({ type: "raw_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
     console.log(error);

@@ -217,6 +217,7 @@ CREATE TABLE IF NOT EXISTS medical_report (
 CREATE TABLE IF NOT EXISTS medical_note (
      id INT NOT NULL AUTO_INCREMENT,
      created_at DATETIME,
+     updated_at DATETIME,
      description VARCHAR(2000),
      id_patient int NOT NULL,
      primary key (id),

@@ -53,7 +53,7 @@ const acceptRequest = async (req, res) => {
       id_patient: body.id_patient,
     });
     if (deletedRecord.affectedRows == 0)
-      return res.status(400).send({ type: "request_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -73,7 +73,7 @@ const rejectRequest = async (req, res) => {
       ...body,
     });
     if (deletedRecord.affectedRows == 0)
-      return res.status(400).send({ type: "request_not_found" });
+      return res.status(400).send({ type: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
     if (error.type == "validation_error") return res.status(400).send(error);
