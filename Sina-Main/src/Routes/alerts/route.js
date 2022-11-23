@@ -1,11 +1,11 @@
 const express = require("express");
 
-const { sendAlert } = require("./controllers");
-const { tokenAuthorization } = require("../../Middlewares/middlewares");
+const controllers = require("./controllers");
+const middleware = require("../../Middlewares/middlewares");
 const Router = express.Router();
 
-// Alerts router
-// send alert.  -- got error with twilio usage
-Router.post("/send", tokenAuthorization, sendAlert);
+// Alert router
+// send alert
+Router.post("/", middleware.tokenAuthorization, controllers.sendAlert);
 
 module.exports = Router;

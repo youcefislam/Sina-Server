@@ -60,25 +60,21 @@ const sendMail = async (to, subject, html) => {
   }
 };
 
-const sendTwilloMessage = (to, message) => {
-  console.log("sms sent");
-  return;
-  // client.messages
-  //   .create({
-  //     body: message,
-  //     to: "+213" + to,
-  //     from: "+19207064918",
-  //   })
-  //   .then((message) => {
-  //     res.end();
-  //     console.log("sms sent");
-  //   })
-  //   // here you can implement your fallback code
-  //   .catch((error) => {
-  //     res.sendStatus(500);
-  //     console.log(error);
-  //   });
-};
+const sendTwilioMessage = (to, message) =>
+  new Promise((resolve, reject) => {
+    client.messages
+      .create({
+        body: message,
+        to: "+213" + to,
+        from: process.env.TWILIO_PHONE_NUMBER,
+      })
+      .then((message) => {
+        resolve(message);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
 
 // socketio connection
 
@@ -140,7 +136,7 @@ module.exports = {
   comparePassword,
   validateAccessToken,
   sendMail,
-  sendTwilloMessage,
+  sendTwilioMessage,
   getSocketByPatientId,
   getPatientSocketByDoctorId,
   getSocketByDoctorId,

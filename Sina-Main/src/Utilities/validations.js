@@ -142,9 +142,9 @@ const validations = {
     .with("address", "id_commune"),
   validDate: joi.object({ date: joi.date().required() }),
   validAlert: joi.object({
-    heartCondition: joi.string().required(),
-    latitude: joi.number().required(),
-    longitude: joi.number().required(),
+    heart_condition: joi.string().required(),
+    latitude: joi.number().min(-90).max(90).required(),
+    longitude: joi.number().min(-180).max(180).required(),
   }),
   doctorSearchQuery: joi
     .object({
