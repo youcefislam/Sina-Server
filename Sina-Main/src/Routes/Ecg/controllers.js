@@ -1,47 +1,56 @@
-const dbPool = require("../../Database/Connection");
-const fs = require("mz/fs");
 const path = require("path");
-const {
-  hashPassword,
-  generateToken,
-  validateToken,
-  sendMail,
-  comparePassword,
-} = require("../../Utilities/utility");
+const { deleteFile } = require("../../Utilities/uploadUtilities");
+const query = require("./queries");
 const validateBody = require("../../Utilities/validations");
 
 const addEcgFile = async (req, res) => {
-  const { error, value } = await validateBody("validDate", req.body);
-  if (error) res.status(400).send(error.details);
-  else {
-    if (req?.file?.path) {
-      let statement =
-        "INSERT INTO fichierecg(lienFichier,dateCreation,idPatient) VALUES(?,?,?);";
-      dbPool.query(
-        statement,
-        [req?.file?.path, value.date, req?.autData?.id],
-        (dbErr, result) => {
-          if (dbErr) res.status(500).send({ error: "internal_server_error" });
-          else res.end();
-        }
-      );
-    } else res.status(400).send({ error: "no_file_attached" });
+  try {
+    const params = await validateBody("validIdPatient", req.params);
+    const body = await validateBody("addEcgFile", req.body);
+
+    if (req?.file?.path == null)
+      return res.status(400).send({ type: "no_file_attached" });
+    body.link = req?.file?.path;
+    await query.insertEcgFile({ ...body, ...params });
+
+    res.sendStatus(201);
+  } catch (error) {
+    if (req?.file?.path) deleteFile(req?.file?.path);
+    if (error.type == "validation_error" || error.type == "invalid_data")
+      return res.status(400).send(error);
+    res.sendStatus(500);
   }
 };
 
-const getEcgFile = async (req, res) => {
-  const { error, value } = await validateBody("validId", req.params);
-  if (error) res.status(400).send(error.details);
-  else {
-    let statement = "SELECT lienFichier FROM fichierecg WHERE idFichierECG=?;";
-    dbPool.query(statement, value.id, (dbErr, result) => {
-      if (dbErr) res.sendStatus(500);
-      else
-        result[0]
-          ? res.download("./" + path.normalize(result[0].lienFichier))
-          : res.send({ error: "file not found" });
+const downloadECGFile = async (req, res) => {
+  try {
+    const params = await validateBody("validId", req.params);
+
+    const file = await query.selectEcgFileById(params.id);
+
+    res.download("./" + path.normalize(file.link));
+  } catch (error) {
+    console.log(error);
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
+  }
+};
+const getEcgFileList = async (req, res) => {
+  try {
+    const params = await validateBody("validIdPatient", req.params);
+    const options = await validateBody("page", req.query);
+
+    res.send({
+      results: await query.selectPatientEcgFiles(
+        params.id_patient,
+        options,
+        options.page
+      ),
     });
+  } catch (error) {
+    console.log(error);
+    if (error.type == "validation_error") return res.status(400).send(error);
+    res.sendStatus(500);
   }
 };
-
-module.exports = { addEcgFile, getEcgFile };
+module.exports = { addEcgFile, downloadECGFile, getEcgFileList };

@@ -1,19 +1,31 @@
 const express = require("express");
-const cors = require("cors");
-const { addEcgFile, getEcgFile } = require("./controllers");
-const { tokenAuthorization } = require("../../Middlewares/middlewares");
+const controllers = require("./controllers");
+const middleware = require("../../Middlewares/middlewares");
 const { uploadEcg } = require("../../Utilities/uploadUtilities");
+
 const Router = express.Router();
 
 // Ecg router
-//Post an ECG file endpoint
-Router.post("/add", tokenAuthorization, uploadEcg.single("file"), addEcgFile);
+// Get all ecg files of patient endpoint
+Router.get(
+  "/list/:id_patient",
+  middleware.tokenAuthorization,
+  controllers.getEcgFileList
+);
 
-// Get an ECG file endpoint
-Router.get("/download/:id", tokenAuthorization, getEcgFile);
+// Save ECG file endpoint
+Router.post(
+  "/list/:id_patient",
+  middleware.tokenAuthorization,
+  uploadEcg.single("file"),
+  controllers.addEcgFile
+);
 
-// get all ecg files of patient endpoint
-
-// delete ecg file  endpoint
+// Download ECG file endpoint
+Router.get(
+  "/download/:id",
+  middleware.tokenAuthorization,
+  controllers.downloadECGFile
+);
 
 module.exports = Router;

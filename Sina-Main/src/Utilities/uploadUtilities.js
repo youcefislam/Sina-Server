@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 const multer = require("multer");
 
 const checkReportType = (file, cb) => {
@@ -67,7 +68,15 @@ const uploadEcg = multer({
   },
 });
 
+const deleteFile = (path) => {
+  fs.unlink(path, (error) => {
+    if (error) return console.log(error);
+    console.log(path + " ===> deleted");
+  });
+};
+
 module.exports = {
   uploadReport,
   uploadEcg,
+  deleteFile,
 };

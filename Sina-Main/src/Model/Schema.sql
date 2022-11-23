@@ -173,9 +173,9 @@ CREATE TABLE IF NOT EXISTS appointment_journal(
 
 CREATE TABLE IF NOT EXISTS ecg_file (
      id INT NOT NULL AUTO_INCREMENT,
-     lik VARCHAR(255),
-     created_at DATETIME,
-     id_patient INT,
+     link VARCHAR(255) NOT NULL,
+     created_at DATETIME NOT NULL,
+     id_patient INT NOT NULL,
      primary key(id),
      FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );

@@ -189,6 +189,9 @@ const validations = {
     id_daira: joi.number().min(1),
     page: joi.number().min(1),
   }),
+  addEcgFile: joi.object({
+    created_at: joi.date().required(),
+  }),
 };
 
 function validationErrorHandler(error) {
