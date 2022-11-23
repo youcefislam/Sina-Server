@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS drugs_journal(
      INDEX (id_patient, id_drug)
 );
 
-CREATE TABLE IF NOT EXISTS appointement_journal(
+CREATE TABLE IF NOT EXISTS appointment_journal(
      id int NOT NULL AUTO_INCREMENT,
      date DATETIME,
      id_patient INT,
@@ -180,10 +180,12 @@ CREATE TABLE IF NOT EXISTS ecg_file (
      FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS appointement (
+CREATE TABLE IF NOT EXISTS appointment (
      id INT NOT NULL AUTO_INCREMENT,
      date DATETIME,
      id_patient int NOT NULL,
+     created_at DATETIME,
+     updated_at DATETIME,
      primary key(id),
      FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );

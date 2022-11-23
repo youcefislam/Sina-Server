@@ -41,6 +41,6 @@ Router.post(
 Router.post("/validate_account/resend", controllers.resendValidationLink);
 
 // validate account endpoint
-Router.post("/validate_account/:token", controllers.validateAccount);
+Router.post("/validate_account/", controllers.validateAccount);
 
 module.exports = Router;

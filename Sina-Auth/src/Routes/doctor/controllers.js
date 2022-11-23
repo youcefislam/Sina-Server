@@ -153,7 +153,7 @@ const signOut = async (req, res) => {
 
 const validateAccount = async (req, res) => {
   try {
-    const params = await utility.validateValidationToken(req.params.token);
+    const params = await utility.validateValidationToken(req.query.token);
     await query.validateDoctorAccount(params.id);
     res.sendStatus(204);
   } catch (error) {
@@ -161,7 +161,7 @@ const validateAccount = async (req, res) => {
     if (error.name == "JsonWebTokenError" || error.name == "TokenExpiredError")
       return res
         .status(400)
-        .send({ type: "not_valid", message: "invalid link" });
+        .send({ type: "not_valid", message: "invalid token" });
     res.sendStatus(500);
   }
 };

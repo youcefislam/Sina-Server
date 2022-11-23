@@ -57,8 +57,11 @@ const validations = {
     id_daira: joi.number().min(1).required(),
     address: joi.string().max(255).required(),
   }),
-  validAppointment: joi.object({
-    id: joi.number().min(1).required(),
+  addAppointment: joi.object({
+    id_patient: joi.number().min(1).required(),
+    date: joi.date().required(),
+  }),
+  updateAppointment: joi.object({
     date: joi.date().required(),
   }),
   validMedication: joi.object({
