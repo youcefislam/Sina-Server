@@ -10,12 +10,12 @@ const validations = {
     birth_date: joi.date().required(),
     address: joi.string().max(255).required(),
     id_commune: joi.number().required(),
-    phone_number: joi.string().max(10).required(),
+    phone_number: joi.string().min(9).max(10).required(),
   }),
   relativeInfo: joi.object({
     first_name: joi.string().max(50).required(),
     last_name: joi.string().max(50).required(),
-    phone_number: joi.string().max(10).required(),
+    phone_number: joi.string().min(9).max(10).required(),
     mail: joi.string().email().required(),
   }),
   validMail: joi.object({
@@ -127,11 +127,19 @@ const validations = {
     description: joi.string().max(1000).required(),
   }),
   validHospital: joi.object({
-    id: joi.number().min(1).required(),
     name: joi.string().max(50).required(),
     address: joi.string().max(255).required(),
-    phone_number: joi.string().max(10).required(),
+    phone_number: joi.string().min(9).max(10).required(),
+    id_commune: joi.number().min(1).required(),
   }),
+  updateHospital: joi
+    .object({
+      name: joi.string().max(50),
+      address: joi.string().max(255),
+      phone_number: joi.string().min(9).max(10),
+      id_commune: joi.number().min(1),
+    })
+    .with("address", "id_commune"),
   validDate: joi.object({ date: joi.date().required() }),
   validAlert: joi.object({
     heartCondition: joi.string().required(),
@@ -142,7 +150,7 @@ const validations = {
     .object({
       username: joi.string().alphanum(),
       mail: joi.string().email(),
-      page: joi.number(),
+      page: joi.number().min(1),
     })
     .or("username", "mail"),
   validPassword: joi.object({
@@ -168,7 +176,18 @@ const validations = {
     id_illness_type: joi.number().min(1).required(),
   }),
   page: joi.object({
-    page: joi.number(),
+    page: joi.number().min(1),
+  }),
+  id_wilaya: joi.object({
+    id_wilaya: joi.number().min(1).required(),
+  }),
+  searchHospital: joi.object({
+    name: joi.string().max(50),
+    phone_number: joi.string().min(9).max(10),
+    id_commune: joi.number().min(1),
+    id_wilaya: joi.number().min(1),
+    id_daira: joi.number().min(1),
+    page: joi.number().min(1),
   }),
 };
 

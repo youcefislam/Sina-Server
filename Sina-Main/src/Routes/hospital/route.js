@@ -1,37 +1,24 @@
 const express = require("express");
 
-const {
-  getAllHospitals,
-  getHospitalsByCommune,
-  getHospitalsByDaira,
-  getHospitalsByWilaya,
-  addNewHospital,
-  modifyHospital,
-  deleteHospital,
-} = require("./controllers");
-const { tokenAuthorization } = require("../../Middlewares/middlewares");
+const controllers = require("./controllers");
+const middleware = require("../../Middlewares/middlewares");
 const Router = express.Router();
 
 // hospital router
 // Get all hospital list endpoint
-Router.get("/", tokenAuthorization, getAllHospitals);
+Router.get("/", middleware.tokenAuthorization, controllers.getAllHospitals);
 
-// Get hospital list of a commune endpoint
-Router.get("/commune/:id", tokenAuthorization, getHospitalsByCommune);
+// Add hospital endpoint
+Router.post("/", middleware.tokenAuthorization, controllers.addNewHospital);
 
-// Get hospital list of a daira endpoint
-Router.get("/daira/:id", tokenAuthorization, getHospitalsByDaira);
-
-// Get hospital list of a wilaya endpoint
-Router.get("/wilaya/:id", tokenAuthorization, getHospitalsByWilaya);
-
-// Add a hospital endpoint
-Router.post("/add", tokenAuthorization, addNewHospital);
-
-// Modify a hospital endpoint
-Router.post("/modify", tokenAuthorization, modifyHospital);
+// Modify hospital endpoint
+Router.put("/:id", middleware.tokenAuthorization, controllers.modifyHospital);
 
 // Delete hospital endpoint
-Router.post("/hospital/delete", tokenAuthorization, deleteHospital);
+Router.delete(
+  "/:id",
+  middleware.tokenAuthorization,
+  controllers.deleteHospital
+);
 
 module.exports = Router;

@@ -15,6 +15,9 @@ const dbPool = mysql.createPool({
 const formulateAndQuery = (statement, query) => {
   return mysql.format(statement, query).replace(/,/g, ` AND`);
 };
+const format = (statement, value) => {
+  return mysql.format(statement, value);
+};
 
 function queryErrorHandler(type, message, path) {
   this.type = type;
@@ -26,4 +29,5 @@ module.exports = {
   formulateAndQuery,
   dbPool,
   queryErrorHandler,
+  format,
 };
