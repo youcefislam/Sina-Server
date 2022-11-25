@@ -1,29 +1,42 @@
 const express = require("express");
 const cors = require("cors");
-const { addMedicalReport, getMedicalReport } = require("./controllers");
+const controllers = require("./controllers");
 const { tokenAuthorization } = require("../../Middlewares/middlewares");
 const { uploadReport } = require("../../Utilities/uploadUtilities");
 const Router = express.Router();
 
 // medical report router
-// receive a new medical report file endpoint
-Router.post(
-  "/add",
-  tokenAuthorization,
-  uploadReport.single("file"),
-  addMedicalReport
-);
-
-// Get a report file endpoint
+// get a medical report endpoint
 Router.get(
-  "/download/:id",
+  "/:id",
   tokenAuthorization,
   cors({
     exposedHeaders: ["Content-Disposition"],
   }),
-  getMedicalReport
+  controllers.getMedicalReport
 );
 
-// delete medical report file endpoint
+// delete medical report endpoint
+Router.delete(
+  "/:id",
+  tokenAuthorization,
+  uploadReport.single("file"),
+  controllers.deleteReport
+);
+
+// Get medical reports list endpoint
+Router.get(
+  "/list/:id_patient",
+  tokenAuthorization,
+  controllers.getMedicalReportList
+);
+
+// add new medical report endpoint
+Router.post(
+  "/list/:id_patient",
+  tokenAuthorization,
+  uploadReport.single("file"),
+  controllers.addMedicalReport
+);
 
 module.exports = Router;

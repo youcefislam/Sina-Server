@@ -11,10 +11,12 @@ const selectPatientEcgFiles = (id_patient, options, page = 1) =>
     delete options?.page;
 
     if (Object.keys(options).length > 0) {
-      statement += format(
-        " AND YEAR(created_at)=? AND MONTH(created_at)=? AND DAY(created_at)=?",
-        [options.year, options.month, options.day]
-      );
+      if (options.year)
+        statement += format(" AND YEAR(created_at)=?", options.year);
+      if (options.month)
+        statement += format(" AND MONTH(created_at)=?", options.month);
+      if (options.day)
+        statement += format(" AND DAY(created_at)=?", options.day);
     }
     statement += " ORDER BY created_at LIMIT ?,5;";
     dbPool.query(statement, [id_patient, pagination], (dbErr, result) => {

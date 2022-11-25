@@ -30,7 +30,6 @@ const downloadECGFile = async (req, res) => {
 
     res.download("./" + path.normalize(file.link));
   } catch (error) {
-    console.log(error);
     if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
@@ -38,7 +37,7 @@ const downloadECGFile = async (req, res) => {
 const getEcgFileList = async (req, res) => {
   try {
     const params = await validateBody("validIdPatient", req.params);
-    const options = await validateBody("page", req.query);
+    const options = await validateBody("getEcgFileListOptions", req.query);
 
     res.send({
       results: await query.selectPatientEcgFiles(
@@ -48,7 +47,6 @@ const getEcgFileList = async (req, res) => {
       ),
     });
   } catch (error) {
-    console.log(error);
     if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }

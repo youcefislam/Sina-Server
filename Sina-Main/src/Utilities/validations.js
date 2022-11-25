@@ -192,6 +192,16 @@ const validations = {
   addEcgFile: joi.object({
     created_at: joi.date().required(),
   }),
+  getEcgFileListOptions: joi.object({
+    year: joi.number().min(1998).max(2100),
+    month: joi.number().min(1).max(12),
+    day: joi.number().min(1).max(31),
+    page: joi.number().min(1),
+  }),
+  GetReportOptions: joi.object({
+    created_at: joi.date(),
+    page: joi.number().min(1),
+  }),
 };
 
 function validationErrorHandler(error) {
