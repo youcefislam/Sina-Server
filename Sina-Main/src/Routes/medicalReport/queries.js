@@ -1,4 +1,8 @@
-const { dbPool, format } = require("../../Database/Connection");
+const {
+  dbPool,
+  format,
+  queryErrorHandler,
+} = require("../../Database/Connection");
 
 const selectReportById = (id) =>
   new Promise((resolve, reject) => {
@@ -24,8 +28,10 @@ const selectReportList = (id_patient, options, page = 1) =>
 const insertReport = (values) =>
   new Promise((resolve, reject) => {
     let statement = "INSERT INTO medical_report SET ?;";
+    console.log(values);
     dbPool.query(statement, values, (dbErr, result) => {
       if (dbErr) {
+        console.log(dbErr);
         if (dbErr.errno == 1452)
           return reject(
             new queryErrorHandler(

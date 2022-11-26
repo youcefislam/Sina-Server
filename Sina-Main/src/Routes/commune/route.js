@@ -2,26 +2,42 @@ const express = require("express");
 
 const controllers = require("./controllers");
 const middleware = require("../../Middlewares/middlewares");
+const { schema } = require("../../Utilities/validations");
 
 const Router = express.Router();
 
 // commune router
 // Get the list of commune endpoint
-Router.get("/", middleware.tokenAuthorization, controllers.getCommuneList);
+Router.get(
+  "/",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.page, "query"),
+  controllers.getCommuneList
+);
 
-// add commune endpoint -- admin only (privileges to be added)
-Router.post("/", middleware.tokenAuthorization, controllers.addCommune);
+// add commune endpoint
+Router.post(
+  "/",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.addCommuneBody, "body"),
+  controllers.addCommune
+);
 
-// Get the commune's info endpoint
-Router.get("/:id", middleware.tokenAuthorization, controllers.getCommune);
+// update commune endpoint
+Router.put(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.validId, "params"),
+  middleware.validation(schema.name, "body"),
+  controllers.updateCommune
+);
 
-// update commune endpoint -- admin only (privileges to be added)
-Router.put("/:id", middleware.tokenAuthorization, controllers.updateCommune);
-
-// delete commune endpoint -- admin only (privileges to be added)
-Router.delete("/:id", middleware.tokenAuthorization, controllers.deleteCommune);
-
-// to implement later (statistics)
-// -----------
+// delete commune endpoint
+Router.delete(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.validId, "params"),
+  controllers.deleteCommune
+);
 
 module.exports = Router;

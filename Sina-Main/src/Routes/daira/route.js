@@ -2,26 +2,41 @@ const express = require("express");
 
 const controllers = require("./controllers");
 const middleware = require("../../Middlewares/middlewares");
-
+const { schema } = require("../../Utilities/validations");
 const Router = express.Router();
 
 // Daira router
 // Get the list of daira endpoint
-Router.get("/", middleware.tokenAuthorization, controllers.getDairaList);
+Router.get(
+  "/",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.page, "query"),
+  controllers.getDairaList
+);
 
-// add daira endpoint -- admin only (privileges to be added)
-Router.post("/", middleware.tokenAuthorization, controllers.addDaira);
+// add daira endpoint
+Router.post(
+  "/",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.addDairaBody, "body"),
+  controllers.addDaira
+);
 
-// Get the daira's info endpoint
-Router.get("/:id", middleware.tokenAuthorization, controllers.getDaira);
+// update daira endpoint
+Router.put(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.validId, "params"),
+  middleware.validation(schema.name, "body"),
+  controllers.updateDaira
+);
 
-// update daira endpoint -- admin only (privileges to be added)
-Router.put("/:id", middleware.tokenAuthorization, controllers.updateDaira);
-
-// delete daira endpoint -- admin only (privileges to be added)
-Router.delete("/:id", middleware.tokenAuthorization, controllers.deleteDaira);
-
-// to implement later (statistics)
-// -----------
+// delete daira endpoint
+Router.delete(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.validId, "params"),
+  controllers.deleteDaira
+);
 
 module.exports = Router;

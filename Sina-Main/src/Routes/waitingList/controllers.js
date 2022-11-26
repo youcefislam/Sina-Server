@@ -1,12 +1,10 @@
-const validateBody = require("../../Utilities/validations");
 const query = require("./queries");
 const patientQuery = require("../patient/queries.js");
 
 const getWaitingList = async (req, res) => {
   try {
-    const options = await validateBody("page", req.query);
     res.send({
-      results: await query.selectWaitingList(req.params.id, options?.page),
+      results: await query.selectWaitingList(req.autData.id, req.query?.page),
     });
   } catch (error) {
     res.sendStatus(500);
@@ -15,68 +13,43 @@ const getWaitingList = async (req, res) => {
 
 const addRequest = async (req, res) => {
   try {
-    const params = await validateBody("validId", req.params);
-
     await query.insertRequest({
-      id_doctor: params.id,
+      id_doctor: req.body.id,
       id_patient: req.autData.id,
+      message: req.body.message,
     });
     res.sendStatus(204);
   } catch (error) {
-    console.log(error);
-    if (
-      error.type == "validation_error" ||
-      error.type == "invalid_data" ||
-      error.type == "duplicated_entry_error"
-    )
+    if (error.code == "invalid_data" || error.code == "duplicated_entry_error")
       return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
 
-const acceptRequest = async (req, res) => {
+const deleteRequest = async (req, res) => {
   try {
-    const params = await validateBody("validId", req.params);
-    const body = await validateBody("validAcceptTicket", req.body);
-
-    const updatedRecord = await patientQuery.updatePatient(
-      {
-        id_doctor: params.id,
-        severity: body.severity,
-        id_illness_type: body.id_illness_type,
-      },
-      { id: body.id_patient }
-    );
-
-    const deletedRecord = await query.deleteRequest({
-      id_doctor: params.id,
-      id_patient: body.id_patient,
+    const patientRequest = await query.selectRequest({
+      id_doctor: req.autData.id,
+      id_patient: req.query.id_patient,
     });
-    if (deletedRecord.affectedRows == 0)
-      return res.status(400).send({ type: "row_not_found" });
+    if (patientRequest == null)
+      return res.status(400).send({ code: "row_not_found" });
+
+    if (req.query.severity)
+      await patientQuery.updatePatient(
+        {
+          id_doctor: req.autData.id,
+          severity: req.query.severity,
+          id_illness_type: req.query.id_illness_type,
+        },
+        { id: req.query.id_patient }
+      );
+
+    await query.deleteRequest(patientRequest);
 
     res.sendStatus(204);
   } catch (error) {
-    console.log(error);
-    if (error.type == "validation_error") return res.status(400).send(error);
-    res.sendStatus(500);
-  }
-};
-
-const rejectRequest = async (req, res) => {
-  try {
-    const params = await validateBody("validId", req.params);
-    const body = await validateBody("validIdPatient", req.body);
-
-    const deletedRecord = await query.deleteRequest({
-      id_doctor: params.id,
-      ...body,
-    });
-    if (deletedRecord.affectedRows == 0)
-      return res.status(400).send({ type: "row_not_found" });
-    res.sendStatus(204);
-  } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
+    if (error.code == "invalid_data") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
@@ -84,6 +57,5 @@ const rejectRequest = async (req, res) => {
 module.exports = {
   getWaitingList,
   addRequest,
-  acceptRequest,
-  rejectRequest,
+  deleteRequest,
 };

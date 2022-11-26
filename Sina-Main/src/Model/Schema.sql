@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS patient (
      first_name VARCHAR(50),
      last_name VARCHAR(50),
      sex TINYINT,
-     birth_date DATE,
+     birth_date DATETIME,
      address VARCHAR(255),
      photo VARCHAR(255),
      severity TINYINT,
@@ -193,6 +193,7 @@ CREATE TABLE IF NOT EXISTS appointment (
 CREATE TABLE IF NOT EXISTS patient_request(
      id_doctor INT NOT NULL,
      id_patient INT NOT NULL,
+     message VARCHAR(250),
      primary key(id_doctor, id_patient),
      FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE,
      FOREIGN KEY (id_doctor) references doctor (id) ON DELETE CASCADE
@@ -213,7 +214,7 @@ CREATE TABLE IF NOT EXISTS medical_report (
      created_at DATETIME,
      id_patient int NOT NULL,
      primary key (id),
-     FOREIGN KEY (id) references patient (id) ON DELETE CASCADE
+     FOREIGN KEY (id_patient) references patient (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS medical_note (

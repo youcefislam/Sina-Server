@@ -1,20 +1,32 @@
 const express = require("express");
 const controllers = require("./controllers");
-
 const middleware = require("../../Middlewares/middlewares");
+const { schema } = require("../../Utilities/validations");
 const Router = express.Router();
 
 // appointment route
 // Add appointment endpoint
-Router.post("/", middleware.tokenAuthorization, controllers.addAppointment);
+Router.post(
+  "/",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.addAppointment, "body"),
+  controllers.addAppointment
+);
 
 // get appointment endpoint
-Router.get("/:id", middleware.tokenAuthorization, controllers.getAppointment);
+Router.get(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.validId, "params"),
+  controllers.getAppointment
+);
 
 // update an appointment endpoint
 Router.put(
   "/:id",
   middleware.tokenAuthorization,
+  middleware.validation(schema.validId, "params"),
+  middleware.validation(schema.validDate, "body"),
   controllers.updateAppointment
 );
 
@@ -22,6 +34,7 @@ Router.put(
 Router.delete(
   "/:id",
   middleware.tokenAuthorization,
+  middleware.validation(schema.validId, "params"),
   controllers.cancelAppointment
 );
 
@@ -29,6 +42,7 @@ Router.delete(
 Router.get(
   "/list/:id_patient",
   middleware.tokenAuthorization,
+  middleware.validation(schema.validIdPatient, "params"),
   controllers.getAppointmentList
 );
 
@@ -36,6 +50,7 @@ Router.get(
 Router.get(
   "/journal/:id_patient",
   middleware.tokenAuthorization,
+  middleware.validation(schema.validIdPatient, "params"),
   controllers.getAppointmentJournal
 );
 
@@ -43,6 +58,8 @@ Router.get(
 Router.post(
   "/journal/:id_patient",
   middleware.tokenAuthorization,
+  middleware.validation(schema.validIdPatient, "params"),
+  middleware.validation(schema.validId, "body"),
   controllers.archiveAppointment
 );
 

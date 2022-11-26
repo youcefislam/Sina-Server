@@ -1,38 +1,38 @@
 const dbPool = require("../../Database/Connection");
 const moment = require("moment");
-const validateBody = require("../../Utilities/validations");
 const query = require("./queries");
 const utility = require("../../Utilities/utility");
 
-const addInfo = async (req, res) => {
+const updatePatient = async (req, res) => {
   try {
-    const body = await validateBody("patientInfo", req.body);
-    const params = await validateBody("validId", req.params);
-
-    body.birth_date = moment.parseZone(body.birth_date).format();
-    const updatedPatient = await query.updatePatient(body, params);
+    if (req.body.birth_date)
+      req.body.birth_date = moment
+        .parseZone(req.body.birth_date)
+        .format()
+        .split("T")[0];
+    if (req.body.phone_number)
+      req.body.phone_number = Number(req.body.phone_number);
+    const updatedPatient = await query.updatePatient(req.body, req.params);
 
     if (updatedPatient.affectedRows == 0)
       return res.status(400).send({ type: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
-    if (error.type == "validation_error") res.status(400).send(error);
-    else res.sendStatus(500);
+    if (error.type == "duplicated_entry_error" || error.type == "invalid_data")
+      return res.status(400).send(error);
+    res.sendStatus(500);
   }
 };
 
 const deleteAccount = async (req, res) => {
   try {
-    const body = await validateBody("validPassword", req.body);
-    const params = await validateBody("validId", req.params);
-
-    const patient = await query.selectPatient_sensitive(params);
+    const patient = await query.selectPatient_sensitive(req.params);
 
     if (patient == null) return res.status(400).send({ type: "row_not_found" });
 
     const validPassword = await utility.comparePassword(
-      body.password,
-      doctor.password
+      req.body.password,
+      patient.password
     );
 
     if (!validPassword)
@@ -40,63 +40,21 @@ const deleteAccount = async (req, res) => {
         .status(400)
         .send({ type: "incorrect_information", path: "password" });
 
-    await query.deletePatientAccount(params.id);
+    await query.deletePatientAccount(req.params.id);
     res.sendStatus(204);
   } catch (error) {
-    if (error.type == "validation_error") res.status(400).send(error);
-    else res.sendStatus(500);
-  }
-};
-
-const modifyMail = async (req, res) => {
-  try {
-    const body = await validateBody("validMail", req.body);
-    const params = await validateBody("validId", req.params);
-
-    const updatedPatient = await query.updatePatient(body, params);
-
-    if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "row_not_found" });
-
-    res.sendStatus(204);
-  } catch (error) {
-    if (
-      error.type == "validation_error" ||
-      error.type == "duplicated_entry_error"
-    )
-      return res.status(400).send(error);
-    res.sendStatus(500);
-  }
-};
-
-const modifyUsername = async (req, res) => {
-  try {
-    const body = await validateBody("validUsername", req.body);
-    const params = await validateBody("validId", req.params);
-
-    const updatedPatient = await query.updatePatient(body, req.params);
-
-    if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "row_not_found" });
-
-    res.sendStatus(204);
-  } catch (error) {
-    if (
-      error.type == "validation_error" ||
-      error.type == "duplicated_entry_error"
-    )
-      return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
 
 const modifyPassword = async (req, res) => {
   try {
-    const body = await validateBody("validNewPassword", req.body);
-    const params = await validateBody("validId", req.params);
+    const patient = await query.selectPatient_sensitive(req.params);
+
+    if (patient == null) return res.status(400).send({ type: "row_not_found" });
 
     const correctOldPassword = await utility.comparePassword(
-      body.old_password,
+      req.body.old_password,
       patient.password
     );
 
@@ -105,11 +63,11 @@ const modifyPassword = async (req, res) => {
         .status(400)
         .send({ type: "incorrect_information", path: "old_password" });
 
-    const newPassword = await utility.hashPassword(body.password);
+    const newPassword = await utility.hashPassword(req.body.password);
 
     const updatedPatient = await query.updatePatient(
       { password: newPassword },
-      params
+      req.params
     );
 
     if (updatedPatient.affectedRows == 0)
@@ -117,98 +75,30 @@ const modifyPassword = async (req, res) => {
 
     res.sendStatus(204);
   } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
-    res.sendStatus(500);
-  }
-};
-
-const modifyName = async (req, res) => {
-  try {
-    const body = await validateBody("validName", req.body);
-    const params = await validateBody("validId", req.params);
-
-    const updatedPatient = await query.updatePatient(body, params);
-
-    if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "row_not_found" });
-
-    res.sendStatus(204);
-  } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
-    res.sendStatus(500);
-  }
-};
-
-const modifyNumber = async (req, res) => {
-  try {
-    const body = await validateBody("validNumber", req.body);
-    const params = await validateBody("validId", req.params);
-
-    body.phone_number = Number(body.phone_number);
-
-    const updatedPatient = await query.updatePatient(body, params);
-
-    if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "row_not_found" });
-
-    res.sendStatus(204);
-  } catch (error) {
-    if (
-      error.type == "validation_error" ||
-      error.type == "duplicated_entry_error"
-    )
-      return res.status(400).send(error);
-    res.sendStatus(500);
-  }
-};
-
-const modifyAddress = async (req, res) => {
-  try {
-    const body = await validateBody("validPatientAddress", req.body);
-    const params = await validateBody("validId", req.params);
-
-    const updatedPatient = await query.updatePatient(body, params);
-
-    if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "row_not_found" });
-
-    res.sendStatus(204);
-  } catch (error) {
-    if (error.type == "validation_error" || error.type == "invalid_data")
-      return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
 
 const getPatientInfo = async (req, res) => {
   try {
-    const params = await validateBody("validId", req.params);
-    res.send({ result: await query.searchPatient(params) });
+    res.send({ result: await query.searchPatient(req.params) });
   } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
 
 const getAllPatient = async (req, res) => {
   try {
-    const options = await validateBody("page", req.query);
-    res.send({ result: await query.selectAllPatient(options?.page) });
+    res.send({ result: await query.selectAllPatient(req.query?.page) });
   } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
 
 module.exports = {
-  addInfo,
+  updatePatient,
   deleteAccount,
-  modifyMail,
-  modifyUsername,
   modifyPassword,
-  modifyName,
-  modifyNumber,
-  modifyAddress,
   getPatientInfo,
   getAllPatient,
 };

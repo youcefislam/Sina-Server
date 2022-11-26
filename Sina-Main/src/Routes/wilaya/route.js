@@ -2,25 +2,41 @@ const express = require("express");
 
 const controllers = require("./controllers");
 const middleware = require("../../Middlewares/middlewares");
+const { schema } = require("../../Utilities/validations");
 const Router = express.Router();
 
 // Wilaya router
 // Get the list of wilaya endpoint
-Router.get("/", middleware.tokenAuthorization, controllers.getWilayaList);
+Router.get(
+  "/",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.page, "query"),
+  controllers.getWilayaList
+);
 
-// add wilaya endpoint -- admin only (privileges to be added)
-Router.post("/", middleware.tokenAuthorization, controllers.addWilaya);
+// add wilaya endpoint
+Router.post(
+  "/",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.name, "body"),
+  controllers.addWilaya
+);
 
-// Get the wilaya's info endpoint
-Router.get("/:id", middleware.tokenAuthorization, controllers.getWilaya);
+// update wilaya endpoint
+Router.put(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.validId, "params"),
+  middleware.validation(schema.name, "body"),
+  controllers.updateWilaya
+);
 
-// update wilaya endpoint -- admin only (privileges to be added)
-Router.put("/:id", middleware.tokenAuthorization, controllers.updateWilaya);
-
-// delete wilaya endpoint -- admin only (privileges to be added)
-Router.delete("/:id", middleware.tokenAuthorization, controllers.deleteWilaya);
-
-// to implement later (statistics)
-// -----------
+// delete wilaya endpoint
+Router.delete(
+  "/:id",
+  middleware.tokenAuthorization,
+  middleware.validation(schema.validId, "params"),
+  controllers.deleteWilaya
+);
 
 module.exports = Router;

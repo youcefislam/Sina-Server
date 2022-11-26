@@ -1,9 +1,4 @@
-const { dbPool } = require("../../Database/connection");
-
-function queryErrorHandler(type, message) {
-  this.type = type;
-  this.message = message;
-}
+const { dbPool, queryErrorHandler } = require("../../Database/connection");
 
 const selectRelative = (id) =>
   new Promise((resolve, reject) => {
@@ -16,6 +11,7 @@ const selectRelative = (id) =>
   });
 const insertRelative = (info) =>
   new Promise((resolve, reject) => {
+    delete info.id;
     let statement = "INSERT INTO relative SET ?;";
     dbPool.query(statement, info, (dbErr, result) => {
       if (dbErr) {

@@ -19,8 +19,8 @@ const format = (statement, value) => {
   return mysql.format(statement, value);
 };
 
-function queryErrorHandler(type, message, path) {
-  this.type = type;
+function queryErrorHandler(code, message, path) {
+  this.code = code;
   this.message = message;
   this.path = path;
 }

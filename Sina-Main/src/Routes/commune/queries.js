@@ -1,23 +1,10 @@
-const { dbPool } = require("../../Database/Connection");
-
-function queryErrorHandler(type, message) {
-  this.type = type;
-  this.message = message;
-}
+const { dbPool, queryErrorHandler } = require("../../Database/Connection");
 
 const selectAllCommune = (page = 1) =>
   new Promise((resolve, reject) => {
     const pagination = page * 5 - 5;
     let statement = "SELECT * FROM commune ORDER BY name LIMIT ?,5;";
     dbPool.query(statement, pagination, (dbErr, result) => {
-      if (dbErr) return reject(dbErr);
-      resolve(result);
-    });
-  });
-const selectCommune = (id) =>
-  new Promise((resolve, reject) => {
-    let statement = "SELECT * FROM commune WHERE id=?;";
-    dbPool.query(statement, id, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result);
     });

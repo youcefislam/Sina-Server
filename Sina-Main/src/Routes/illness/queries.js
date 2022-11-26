@@ -1,9 +1,4 @@
-const { dbPool } = require("../../Database/Connection");
-
-function queryErrorHandler(type, message) {
-  this.type = type;
-  this.message = message;
-}
+const { dbPool, queryErrorHandler } = require("../../Database/Connection");
 
 const selectAllIllnessTypes = (page = 1) =>
   new Promise((resolve, reject) => {

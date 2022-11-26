@@ -2,6 +2,7 @@ const express = require("express");
 const controllers = require("./controllers");
 const middleware = require("../../Middlewares/middlewares");
 const { uploadEcg } = require("../../Utilities/uploadUtilities");
+const { schema } = require("../../Utilities/validations");
 
 const Router = express.Router();
 
@@ -10,6 +11,8 @@ const Router = express.Router();
 Router.get(
   "/list/:id_patient",
   middleware.tokenAuthorization,
+  middleware.validation(schema.validIdPatient, "params"),
+  middleware.validation(schema.getEcgListOptions, "query"),
   controllers.getEcgFileList
 );
 
@@ -17,7 +20,9 @@ Router.get(
 Router.post(
   "/list/:id_patient",
   middleware.tokenAuthorization,
+  middleware.validation(schema.validIdPatient, "params"),
   uploadEcg.single("file"),
+  middleware.validation(schema.addEcgFile, "body"),
   controllers.addEcgFile
 );
 
@@ -25,6 +30,7 @@ Router.post(
 Router.get(
   "/download/:id",
   middleware.tokenAuthorization,
+  middleware.validation(schema.validId, "params"),
   controllers.downloadECGFile
 );
 

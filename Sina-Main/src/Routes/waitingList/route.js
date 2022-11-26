@@ -1,43 +1,35 @@
 const express = require("express");
 const controller = require("./controllers");
 const middleware = require("../../Middlewares/middlewares");
-
+const { schema } = require("../../Utilities/validations");
 const Router = express.Router();
 
 // Waiting list route
 // Get the waiting list of the doctor endpoint
 Router.get(
-  "/:id",
+  "/",
   middleware.tokenAuthorization,
   middleware.doctorOnly,
-  middleware.private,
+  middleware.validation(schema.page, "query"),
   controller.getWaitingList
 );
 
 // Insert a patient request to the doctor's waiting list
 Router.post(
-  "/:id",
+  "/",
   middleware.tokenAuthorization,
   middleware.patientOnly,
+  middleware.validation(schema.addPatientRequest, "body"),
   controller.addRequest
 );
 
-// Reject a patient on waiting list endpoint
+// Accept/Reject a request endpoint
 Router.delete(
-  "/:id",
+  "/",
   middleware.tokenAuthorization,
   middleware.doctorOnly,
-  middleware.private,
-  controller.rejectRequest
-);
-
-// Accept a patient request endpoint
-Router.post(
-  "/:id/accept",
-  middleware.tokenAuthorization,
-  middleware.doctorOnly,
-  middleware.private,
-  controller.acceptRequest
+  middleware.validation(schema.patientRequest, "query"),
+  controller.deleteRequest
 );
 
 module.exports = Router;

@@ -12,24 +12,21 @@ const checkReportType = (file, cb) => {
 
   if (extname && mimetype) {
     return cb(null, true);
-  } else {
-    cb("Pdf Only");
   }
+  cb(null, false);
 };
-const checkEcgtType = (file, cb) => {
+const checkEcgType = (file, cb, res) => {
   //type of valid extension
   const filetype = /csv/;
   //check file extension
   const extname = filetype.test(path.extname(file.originalname).toLowerCase());
   // check the mimetype
   const mimetype = filetype.test(file.mimetype);
-  console.log(extname);
 
   if (extname && mimetype) {
     return cb(null, true);
-  } else {
-    cb("csv Only");
   }
+  cb(null, false);
 };
 
 const reportStorage = multer.diskStorage({
@@ -55,7 +52,7 @@ const ecgFileStorage = multer.diskStorage({
 const uploadReport = multer({
   storage: reportStorage, // where to store the files
   limits: 30000000, // limit of the uploaded data
-  fileFilter: (res, file, cb) => {
+  fileFilter: (req, file, cb) => {
     checkReportType(file, cb); // type of valid files
   },
 });
@@ -63,15 +60,14 @@ const uploadReport = multer({
 const uploadEcg = multer({
   storage: ecgFileStorage, // where to store the files
   limits: 30000000, // limit of the uploaded data
-  fileFilter: (res, file, cb) => {
-    checkEcgtType(file, cb); // type of valid files
+  fileFilter: (req, file, cb) => {
+    checkEcgType(file, cb); // type of valid files
   },
 });
 
 const deleteFile = (path) => {
   fs.unlink(path, (error) => {
     if (error) return console.log(error);
-    console.log(path + " ===> deleted");
   });
 };
 

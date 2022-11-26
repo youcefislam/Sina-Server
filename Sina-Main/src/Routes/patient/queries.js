@@ -1,6 +1,10 @@
 const mysql = require("mysql");
 const moment = require("moment");
-const { dbPool } = require("../../Database/connection");
+const {
+  dbPool,
+  formulateAndQuery,
+  format,
+} = require("../../Database/connection");
 
 function queryErrorHandler(type, message) {
   this.type = type;
@@ -18,25 +22,27 @@ const deletePatientAccount = (id) =>
 
 const updatePatient = async (newValues, options) =>
   new Promise((resolve, reject) => {
-    let statement = `UPDATE patient SET ? WHERE ?;`;
-    dbPool.query(statement, [newValues, options], (dbErr, result) => {
+    let statement = format(`UPDATE patient SET ?`, newValues);
+    statement += formulateAndQuery(` WHERE ?;`, options);
+    dbPool.query(statement, (dbErr, result) => {
       if (dbErr) {
         if (dbErr.errno == 1062)
-          reject(
+          return reject(
             new queryErrorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("doctor.", "")
             )
           );
-        else if (dbErr.errno == 1452)
-          reject(
+        if (dbErr.errno == 1452)
+          return reject(
             new queryErrorHandler(
               "invalid_data",
               `The entered data might be incorrect`
             )
           );
-        else reject(dbErr);
-      } else resolve(result);
+        return reject(dbErr);
+      }
+      resolve(result);
     });
   });
 

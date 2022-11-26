@@ -119,8 +119,8 @@ app.use("*", (req, res) => res.sendStatus(404));
 
 // handling unknown errors -- tested
 app.use((err, req, res, next) => {
-  if (err.status == 400) res.status(err.status).send({ error: "Bad_request" });
-  res.status(500).send({ error: "unknown_internal_error_server" });
+  if (err.status == 400) res.status(err.status).send({ code: "Bad_request" });
+  res.sendStatus(500);
 });
 
 module.exports = app;

@@ -1,10 +1,8 @@
-const { dbPool, formulateAndQuery } = require("../../Database/Connection");
-
-function queryErrorHandler(type, message, path) {
-  this.type = type;
-  this.message = message;
-  this.path = path;
-}
+const {
+  dbPool,
+  formulateAndQuery,
+  queryErrorHandler,
+} = require("../../Database/Connection");
 
 const selectWaitingList = (id_doctor, page = 1) =>
   new Promise((resolve, reject) => {

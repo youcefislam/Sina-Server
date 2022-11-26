@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const Joi = require("joi");
 require("dotenv").config();
 
 const { validateAccessToken } = require("../Utilities/utility");
@@ -18,18 +19,34 @@ const tokenAuthorization = async (req, res, next) => {
 };
 
 const doctorOnly = async (req, res, next) => {
-  if (req.autData.patient) return res.status(400).send({ type: "doctor_only" });
+  if (req.autData.patient) return res.status(400).send({ code: "doctor_only" });
   next();
 };
 
 const patientOnly = async (req, res, next) => {
   if (req.autData.patient) return next();
-  res.status(400).send({ type: "patient_only" });
+  res.status(400).send({ code: "patient_only" });
 };
 
 const private = async (req, res, next) => {
   if (req.autData?.id == req.params?.id) return next();
-  res.status(400).send({ type: "private_access" });
+  res.status(400).send({ code: "private_access" });
+};
+
+const validation = (schema, property) => {
+  return async (req, res, next) => {
+    try {
+      await schema.validateAsync(req[property]);
+
+      next();
+    } catch (error) {
+      const type = error.details[0].type;
+      const path = error.details[0].path[0];
+      const message = error.details[0].message;
+      const code = "validation_error";
+      res.status(422).send({ code, type, message, path });
+    }
+  };
 };
 
 module.exports = {
@@ -37,4 +54,5 @@ module.exports = {
   doctorOnly,
   patientOnly,
   private,
+  validation,
 };

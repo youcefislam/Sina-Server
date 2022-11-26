@@ -1,7 +1,7 @@
 const { dbPool, formulateAndQuery } = require("../../Database/connection");
 
-function queryErrorHandler(type, message, path) {
-  this.type = type;
+function queryErrorHandler(code, message, path) {
+  this.code = code;
   this.message = message;
   this.path = path;
 }

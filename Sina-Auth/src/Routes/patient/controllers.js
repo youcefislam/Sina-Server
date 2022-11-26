@@ -115,7 +115,7 @@ const refreshAccessToken = async (req, res) => {
       patient: 1,
     };
     const ACCESS_TOKEN = await utility.generateAccessToken(tokenData, {
-      expiresIn: "15m",
+      expiresIn: "30m",
     });
     return res.send({ ACCESS_TOKEN });
   } catch (error) {

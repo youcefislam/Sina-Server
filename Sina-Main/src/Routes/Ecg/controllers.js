@@ -1,53 +1,44 @@
 const path = require("path");
 const { deleteFile } = require("../../Utilities/uploadUtilities");
 const query = require("./queries");
-const validateBody = require("../../Utilities/validations");
 
 const addEcgFile = async (req, res) => {
   try {
-    const params = await validateBody("validIdPatient", req.params);
-    const body = await validateBody("addEcgFile", req.body);
-
-    if (req?.file?.path == null)
-      return res.status(400).send({ type: "no_file_attached" });
-    body.link = req?.file?.path;
-    await query.insertEcgFile({ ...body, ...params });
+    if (req.file?.path == null)
+      return res.status(400).send({
+        code: "file_error",
+        message: "File not attached or invalid file extension type",
+      });
+    req.body.link = req.file?.path;
+    await query.insertEcgFile({ ...req.body, ...req.params });
 
     res.sendStatus(201);
   } catch (error) {
-    if (req?.file?.path) deleteFile(req?.file?.path);
-    if (error.type == "validation_error" || error.type == "invalid_data")
-      return res.status(400).send(error);
+    if (req.file?.path) deleteFile(req.file?.path);
+    if (error.code == "invalid_data") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
 
 const downloadECGFile = async (req, res) => {
   try {
-    const params = await validateBody("validId", req.params);
-
-    const file = await query.selectEcgFileById(params.id);
+    const file = await query.selectEcgFileById(req.params.id);
 
     res.download("./" + path.normalize(file.link));
   } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
 const getEcgFileList = async (req, res) => {
   try {
-    const params = await validateBody("validIdPatient", req.params);
-    const options = await validateBody("getEcgFileListOptions", req.query);
-
     res.send({
       results: await query.selectPatientEcgFiles(
-        params.id_patient,
-        options,
-        options.page
+        req.params.id_patient,
+        req.query,
+        req.query?.page
       ),
     });
   } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
