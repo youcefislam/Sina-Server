@@ -63,7 +63,7 @@ const updateDoctor = (newValue, options) =>
 const selectPatientList = (id_doctor, page = 1) =>
   new Promise((resolve, reject) => {
     const pagination = page * 5 - 5;
-    const statement = `SELECT * FROM patientView WHERE id_doctor=? ORDER BY first_name, last_name LIMIT ?,5;`;
+    const statement = `SELECT * FROM patientViewDetailed WHERE id_doctor=? ORDER BY first_name, last_name LIMIT ?,5;`;
     dbPool.query(statement, [id_doctor, pagination], (dbErr, results) => {
       if (dbErr) reject(dbErr);
       else resolve(results);

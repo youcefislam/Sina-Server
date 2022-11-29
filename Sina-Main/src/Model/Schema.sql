@@ -265,88 +265,7 @@ WHERE
      AND daira.id = doctor.id_daira;
 
 CREATE
-OR REPLACE VIEW patientView AS
-SELECT
-     patient.id,
-     username,
-     password,
-     patient.mail,
-     patient.first_name,
-     patient.last_name,
-     sex,
-     birth_date,
-     address,
-     photo,
-     severity,
-     created_at,
-     patient.phone_number,
-     id_illness_type,
-     illness_type.type as "illness_type",
-     id_commune,
-     commune.name as "commune_name",
-     daira.id as "id_daira",
-     daira.name as "daira_name",
-     wilaya.id as "id_wilaya",
-     wilaya.name as "wliaya_name",
-     id_doctor,
-     id_relative,
-     relative.first_name as "relative_first_name",
-     relative.last_name as "relative_last_name",
-     relative.phone_number "relative_phone_number",
-     relative.mail as "relative_mail"
-FROM
-     patient,
-     commune,
-     daira,
-     wilaya,
-     relative,
-     illness_type
-WHERE
-     patient.id_illness_type = illness_type.id
-     AND patient.id_commune = commune.id
-     AND patient.id_relative = relative.id
-     AND commune.id_daira = daira.id
-     AND daira.id_wilaya = wilaya.id;
-
-CREATE
-OR REPLACE VIEW patientView AS
-SELECT
-     p.id,
-     username,
-     p.mail,
-     p.first_name,
-     p.last_name,
-     sex,
-     birth_date,
-     address,
-     photo,
-     severity,
-     created_at,
-     p.phone_number,
-     id_illness_type,
-     i.type as "illness_type",
-     id_commune,
-     c.name as "commune_name",
-     d.id as "id_daira",
-     d.name as "daira_name",
-     w.id as "id_wilaya",
-     w.name as "wliaya_name",
-     id_doctor,
-     id_relative,
-     r.first_name as "relative_first_name",
-     r.last_name as "relative_last_name",
-     r.phone_number "relative_phone_number",
-     r.mail as "relative_mail"
-FROM
-     patient as p
-     left join commune as c on p.id_commune = c.id
-     left join daira as d on c.id_daira = d.id
-     left join wilaya as w on d.id_wilaya = w.id
-     left join relative as r on p.id_relative = r.id
-     left join illness_type as i on p.id_illness_type = i.id;
-
-CREATE
-OR REPLACE VIEW patientView AS
+OR REPLACE VIEW patientViewDetailed AS
 SELECT
      p.id,
      p.username,
@@ -387,3 +306,25 @@ FROM
      left join relative as r on p.id_relative = r.id
      left join doctor as doc on p.id_doctor = doc.id
      left join illness_type as i on p.id_illness_type = i.id;
+
+CREATE
+OR REPLACE VIEW patientView AS
+SELECT
+     id,
+     username,
+     mail,
+     first_name,
+     last_name,
+     sex,
+     birth_date,
+     address,
+     photo,
+     severity,
+     created_at,
+     phone_number,
+     id_illness_type,
+     id_commune,
+     id_relative,
+     id_doctor
+FROM
+     patient as p;

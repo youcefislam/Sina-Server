@@ -1,8 +1,18 @@
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
+const patientQuery = require("../Routes/patient/queries");
 require("dotenv").config();
 
 const { validateAccessToken } = require("../Utilities/utility");
+
+function socketError(err, code, message) {
+  const error = new Error(err);
+  error.data = {
+    code,
+    message,
+  };
+  return error;
+}
 
 const tokenAuthorization = async (req, res, next) => {
   try {
@@ -15,6 +25,48 @@ const tokenAuthorization = async (req, res, next) => {
     } else res.status(401);
   } catch (error) {
     res.sendStatus(403);
+  }
+};
+const socketTokenAuthorization = async (socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+    if (token == null) {
+      const error = new Error("No token Error");
+      error.data = { code: "NO_TOKEN_ASSIGNED" };
+      next(error);
+    }
+    const valid = await validateAccessToken(token);
+    socket.autData = valid;
+    next();
+  } catch (error) {
+    const err = new Error(error.message);
+    err.data = { code: "INVALID_TOKEN" };
+    next(err);
+  }
+};
+
+const socketAccountIdentification = async (socket, next) => {
+  try {
+    const authenticationData = socket.autData;
+
+    if (authenticationData.patient) {
+      const patient = await patientQuery.selectPatientMinimal({
+        id: authenticationData.id,
+      });
+      if (patient?.id_doctor == null)
+        return next(
+          new socketError(
+            "Not authorized",
+            "not_authorized",
+            "Patient account not attached to a doctor"
+          )
+        );
+      socket.autData.id_doctor = patient.id_doctor;
+      next();
+    } else next();
+  } catch (error) {
+    console.log(error);
+    next(socketError("Not authorized", "Token_validation_error"));
   }
 };
 
@@ -51,6 +103,8 @@ const validation = (schema, property) => {
 
 module.exports = {
   tokenAuthorization,
+  socketTokenAuthorization,
+  socketAccountIdentification,
   doctorOnly,
   patientOnly,
   private,

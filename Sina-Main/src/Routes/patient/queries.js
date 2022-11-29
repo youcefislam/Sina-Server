@@ -54,10 +54,18 @@ const selectPatient_sensitive = (query) =>
       else resolve(result[0]);
     });
   });
+const selectPatientMinimal = (query) =>
+  new Promise((resolve, reject) => {
+    let statement = `SELECT * FROM patientView WHERE ?;`;
+    dbPool.query(statement, query, (dbErr, result) => {
+      if (dbErr) reject(dbErr);
+      else resolve(result[0]);
+    });
+  });
 const searchPatient = (query) =>
   new Promise((resolve, reject) => {
     const statement = mysql
-      .format(`SELECT * FROM patientView WHERE ?;`, query)
+      .format(`SELECT * FROM patientViewDetailed WHERE ?;`, query)
       .replace(",", ` AND`);
     dbPool.query(statement, (dbErr, result) => {
       if (dbErr) reject(dbErr);
@@ -69,7 +77,7 @@ const selectAllPatient = (page = 1) =>
   new Promise((resolve, reject) => {
     const pagination = page * 5 - 5;
     let statement =
-      "SELECT * FROM patientView ORDER BY first_name,last_name LIMIT ?,5;";
+      "SELECT * FROM patientViewDetailed ORDER BY first_name,last_name LIMIT ?,5;";
     dbPool.query(statement, pagination, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result);
@@ -81,4 +89,5 @@ module.exports = {
   updatePatient,
   deletePatientAccount,
   selectAllPatient,
+  selectPatientMinimal,
 };

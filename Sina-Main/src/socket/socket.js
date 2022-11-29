@@ -1,135 +1,65 @@
 const { Server } = require("socket.io");
-const {
-  getSocketByPatientId,
-  getPatientSocketByDoctorId,
-  getSocketByDoctorId,
-  disconnectPatient,
-  validateToken,
-} = require("../Utilities/utility");
-
+const utility = require("../Utilities/utility");
+const middleware = require("../Middlewares/middlewares");
 const io = new Server();
 
-io.use(async (socket, next) => {
-  const { error, valid } = await validateToken(socket.handshake.auth.token);
-  if (error) {
-    const err = new Error("not authorized");
-    err.data = { content: "Please try again later later" };
-    next(err);
-  } else {
-    if (valid.patient) {
-      let statement = "SELECT idMedecin FROM patient WHERE idPatient=?";
-      dbPool.query(statement, valid.id, (dbErr, result) => {
-        if (dbErr) {
-          // datatbase error
-          console.log("## db error ## ", dbErr);
-          next(err);
-        } else {
-          valid.idMedecin = result[0].idMedecin;
-          socket.autData = valid;
-          next();
-        }
-      });
-    } else {
-      socket.autData = valid;
-      next();
-    }
-  }
-});
+const logOutRoomsNotification = (socket, event) => {
+  const roomSet = socket.rooms.values();
+  roomSet.next();
+  io.to(roomSet.next().value).emit(event, {
+    disconnected: true,
+  });
+};
+
+io.use(middleware.socketTokenAuthorization);
+io.use(middleware.socketAccountIdentification);
+
 io.on("connection", (socket) => {
   console.log("a user connected ", socket.id, " from ", socket.autData);
   socket.on("disconnect", () => {
-    // console.log("a user is disconnected ", socket.id);
+    console.log("a user disconnected ", socket.id, " from ", socket.autData);
     if (socket.autData.patient) {
-      disconnectPatient(socket);
+      logOutRoomsNotification(socket, "patientDisconnected");
+      utility.disconnectPatient(socket);
+      utility.patientLogOutNotifyDoctor(socket);
     } else {
-      connectedDoctors = connectedDoctors.filter(
-        (item) => item.socketId != socket.id
-      );
-      doctorSocketIds = doctorSocketIds.filter(
-        (item) => item.socket.id != socket.id
-      );
-      let socketPatient = getPatientSocketByDoctorId(socket.autData.id);
-      if (socketPatient) {
-        io.to(socketPatient).emit("DoctorGoes", { disconnected: true });
-      }
+      logOutRoomsNotification(socket, "DoctorDisconnected");
+      utility.disconnectDoctor(socket);
     }
+
+    socket.disconnect(true);
   });
-  socket.on("leaveRoom", (data) => {
-    let socketPatient = getSocketByPatientId(data.withUserId);
-    io.to(socketPatient.id).emit("DoctorGoes", {
-      disconnected: true,
-      room: data.room,
-    });
+
+  socket.on("doctorLeaveRoom", (data) => {
+    io.to(data.room).emit("DoctorGone", "Doctor left the room");
     socket.leave(data.room);
   });
-  socket.on("patientStopRecording", (data) => {
-    // console.log(socket.id, " patient stop recording ");
-    disconnectPatient(socket);
-    socket.leave(data?.room);
-  });
-  socket.on("loggedin", function (data) {
-    // console.log(socket.autData);
+
+  socket.on("logIn", function (data) {
     if (socket.autData.patient) {
-      patientSocketIds = patientSocketIds.filter(
-        (item) => item.userId != socket.autData.id
-      );
-      patientSocketIds.push({ socket: socket, userId: socket.autData.id });
-      connectedPatients = connectedPatients.filter(
-        (item) => item.id != socket.autData.id
-      );
-      connectedPatients.push({ ...socket.autData, socketId: socket.id });
-      let socketMedecin = getSocketByDoctorId(socket.autData.idMedecin);
-      // console.log(socketMedecin, "    ", socket.autData.idMedecin);
-      if (socketMedecin) {
-        let connectedPaitientWithId = connectedPatients.filter(
-          (item) => item.idMedecin == socket.autData.idMedecin
-        );
-        // console.log(socketMedecin.id);
-        io.to(socketMedecin.id).emit("updateUserList", connectedPaitientWithId);
-      }
+      utility.patientLogIn(socket);
+      utility.patientLogInNotification(socket);
     } else {
-      doctorSocketIds = doctorSocketIds.filter(
-        (item) => item.userId != socket.autData.id
-      );
-      doctorSocketIds.push({ socket: socket, userId: socket.autData.id });
-      connectedDoctors = connectedDoctors.filter(
-        (item) => item.id != socket.autData.id
-      );
-      connectedDoctors.push({ ...socket.autData, socketId: socket.id });
-      let connectedPaitientWithId = connectedPatients.filter(
-        (item) => item.idMedecin == socket.autData.id
-      );
-      io.to(socket.id).emit("updateUserList", connectedPaitientWithId);
+      utility.doctorLogIn(socket);
+      utility.sendConnectedPatientList(socket);
     }
   });
-  socket.on("create", function (data) {
-    // console.log(socket.id, " joingin the room : ", data.room);
-    // console.log("create room");
-    socket.join(data?.room);
-    let withSocket = getSocketByPatientId(data?.withUserId);
-    socket.broadcast.to(withSocket?.id).emit("invite", { data });
-    // socket.broadcast.to(socket.id).emit("invite");
+
+  socket.on("createRoom", function (data) {
+    const room = `${socket.autData.id}-${data.id_patient}`;
+    let patientSocket = utility.getSocketByPatientId(data.id_patient);
+    if (patientSocket) {
+      patientSocket.emit("invite", { room });
+      socket.join(room);
+      patientSocket.join(room);
+    } else socket.emit("error", { code: "patient_not_connected" });
   });
-  socket.on("joinRoom", function (data) {
-    // console.log(socket.id, " patient is joining the room : ", data);
-    socket.join(data);
-  });
+
   socket.on("message", function (data) {
-    data?.room && socket.broadcast.to(data.room).emit("message", data.message);
-  });
-  socket.on("disconnectMe", function (data) {
-    // console.log(data)
-    // if (socket.autData.patient && data.doctorIsWatching ) {
-    //   let socketMedecin = getSocketByDoctorId(socket.autData.idMedecin);
-    //   // console.log(socketMedecin, "    ", socket.autData.idMedecin);
-    //   if (socketMedecin) {
-    //     let connectedPaitientWithId = connectedPatients.filter(
-    //       (item) => item.idMedecin == socket.autData.idMedecin
-    //     );
-    //     console.log(socketMedecin.id);
-    //     io.to(socketMedecin.id).emit("updateUserList", connectedPaitientWithId);
-    //   }
-    // }
+    console.log("message");
+    if (data?.room) {
+      socket.to(data.room).emit("message", data.message);
+    } else socket.emit("error", { code: "room_required" });
   });
 });
 

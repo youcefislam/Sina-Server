@@ -83,51 +83,96 @@ connectedPatients = [];
 doctorSocketIds = [];
 connectedDoctors = [];
 
-const getSocketByPatientId = (userId) => {
-  let socket = "";
-  for (let i = 0; i < patientSocketIds.length; i++) {
-    if (patientSocketIds[i].userId == userId) {
-      socket = patientSocketIds[i].socket;
-      break;
-    }
-  }
-  return socket;
+const getSocketByPatientId = (patientId) => {
+  const socket = patientSocketIds.find(
+    (patient) => patient.userId == patientId
+  );
+  return socket?.socket;
 };
-const getPatientSocketByDoctorId = (userId) => {
-  let socket = "";
-  for (let i = 0; i < connectedPatients.length; i++) {
-    if (connectedPatients[i].idMedecin == userId) {
-      socket = connectedPatients[i].socketId;
-      break;
-    }
-  }
-  return socket;
+const getPatientSocketByDoctorId = (doctorId) => {
+  const socket = connectedPatients.find(
+    (patient) => patient.id_doctor == doctorId
+  );
+  return socket?.socketId;
 };
-const getSocketByDoctorId = (userId) => {
-  let socket = "";
-  for (let i = 0; i < doctorSocketIds.length; i++) {
-    if (doctorSocketIds[i].userId == userId) {
-      socket = doctorSocketIds[i].socket;
-      break;
-    }
-  }
-  return socket;
+const getSocketByDoctorId = (doctorId) => {
+  const socket = doctorSocketIds.find((doctor) => doctor.userId == doctorId);
+  return socket?.socket;
+};
+
+const deletePatientSocket = (socket) => {
+  connectedPatients = connectedPatients.filter(
+    (patient) => patient.socketId != socket.id
+  );
+  patientSocketIds = patientSocketIds.filter(
+    (patient) => patient.socket.id != socket.id
+  );
 };
 
 const disconnectPatient = (socket) => {
-  connectedPatients = connectedPatients.filter(
-    (item) => item.socketId != socket.id
-  );
-  patientSocketIds = patientSocketIds.filter(
-    (item) => item.socket.id != socket.id
-  );
-  let socketMedecin = getSocketByDoctorId(socket.autData.idMedecin);
-  if (socketMedecin) {
-    let connectedPaitientWithId = connectedPatients.filter(
-      (item) => item.idMedecin == socket.autData.idMedecin
+  deletePatientSocket(socket);
+};
+
+const patientLogOutNotifyDoctor = (patientSocket) => {
+  let socketDoctor = getSocketByDoctorId(patientSocket.autData.id_doctor);
+  if (socketDoctor) {
+    let connectedPatientId = connectedPatients.filter(
+      (patient) => patient.id_doctor == patientSocket.autData.id_doctor
     );
-    io.to(socketMedecin.id).emit("updateUserList", connectedPaitientWithId);
+    socketDoctor.emit("updatePatientList", connectedPatientId);
   }
+};
+
+const patientLogInNotification = (socket) => {
+  let doctorSocket = getSocketByDoctorId(socket.autData.id_doctor);
+  if (doctorSocket) {
+    let connectedPatientWithId = connectedPatients.filter(
+      (item) => item.id_doctor == socket.autData.id_doctor
+    );
+    doctorSocket.emit("updatePatientList", connectedPatientWithId);
+  }
+};
+
+const deleteDoctorSocket = (socket) => {
+  connectedDoctors = connectedDoctors.filter(
+    (doctor) => doctor.socketId != socket.id
+  );
+  doctorSocketIds = doctorSocketIds.filter(
+    (doctor) => doctor.socket.id != socket.id
+  );
+};
+
+const disconnectDoctor = (socket) => {
+  deleteDoctorSocket(socket);
+};
+
+const patientLogIn = (socket) => {
+  patientSocketIds = patientSocketIds.filter(
+    (patient) => patient.userId != socket.autData.id
+  );
+  patientSocketIds.push({ socket: socket, userId: socket.autData.id });
+  connectedPatients = connectedPatients.filter(
+    (patient) => patient.id != socket.autData.id
+  );
+  connectedPatients.push({ ...socket.autData, socketId: socket.id });
+};
+
+const doctorLogIn = (socket) => {
+  doctorSocketIds = doctorSocketIds.filter(
+    (doctor) => doctor.userId != socket.autData.id
+  );
+  doctorSocketIds.push({ socket: socket, userId: socket.autData.id });
+  connectedDoctors = connectedDoctors.filter(
+    (doctor) => doctor.id != socket.autData.id
+  );
+  connectedDoctors.push({ ...socket.autData, socketId: socket.id });
+};
+
+const sendConnectedPatientList = (socket) => {
+  let connectedPatientWithId = connectedPatients.filter(
+    (item) => item.id_doctor == socket.autData.id
+  );
+  socket.emit("updateUserList", connectedPatientWithId);
 };
 
 module.exports = {
@@ -141,4 +186,10 @@ module.exports = {
   getPatientSocketByDoctorId,
   getSocketByDoctorId,
   disconnectPatient,
+  disconnectDoctor,
+  sendConnectedPatientList,
+  doctorLogIn,
+  patientLogIn,
+  patientLogInNotification,
+  patientLogOutNotifyDoctor,
 };
