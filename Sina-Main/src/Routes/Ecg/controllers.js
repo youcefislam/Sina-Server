@@ -1,4 +1,5 @@
 const path = require("path");
+const moment = require("moment");
 const { deleteFile } = require("../../Utilities/uploadUtilities");
 const query = require("./queries");
 
@@ -10,6 +11,7 @@ const addEcgFile = async (req, res) => {
         message: "File not attached or invalid file extension type",
       });
     req.body.link = req.file?.path;
+    req.params.created_at = moment(req.params.created_at).format();
     await query.insertEcgFile({ ...req.body, ...req.params });
 
     res.sendStatus(201);
@@ -29,6 +31,7 @@ const downloadECGFile = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 const getEcgFileList = async (req, res) => {
   try {
     res.send({
@@ -42,4 +45,5 @@ const getEcgFileList = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 module.exports = { addEcgFile, downloadECGFile, getEcgFileList };

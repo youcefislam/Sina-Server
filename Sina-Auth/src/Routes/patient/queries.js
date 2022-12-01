@@ -1,11 +1,6 @@
 const mysql = require("mysql");
 const moment = require("moment");
-const dbPool = require("../../Database/connection");
-
-function queryErrorHandler(type, message) {
-  this.type = type;
-  this.message = message;
-}
+const { dbPool, queryErrorHandler } = require("../../Database/connection");
 
 const insertPatient = (info) =>
   new Promise((resolve, reject) => {

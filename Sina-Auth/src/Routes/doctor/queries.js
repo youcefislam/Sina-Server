@@ -1,10 +1,5 @@
 const moment = require("moment");
-const dbPool = require("../../Database/connection");
-
-function queryErrorHandler(type, message) {
-  this.type = type;
-  this.message = message;
-}
+const { dbPool, queryErrorHandler } = require("../../Database/connection");
 
 const insertDoctor = (info) =>
   new Promise((resolve, reject) => {

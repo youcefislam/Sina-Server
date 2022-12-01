@@ -1,4 +1,3 @@
-const dbPool = require("../../Database/Connection");
 const query = require("./queries");
 
 const getAllHospitals = async (req, res) => {

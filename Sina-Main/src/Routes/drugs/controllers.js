@@ -145,14 +145,14 @@ const deleteDrugFromJournal = async (req, res) => {
 module.exports = {
   getPatientDrugsList,
   addToDrugsList,
+  deleteFromDugList,
   getAllDrugs,
   addNewDrug,
+  getDrugInfo,
   updateDrug,
   deleteDrug,
+  getDrugsJournal,
+  getOneDrugJournal,
   addToDrugsJournal,
   deleteDrugFromJournal,
-  getOneDrugJournal,
-  getDrugInfo,
-  getDrugsJournal,
-  deleteFromDugList,
 };

@@ -166,7 +166,7 @@ module.exports = {
   insertIntoDrugList,
   deleteFromDrugList,
   selectDrugsJournal,
-  insertIntoDrugJournal,
   selectDrugsJournalItem,
+  insertIntoDrugJournal,
   deleteFromJournal,
 };

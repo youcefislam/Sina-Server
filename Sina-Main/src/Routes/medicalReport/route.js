@@ -4,6 +4,7 @@ const controllers = require("./controllers");
 const middleware = require("../../Middlewares/middlewares");
 const { uploadReport } = require("../../Utilities/uploadUtilities");
 const { schema } = require("../../Utilities/validations");
+
 const Router = express.Router();
 
 // medical report router

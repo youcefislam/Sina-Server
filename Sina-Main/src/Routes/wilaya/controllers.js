@@ -1,4 +1,3 @@
-const dbPool = require("../../Database/Connection");
 const query = require("./queries");
 
 const getWilayaList = async (req, res) => {
@@ -32,6 +31,7 @@ const updateWilaya = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 const deleteWilaya = async (req, res) => {
   try {
     const deletedWilaya = await query.deleteWilaya(req.params.id);
@@ -42,6 +42,7 @@ const deleteWilaya = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 module.exports = {
   getWilayaList,
   addWilaya,

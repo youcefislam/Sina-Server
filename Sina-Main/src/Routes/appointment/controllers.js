@@ -54,6 +54,7 @@ const archiveAppointment = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 const getAppointment = async (req, res) => {
   try {
     res.send({ result: await query.selectAppointmentById(req.params.id) });
@@ -61,6 +62,7 @@ const getAppointment = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 const getAppointmentList = async (req, res) => {
   try {
     res.send({ results: await query.getAppointmentList(req.params) });
@@ -68,6 +70,7 @@ const getAppointmentList = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 const getAppointmentJournal = async (req, res) => {
   try {
     res.send({
@@ -77,6 +80,7 @@ const getAppointmentJournal = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 module.exports = {
   addAppointment,
   updateAppointment,

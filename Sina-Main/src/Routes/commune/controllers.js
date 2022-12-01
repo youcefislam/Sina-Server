@@ -1,4 +1,3 @@
-const dbPool = require("../../Database/Connection");
 const query = require("./queries");
 
 const getCommuneList = async (req, res) => {
@@ -32,6 +31,7 @@ const updateCommune = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 const deleteCommune = async (req, res) => {
   try {
     const deletedCommune = await query.deleteCommune(req.params.id);
@@ -42,6 +42,7 @@ const deleteCommune = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 module.exports = {
   getCommuneList,
   addCommune,

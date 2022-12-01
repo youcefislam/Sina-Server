@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 // const rateLimit = require("express-rate-limit");
 // const apicache = require("apicache");
 
@@ -25,30 +26,11 @@ app.use("/public/views", express.static("public/views"));
 app.use("/public/uploads/Media", express.static("public/uploads/Media"));
 app.use("/public/views", express.static("public/views"));
 
-// Add headers before the routes are defined
-app.use(function (req, res, next) {
-  // Website you wish to allow to connect
-  res.setHeader("Access-Control-Allow-Origin", "*");
-
-  // Request methods you wish to allow
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-  );
-
-  // Request headers you wish to allow
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-
-  // Set to true if you need the website to include cookies in the requests sent
-  // to the API (e.g. in case you use sessions)
-  res.setHeader("Access-Control-Allow-Credentials", true);
-
-  // Pass to next layer of middleware
-  next();
-});
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
 // configure the app to use bodyParser()
 app.use(
@@ -64,7 +46,6 @@ app.use(bodyParser.json());
 //   max:100
 // })
 // app.use(limiter);
-// app.set('trust proxy', true);
 
 // // to cache responses
 // let cache = apicache.middleware;

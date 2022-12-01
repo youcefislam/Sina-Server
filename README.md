@@ -21,7 +21,7 @@ This is my Master's end-of-studies project. I had the honor to work with the ins
 
 ## Documentation
 
-[Sina API Documentation](/ReadMe/Documentation/Doccumentation.md)
+[Sina API Documentation](https://documenter.getpostman.com/view/10443175/2s8Yt1qozx)
 
 ### Future features
 

@@ -11,4 +11,13 @@ var dbPool = mysql.createPool({
   multipleStatements: true,
 });
 
-module.exports = dbPool;
+function queryErrorHandler(code, message, path) {
+  this.code = code;
+  this.message = message;
+  this.path = path;
+}
+
+module.exports = {
+  dbPool,
+  queryErrorHandler,
+};

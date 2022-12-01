@@ -2,6 +2,7 @@ const express = require("express");
 const controllers = require("./controllers");
 const middleware = require("../../Middlewares/middlewares");
 const { schema } = require("../../Utilities/validations");
+
 const Router = express.Router();
 
 // illness route

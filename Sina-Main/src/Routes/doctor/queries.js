@@ -1,10 +1,8 @@
-const { dbPool, formulateAndQuery } = require("../../Database/connection");
-
-function queryErrorHandler(code, message, path) {
-  this.code = code;
-  this.message = message;
-  this.path = path;
-}
+const {
+  dbPool,
+  formulateAndQuery,
+  queryErrorHandler,
+} = require("../../Database/connection");
 
 const selectDoctor_sensitive = (query) =>
   new Promise((resolve, reject) => {
@@ -72,7 +70,7 @@ const selectPatientList = (id_doctor, page = 1) =>
 
 const searchDoctor = (query) =>
   new Promise((resolve, reject) => {
-    let pagination = query.page ? query.page : 1 * 5 - 5;
+    let pagination = (query.page ? Number(query.page) : 1) * 5 - 5;
     delete query.page;
     let statement = formulateAndQuery(
       `SELECT * FROM doctorView WHERE ?`,
@@ -86,10 +84,10 @@ const searchDoctor = (query) =>
   });
 
 module.exports = {
+  selectDoctor_sensitive,
   selectAllDoctor,
   deleteDoctor,
   updateDoctor,
   selectPatientList,
-  selectDoctor_sensitive,
   searchDoctor,
 };

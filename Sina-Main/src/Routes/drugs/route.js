@@ -1,5 +1,4 @@
 const express = require("express");
-
 const controllers = require("./controllers");
 const middleware = require("../../Middlewares/middlewares");
 const { schema } = require("../../Utilities/validations");
@@ -107,7 +106,5 @@ Router.delete(
   middleware.validation(schema.deleteFromDrugJournal, "params"),
   controllers.deleteDrugFromJournal
 );
-
-// statistics to be added later
 
 module.exports = Router;

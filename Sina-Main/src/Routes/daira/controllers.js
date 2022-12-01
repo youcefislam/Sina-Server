@@ -31,6 +31,7 @@ const updateDaira = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 const deleteDaira = async (req, res) => {
   try {
     const deletedDaira = await query.deleteDaira(req.params.id);
@@ -41,6 +42,7 @@ const deleteDaira = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 module.exports = {
   getDairaList,
   addDaira,

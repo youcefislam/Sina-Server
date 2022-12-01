@@ -5,28 +5,26 @@ const utility = require("../../Utilities/utility");
 const signUp = async (req, res) => {
   let newDoctorId;
   try {
-    const body = await validateBody("doctorSignUp", req.body);
-    body.password = await utility.hashValue(body.password);
-    body.photo = req.file ? req.file.path : null;
+    req.body.password = await utility.hashValue(req.body.password);
+    req.body.photo = req.file ? req.file.path : null;
 
-    newDoctorId = await query.insertDoctor(body);
+    newDoctorId = await query.insertDoctor(req.body);
     await query.insertDoctorNotVerified(newDoctorId);
 
     const validation_token = await utility.generateValidationToken(
       { id: newDoctorId },
       { expiresIn: "2h" }
     );
-
-    const url = `http://localhost:4000/doctor/verify_account/${validation_token}`;
     console.log(validation_token);
+    const url = `http://localhost:4000/doctor/verify_account?token${validation_token}`;
     const emailBody = `
-                <h3>Cher ${body.username}!</h3>
+                <h3>Cher ${req.body.username}!</h3>
                 <p>TVeuillez cliquer sur le lien de confirmation ci-dessous pour vérifier votre adresse e-mail et créer votre compte:</p>
                 <a href='${url}'>${url}</a>
                 <p>Cordialement,</p>
                 <p>L'équipe de Sina.</p>`;
     await utility.sendMail(
-      body.mail,
+      req.body.mail,
       "Vérifiez votre adresse e-mail ✔",
       emailBody
     );
@@ -34,10 +32,7 @@ const signUp = async (req, res) => {
     res.sendStatus(201);
   } catch (error) {
     if (newDoctorId) await query.deleteDoctor(newDoctorId);
-    if (
-      error.type == "duplicated_entry_error" ||
-      error.type == "validation_error"
-    )
+    if (error.code == "duplicated_entry_error")
       return res.status(400).send(error);
     res.sendStatus(500);
   }
@@ -45,33 +40,31 @@ const signUp = async (req, res) => {
 
 const signIn = async (req, res) => {
   try {
-    const body = await validateBody("signIn", req.body);
-
     const doctor = await query.selectDoctor_sensitive({
-      username: body.username,
+      username: req.body.username,
     });
 
     if (doctor == null)
       return res
         .status(400)
-        .send({ type: "incorrect_information", path: "username" });
+        .send({ code: "incorrect_information", path: "username" });
 
     const isNotVerified = await query.selectNotVerifiedDoctor(doctor.id);
     if (isNotVerified)
       return res.status(403).send({
-        type: "account_not_verified",
+        code: "account_not_verified",
         message:
           "check your email and click the account verification link to validate your account",
       });
 
     const correctPassword = await utility.compareHashedValues(
-      body.password,
+      req.body.password,
       doctor.password
     );
     if (!correctPassword)
       return res
         .status(400)
-        .send({ type: "incorrect_information", path: "password" });
+        .send({ code: "incorrect_information", path: "password" });
 
     const tokenData = {
       id: doctor.id,
@@ -94,9 +87,8 @@ const signIn = async (req, res) => {
       httpOnly: true,
       signed: true,
     });
-    return res.status(201).send({ token: ACCESS_TOKEN });
+    return res.status(201).send({ ACCESS_TOKEN });
   } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
@@ -121,7 +113,7 @@ const refreshAccessToken = async (req, res) => {
       { id: req.autData.id },
       { expiresIn: "30m" }
     );
-    return res.send({ token: ACCESS_TOKEN });
+    return res.send({ ACCESS_TOKEN });
   } catch (error) {
     res.sendStatus(500);
   }
@@ -153,33 +145,32 @@ const signOut = async (req, res) => {
 
 const validateAccount = async (req, res) => {
   try {
-    const params = await utility.validateValidationToken(req.query.token);
-    await query.validateDoctorAccount(params.id);
+    const options = await utility.validateValidationToken(req.query.token);
+    await query.validateDoctorAccount(options.id);
     res.sendStatus(204);
   } catch (error) {
-    console.log(error.name);
+    console.log(error);
     if (error.name == "JsonWebTokenError" || error.name == "TokenExpiredError")
       return res
         .status(400)
-        .send({ type: "not_valid", message: "invalid token" });
+        .send({ code: "not_valid", message: "invalid token" });
     res.sendStatus(500);
   }
 };
 
 const resendValidationLink = async (req, res) => {
   try {
-    const body = await validateBody("validMail", req.body);
-    const doctor = await query.selectDoctor_sensitive(body);
+    const doctor = await query.selectDoctor_sensitive(req.body);
 
     if (doctor == null)
-      return res.status(401).send({ type: "no_account_found" });
+      return res.status(400).send({ code: "no_account_found" });
 
     const validation_token = await utility.generateValidationToken(
       { id: doctor.id },
       { expiresIn: "2h" }
     );
 
-    const url = `http://localhost:4000/doctor/verify_account/${validation_token}`;
+    const url = `http://localhost:4000/doctor/verify_account?token=${validation_token}`;
     const emailBody = `
                       <h3>Cher ${doctor.username}!</h3>
                       <p>TVeuillez cliquer sur le lien de confirmation ci-dessous pour vérifier votre adresse e-mail et créer votre compte:</p>
@@ -187,7 +178,7 @@ const resendValidationLink = async (req, res) => {
                       <p>Cordialement,</p>
                       <p>L'équipe de Sina.</p>`;
     await utility.sendMail(
-      body.mail,
+      req.body.mail,
       "Vérifiez votre adresse e-mail ✔",
       emailBody
     );
@@ -199,17 +190,15 @@ const resendValidationLink = async (req, res) => {
 
 const sendRestoreLink = async (req, res) => {
   try {
-    const value = await validateBody("validMail", req.body);
+    const doctor = await query.selectDoctor_sensitive(req.body);
 
-    const doctor = await query.selectDoctor_sensitive(value);
-
-    if (!doctor) return res.status(400).send({ type: "no_account_found" });
+    if (!doctor) return res.status(400).send({ code: "no_account_found" });
     const { id, username, mail } = doctor;
-    const token = await utility.generateValidationToken(
+    const token = await utility.generateResetToken(
       { id, reset_password: true },
       { expiresIn: "2h" }
     );
-    const url = `http://localhost:4000/doctor/reset_password/${token}`;
+    const url = `http://localhost:4000/doctor/reset_password?token=${token}`;
     const emailBody = `
                               <h3>Cher ${username}!</h3>
                               <p>nous sommes désolés que vous rencontriez des problèmes pour utiliser votre compte, entrez ce lien pour réinitialiser votre mot de passe:</p>
@@ -217,29 +206,33 @@ const sendRestoreLink = async (req, res) => {
                               <p> ce lien ne fonctionne que pendant les 2 prochaines heures </p>
                               <p>Cordialement,</p>
                               <p>L'équipe de Sina.</p>`;
-
+    console.log(token);
     await utility.sendMail(mail, "Recuperation du mot de passe ✔", emailBody);
     res.sendStatus(204);
   } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
 
 const resetPassword = async (req, res) => {
   try {
-    const body = await validateBody("validNewPassword", req.body);
-    const doctor = await query.selectDoctor_sensitive({ id: req.autData.id });
+    const autData = await utility.validateResetToken(req.query.token);
+    const password = await utility.hashValue(req.body.password);
 
-    if (!doctor) return res.status(403).send({ type: "no_account_found" });
+    const updateQuery = await query.updateDoctor(
+      { password },
+      { id: autData.id }
+    );
+    if (updateQuery.affectedRows == 0)
+      return res.status(400).send({ code: "no_account_found" });
 
-    const password = await utility.hashValue(body.password);
-
-    await query.updateDoctor({ password }, { id: req.autData.id });
     res.sendStatus(204);
   } catch (error) {
-    if (error.type == "validation_error") res.status(400).send(error);
-    else res.sendStatus(500);
+    if (error.name == "JsonWebTokenError" || error.name == "TokenExpiredError")
+      return res
+        .status(400)
+        .send({ code: "not_valid", message: "invalid token" });
+    res.sendStatus(500);
   }
 };
 

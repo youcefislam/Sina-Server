@@ -51,6 +51,14 @@ const generateValidationToken = async (values, options = {}) => {
   }
 };
 
+const generateResetToken = async (values, options = {}) => {
+  try {
+    return await jwt.sign(values, process.env.RESET_SECRET_KEY, options);
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 const validateRefreshToken = async (token) => {
   try {
     const valid = await jwt.verify(token, process.env.REFRESH_SECRET_KEY);
@@ -63,6 +71,15 @@ const validateRefreshToken = async (token) => {
 const validateValidationToken = async (token) => {
   try {
     const valid = await jwt.verify(token, process.env.VALIDATION_SECRET_KEY);
+    return valid;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const validateResetToken = async (token) => {
+  try {
+    const valid = await jwt.verify(token, process.env.RESET_SECRET_KEY);
     return valid;
   } catch (error) {
     throw error;
@@ -96,4 +113,6 @@ module.exports = {
   validateRefreshToken,
   validateValidationToken,
   sendMail,
+  validateResetToken,
+  generateResetToken,
 };

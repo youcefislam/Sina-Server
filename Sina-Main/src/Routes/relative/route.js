@@ -2,6 +2,7 @@ const express = require("express");
 const controllers = require("./controllers");
 const middleware = require("../../Middlewares/middlewares");
 const { schema } = require("../../Utilities/validations");
+
 const Router = express.Router();
 
 // relative route
@@ -15,11 +16,9 @@ Router.get(
 
 // Add patient's relative endpoint
 Router.post(
-  "/:id",
+  "/",
   middleware.tokenAuthorization,
-  middleware.validation(schema.validId, "params"),
   middleware.patientOnly,
-  middleware.private,
   middleware.validation(schema.addRelative, "body"),
   controllers.addRelative
 );

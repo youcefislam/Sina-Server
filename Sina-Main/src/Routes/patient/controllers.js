@@ -1,4 +1,3 @@
-const dbPool = require("../../Database/Connection");
 const moment = require("moment");
 const query = require("./queries");
 const utility = require("../../Utilities/utility");

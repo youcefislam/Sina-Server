@@ -64,6 +64,6 @@ module.exports = {
   selectAllIllnessTypes,
   insertIllnessType,
   selectIllnessType,
-  deleteIllness,
   updateIllness,
+  deleteIllness,
 };

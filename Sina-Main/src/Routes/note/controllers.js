@@ -51,6 +51,7 @@ const deleteNote = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 const getNote = async (req, res) => {
   try {
     res.send({ result: await query.selectNoteById(req.params.id) });
@@ -58,6 +59,7 @@ const getNote = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 module.exports = {
   getNotesList,
   addNote,

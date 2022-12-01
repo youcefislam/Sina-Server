@@ -5,33 +5,29 @@ const utility = require("../../Utilities/utility");
 const signUp = async (req, res) => {
   let newPatientId;
   try {
-    const body = await validateBody("patientSignUp", req.body);
-
-    body.password = await utility.hashValue(body.password);
-    newPatientId = await query.insertPatient(body);
+    req.body.password = await utility.hashValue(req.body.password);
+    newPatientId = await query.insertPatient(req.body);
 
     const validation_code = utility.createValidationCode();
     await query.insertPatientNotVerified(newPatientId, validation_code);
 
     const emailBody = `
-    <h3>Cher ${body.username}!</h3>
+    <h3>Cher ${req.body.username}!</h3>
     <p>Voici le code de validation ci-dessous pour vérifier votre compte:</p>
     <p style="font-weight: bold;color: #0DBDA5;">${validation_code}</p>
     <p>Cordialement,</p>
     <p>L'équipe de Sina.</p>`;
     await utility.sendMail(
-      body.mail,
+      req.body.mail,
       "Vérifiez votre adresse e-mail ✔",
       emailBody
     );
 
     res.send({ validation_code });
   } catch (error) {
+    console.log(error);
     if (newPatientId) query.deletePatient(newPatientId);
-    if (
-      error.type == "duplicated_entry_error" ||
-      error.type == "validation_error"
-    )
+    if (error.code == "duplicated_entry_error")
       return res.status(400).send(error);
     res.sendStatus(500);
   }
@@ -39,40 +35,37 @@ const signUp = async (req, res) => {
 
 const signIn = async (req, res) => {
   try {
-    const body = await validateBody("signIn", req.body);
     const patient = await query.selectPatient_sensitive({
-      username: body.username,
+      username: req.body.username,
     });
 
     if (patient == null)
       return res
         .status(400)
-        .send({ type: "incorrect_information", path: "username" });
+        .send({ code: "incorrect_information", path: "username" });
 
     const isNotVerified = await query.selectValidationCode(patient.id);
     if (isNotVerified)
       return res.status(403).send({
-        type: "account_not_verified",
-        message:
-          "check your email and click the account verification link to validate your account",
+        code: "account_not_verified",
       });
 
     const isCorrectPassword = await utility.compareHashedValues(
-      body.password,
+      req.body.password,
       patient.password
     );
 
     if (!isCorrectPassword)
       return res
         .status(400)
-        .send({ type: "incorrect_information", path: "password" });
+        .send({ code: "incorrect_information", path: "password" });
 
     const tokenData = {
       id: patient.id,
       patient: 1,
     };
     const ACCESS_TOKEN = await utility.generateAccessToken(tokenData, {
-      expiresIn: "15m",
+      expiresIn: "30m",
     });
     const REFRESH_TOKEN = await utility.generateRefreshToken(tokenData, {
       expiresIn: "2y",
@@ -88,7 +81,6 @@ const signIn = async (req, res) => {
 
     return res.send({ ACCESS_TOKEN, REFRESH_TOKEN });
   } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
@@ -149,18 +141,22 @@ const signOut = async (req, res) => {
 };
 
 const resendValidationCode = async (req, res) => {
+  let deleteQuery, patient;
   try {
-    const body = await validateBody("validMail", req.body);
-
-    const patient = await query.selectPatient_sensitive(body.mail);
+    patient = await query.selectPatient_sensitive(req.body);
 
     if (patient == null)
-      return res.status(403).send({ type: "no_account_found" });
+      return res.status(400).send({ code: "no_account_found" });
 
-    await query.deleteValidationCode(patient.id);
+    deleteQuery = await query.deleteValidationCode(patient.id);
+
+    if (deleteQuery.affectedRows == 0)
+      return res
+        .status(400)
+        .send({ code: "no_row_found", message: "Account already verified" });
 
     const validation_code = utility.createValidationCode();
-    await insertNotVerifiedPatient(patient.id, validation_code);
+    await query.insertPatientNotVerified(patient.id, validation_code);
 
     const emailBody = `
     <h3>Cher ${patient.username}!</h3>
@@ -176,23 +172,26 @@ const resendValidationCode = async (req, res) => {
     );
     res.send({ validation_code });
   } catch (error) {
+    console.log(error);
+    if (deleteQuery) query.insertPatientNotVerified(patient.id, null);
     res.sendStatus(500);
   }
 };
 
 const validateAccount = async (req, res) => {
   try {
-    const body = await validateBody("validValidationCode", req.body);
-    const patient = await query.selectPatient_sensitive({ mail: body.mail });
+    const patient = await query.selectPatient_sensitive({
+      mail: req.body.mail,
+    });
     if (patient == null)
-      return res.status(403).send({ type: "no_account_found" });
+      return res.status(400).send({ code: "no_account_found" });
 
     const correctValidation_code = await query.selectValidationCode(patient.id);
 
     if (!correctValidation_code) return res.sendStatus(403);
-    if (correctValidation_code != body.validation_code)
+    if (correctValidation_code != req.body.validation_code)
       return res.status(400).send({
-        type: "incorrect_information",
+        code: "incorrect_information",
         message: "incorrect validation_code",
       });
 
@@ -219,24 +218,22 @@ const validateAccount = async (req, res) => {
 
     return res.send({ ACCESS_TOKEN, REFRESH_TOKEN });
   } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
 
 const sendRestoreLink = async (req, res) => {
   try {
-    const value = await validateBody("validMail", req.body);
+    const patient = await query.selectPatient_sensitive(req.body);
 
-    const patient = await query.selectPatient_sensitive(value);
-
-    if (!patient) return res.status(400).send({ type: "no_account_found" });
+    if (!patient) return res.status(400).send({ code: "no_account_found" });
     const { id, username, mail } = patient;
     const token = await utility.generateValidationToken(
       { id, reset_password: true },
       { expiresIn: "2h" }
     );
-    const url = `http://localhost:4000/doctor/reset_password/${token}`;
+    console.log(token);
+    const url = `http://localhost:4000/doctor/reset_password/?token=${token}`;
     const emailBody = `
                               <h3>Cher ${username}!</h3>
                               <p>nous sommes désolés que vous rencontriez des problèmes pour utiliser votre compte, entrez ce lien pour réinitialiser votre mot de passe:</p>
@@ -244,29 +241,26 @@ const sendRestoreLink = async (req, res) => {
                               <p> ce lien ne fonctionne que pendant les 2 prochaines heures </p>
                               <p>Cordialement,</p>
                               <p>L'équipe de Sina.</p>`;
-
     await utility.sendMail(mail, "Recuperation du mot de passe ✔", emailBody);
     res.sendStatus(204);
   } catch (error) {
-    if (error.type == "validation_error") return res.status(400).send(error);
     res.sendStatus(500);
   }
 };
 
 const resetPassword = async (req, res) => {
   try {
-    const body = await validateBody("validNewPassword", req.body);
-    const patient = await query.selectPatient_sensitive({ id: req.autData.id });
+    const autData = await utility.validateValidationToken(req.query.token);
+    const patient = await query.selectPatient_sensitive({ id: autData.id });
 
-    if (!patient) return res.status(403).send({ type: "no_account_found" });
+    if (!patient) return res.status(400).send({ code: "no_account_found" });
 
-    const password = await utility.hashValue(body.password);
+    const password = await utility.hashValue(req.body.password);
 
-    await query.updatePatient({ password }, { id: req.autData.id });
+    await query.updatePatient({ password }, { id: autData.id });
     res.sendStatus(204);
   } catch (error) {
-    if (error.type == "validation_error") res.status(400).send(error);
-    else res.sendStatus(500);
+    res.sendStatus(500);
   }
 };
 

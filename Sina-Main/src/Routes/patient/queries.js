@@ -1,15 +1,9 @@
-const mysql = require("mysql");
-const moment = require("moment");
 const {
   dbPool,
   formulateAndQuery,
+  queryErrorHandler,
   format,
 } = require("../../Database/connection");
-
-function queryErrorHandler(type, message) {
-  this.type = type;
-  this.message = message;
-}
 
 const deletePatientAccount = (id) =>
   new Promise((resolve, reject) => {
@@ -64,9 +58,10 @@ const selectPatientMinimal = (query) =>
   });
 const searchPatient = (query) =>
   new Promise((resolve, reject) => {
-    const statement = mysql
-      .format(`SELECT * FROM patientViewDetailed WHERE ?;`, query)
-      .replace(",", ` AND`);
+    const statement = formulateAndQuery(
+      `SELECT * FROM patientViewDetailed WHERE ?;`,
+      query
+    );
     dbPool.query(statement, (dbErr, result) => {
       if (dbErr) reject(dbErr);
       else resolve(result);
@@ -84,10 +79,10 @@ const selectAllPatient = (page = 1) =>
     });
   });
 module.exports = {
-  selectPatient_sensitive,
-  searchPatient,
-  updatePatient,
   deletePatientAccount,
-  selectAllPatient,
+  updatePatient,
+  selectPatient_sensitive,
   selectPatientMinimal,
+  searchPatient,
+  selectAllPatient,
 };

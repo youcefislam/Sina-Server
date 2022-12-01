@@ -28,6 +28,7 @@ const schema = {
       .length(10)
       .pattern(/^0{1}(7|6|5){1}([0-9]){8}$/),
     mail: joi.string().email().required(),
+    id_patient: joi.number().min(1).required(),
   }),
   updateRelative: joi
     .object({

@@ -37,6 +37,7 @@ const getMedicalReport = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 const getMedicalReportList = async (req, res) => {
   try {
     res.send({
@@ -50,6 +51,7 @@ const getMedicalReportList = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 const deleteReport = async (req, res) => {
   try {
     const deleteQuery = await query.deleteReport(req.params.id);
@@ -60,9 +62,10 @@ const deleteReport = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
 module.exports = {
   addMedicalReport,
   getMedicalReport,
-  deleteReport,
   getMedicalReportList,
+  deleteReport,
 };

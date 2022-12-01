@@ -58,17 +58,6 @@ CREATE TABLE IF NOT EXISTS drug (
      UNIQUE(name)
 );
 
-CREATE TABLE IF NOT EXISTS relative (
-     id INT NOT NULL AUTO_INCREMENT,
-     first_name VARCHAR(50),
-     last_name VARCHAR(50),
-     phone_number VARCHAR(10),
-     mail VARCHAR(255),
-     primary key(id),
-     UNIQUE (phone_number),
-     UNIQUE (mail)
-);
-
 CREATE TABLE IF NOT EXISTS doctor(
      id INT NOT NULL AUTO_INCREMENT,
      username VARCHAR(50) NOT NULL,
@@ -109,7 +98,6 @@ CREATE TABLE IF NOT EXISTS patient (
      id_illness_type INT,
      id_commune INT,
      id_doctor INT,
-     id_relative INT,
      Primary key (id),
      FOREIGN KEY (id_illness_type) references illness_type(id) ON DELETE
      SET
@@ -120,12 +108,22 @@ CREATE TABLE IF NOT EXISTS patient (
           FOREIGN KEY (id_doctor) references doctor (id) ON DELETE
      SET
           NULL,
-          FOREIGN KEY (id_relative) references relative (id) ON DELETE
-     SET
-          NULL,
           UNIQUE (username),
           UNIQUE (mail),
           UNIQUE (phone_number)
+);
+
+CREATE TABLE IF NOT EXISTS relative (
+     id INT NOT NULL AUTO_INCREMENT,
+     first_name VARCHAR(50),
+     last_name VARCHAR(50),
+     phone_number VARCHAR(10),
+     mail VARCHAR(255),
+     id_patient INT NOT NULL,
+     primary key(id),
+     UNIQUE (phone_number),
+     UNIQUE (mail),
+     FOREIGN KEY (id_patient) REFERENCES patient(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS patient_login_info(
@@ -287,7 +285,7 @@ SELECT
      d.name as "daira_name",
      w.id as "id_wilaya",
      w.name as "wliaya_name",
-     id_relative,
+     r.id as "relative_id",
      r.first_name as "relative_first_name",
      r.last_name as "relative_last_name",
      r.phone_number "relative_phone_number",
@@ -303,7 +301,7 @@ FROM
      left join commune as c on p.id_commune = c.id
      left join daira as d on c.id_daira = d.id
      left join wilaya as w on d.id_wilaya = w.id
-     left join relative as r on p.id_relative = r.id
+     left join relative as r on r.id_patient = p.id
      left join doctor as doc on p.id_doctor = doc.id
      left join illness_type as i on p.id_illness_type = i.id;
 
@@ -324,7 +322,6 @@ SELECT
      phone_number,
      id_illness_type,
      id_commune,
-     id_relative,
      id_doctor
 FROM
      patient as p;

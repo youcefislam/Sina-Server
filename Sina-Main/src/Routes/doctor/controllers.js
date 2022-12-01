@@ -112,6 +112,7 @@ const searchDoctor = async (req, res) => {
   try {
     res.send({ results: await query.searchDoctor(req.query) });
   } catch (error) {
+    console.log(error);
     res.sendStatus(500);
   }
 };

@@ -3,7 +3,7 @@ const { dbPool, queryErrorHandler } = require("../../Database/connection");
 const selectRelative = (id) =>
   new Promise((resolve, reject) => {
     let statement =
-      "SELECT r.first_name,r.last_name,r.phone_number,r.mail FROM patient p,relative r WHERE p.id=? and p.id_relative=r.id;";
+      "SELECT first_name,last_name,phone_number,mail,id_patient FROM relative WHERE id = ?;";
     dbPool.query(statement, id, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result[0]);
@@ -22,6 +22,13 @@ const insertRelative = (info) =>
               dbErr.sqlMessage.replace("relative.", "")
             )
           );
+        if (dbErr.errno == 1452)
+          return reject(
+            new queryErrorHandler(
+              "invalid_data",
+              "The entered data might be incorrect."
+            )
+          );
         return reject(dbErr);
       }
       resolve(result);
@@ -35,10 +42,9 @@ const deleteRelative = (id_relative) =>
       resolve(result);
     });
   });
-const deleteMyRelative = (id_patient) =>
+const deleteMyRelative = (id) =>
   new Promise((resolve, reject) => {
-    let statement =
-      "DELETE FROM relative WHERE id IN (select id_relative from patient where patient.id=?);";
+    let statement = "DELETE FROM relative WHERE id = ?;";
     dbPool.query(statement, id_patient, (dbErr, result) => {
       if (dbErr) return reject(dbErr);
       resolve(result);

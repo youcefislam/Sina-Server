@@ -2,7 +2,7 @@ const joi = require("joi");
 
 // Data form validation with joi
 // need modification at the end of project.
-const validations = {
+const schema = {
   doctorSignUp: joi
     .object({
       username: joi.string().alphanum().min(6).required(),
@@ -11,7 +11,10 @@ const validations = {
       mail: joi.string().email().required(),
       first_name: joi.string().max(50).required(),
       last_name: joi.string().max(50).required(),
-      phone_number: joi.number().max(1000000000).required(),
+      phone_number: joi
+        .string()
+        .length(10)
+        .pattern(/^0{1}(7|6|5){1}([0-9]){8}$/),
       sex: joi.number().max(1).required(),
       address: joi.string().max(400).required(),
       id_daira: joi.number().required(),
@@ -36,7 +39,10 @@ const validations = {
     birth_date: joi.date().required(),
     address: joi.string().max(255).required(),
     id_commune: joi.number().required(),
-    phone_number: joi.string().max(10).required(),
+    phone_number: joi
+      .string()
+      .length(10)
+      .pattern(/^0{1}(7|6|5){1}([0-9]){8}$/),
   }),
   validMail: joi.object({
     mail: joi.string().email().required(),
@@ -48,25 +54,14 @@ const validations = {
       repeat_password: joi.ref("password"),
     })
     .with("password", "repeat_password"),
-  validId: joi.object({ id: joi.number().required() }),
+  validId: joi.object({ id: joi.number().min(1).required() }),
   validValidationCode: joi.object({
     mail: joi.string().email().required(),
     validation_code: joi.number().min(100000).max(999999).required(),
   }),
+  validToken: joi.object({
+    token: joi.string().required(),
+  }),
 };
 
-function validationErrorHandler(error) {
-  this.type = "validation_error";
-  this.message = error.details[0].message;
-  this.path = error.details[0].path[0];
-}
-
-const validateBody = async (type, body) => {
-  try {
-    return await validations[type].validateAsync(body);
-  } catch (error) {
-    throw new validationErrorHandler(error);
-  }
-};
-
-module.exports = validateBody;
+module.exports = { schema };
