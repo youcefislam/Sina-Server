@@ -58,28 +58,53 @@ const updateDoctor = (newValue, options) =>
     });
   });
 
-const selectPatientList = (id_doctor, page = 1) =>
+const selectPatientList = (id_doctor, { page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    const pagination = page * 5 - 5;
-    const statement = `SELECT * FROM patientViewDetailed WHERE id_doctor=? ORDER BY first_name, last_name LIMIT ?,5;`;
-    dbPool.query(statement, [id_doctor, pagination], (dbErr, results) => {
-      if (dbErr) reject(dbErr);
-      else resolve(results);
-    });
+    const pagination = page * limit - limit;
+    const statement = `SELECT * FROM patientViewDetailed WHERE id_doctor=? ORDER BY first_name, last_name LIMIT ?,?;SELECT count(*) as size FROM patientViewDetailed WHERE id_doctor=?;`;
+    dbPool.query(
+      statement,
+      [id_doctor, pagination, limit, id_doctor],
+      (dbErr, result) => {
+        if (dbErr) return reject(dbErr);
+        const maxPage = Math.ceil(result[1][0].size / limit);
+        resolve({
+          Results: result[0],
+          Pagination: {
+            page,
+            nextPage: page < maxPage ? ++page : -1,
+            limit,
+            maxPage,
+          },
+        });
+      }
+    );
   });
 
 const searchDoctor = (query) =>
   new Promise((resolve, reject) => {
-    let pagination = (query.page ? Number(query.page) : 1) * 5 - 5;
+    let page = options.page || 1;
+    let limit = options.limit || 10;
+    let pagination = page * limit - limit;
     delete query.page;
+    delete query.limit;
     let statement = formulateAndQuery(
-      `SELECT * FROM doctorView WHERE ?`,
-      query
+      `SELECT count(*) as size FROM doctorView WHERE ?; SELECT * FROM doctorView WHERE ?`,
+      [query, query]
     );
-    statement += " ORDER BY first_name,last_name LIMIT ?,5;";
-    dbPool.query(statement, pagination, (dbErr, result) => {
-      if (dbErr) reject(dbErr);
-      else resolve(result);
+    statement += " ORDER BY first_name,last_name LIMIT ?,?;";
+    dbPool.query(statement, [pagination, limit], (dbErr, result) => {
+      if (dbErr) return reject(dbErr);
+      const maxPage = Math.ceil(result[0][0].size / limit);
+      resolve({
+        Results: result[1],
+        Pagination: {
+          page,
+          nextPage: page < maxPage ? ++page : -1,
+          limit,
+          maxPage,
+        },
+      });
     });
   });
 

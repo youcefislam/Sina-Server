@@ -34,14 +34,28 @@ const updateNote = (newValues, query) =>
       resolve(result);
     });
   });
-const selectNoteList = (id_patient, page = 1) =>
+const selectNoteList = (id_patient, { page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    let pagination = page * 5 - 5;
-    let statement = "SELECT * FROM medical_note WHERE id_patient=? LIMIT ?,5;";
-    dbPool.query(statement, [id_patient, pagination], (dbErr, result) => {
-      if (dbErr) return reject(dbErr);
-      resolve(result);
-    });
+    let pagination = page * limit - limit;
+    let statement =
+      "SELECT * FROM medical_note WHERE id_patient=? ORDER BY updated_at,created_at DESC LIMIT ?,?; SELECT count(*) as size FROM medical_note WHERE id_patient=?;";
+    dbPool.query(
+      statement,
+      [id_patient, pagination, limit, id_patient],
+      (dbErr, result) => {
+        if (dbErr) return reject(dbErr);
+        const maxPage = Math.ceil(result[1][0].size / limit);
+        resolve({
+          Results: result[0],
+          Pagination: {
+            page,
+            nextPage: page < maxPage ? ++page : -1,
+            limit,
+            maxPage,
+          },
+        });
+      }
+    );
   });
 const deleteNote = (id) =>
   new Promise((resolve, reject) => {

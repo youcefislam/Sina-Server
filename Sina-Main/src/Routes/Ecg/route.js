@@ -13,6 +13,7 @@ Router.get(
   middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   middleware.validation(schema.getEcgListOptions, "query"),
+  middleware.transformQuery,
   controllers.getEcgFileList
 );
 

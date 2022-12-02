@@ -68,14 +68,23 @@ const searchPatient = (query) =>
     });
   });
 
-const selectAllPatient = (page = 1) =>
+const selectAllPatient = ({ page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    const pagination = page * 5 - 5;
+    const pagination = page * limit - limit;
     let statement =
-      "SELECT * FROM patientViewDetailed ORDER BY first_name,last_name LIMIT ?,5;";
-    dbPool.query(statement, pagination, (dbErr, result) => {
+      "SELECT * FROM patientViewDetailed ORDER BY first_name,last_name LIMIT ?,?;SELECT count(*) as size FROM patientViewDetailed;";
+    dbPool.query(statement, [pagination, limit], (dbErr, result) => {
       if (dbErr) return reject(dbErr);
-      resolve(result);
+      const maxPage = Math.ceil(result[1][0].size / limit);
+      resolve({
+        Results: result[0],
+        Pagination: {
+          page,
+          nextPage: page < maxPage ? ++page : -1,
+          limit,
+          maxPage,
+        },
+      });
     });
   });
 module.exports = {

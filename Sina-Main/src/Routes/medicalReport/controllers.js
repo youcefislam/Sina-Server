@@ -23,7 +23,7 @@ const addMedicalReport = async (req, res) => {
 const getMedicalReport = async (req, res) => {
   try {
     const report = await query.selectReportById(req.params.id);
-    if (report == null) return res.status(400).send({ code: "file_not_found" });
+    if (report == null) return res.status(400).send({ code: "row_not_found" });
 
     const fileName = "file.pdf";
     const fileURL = "./" + path.normalize(report.link);
@@ -40,13 +40,7 @@ const getMedicalReport = async (req, res) => {
 
 const getMedicalReportList = async (req, res) => {
   try {
-    res.send({
-      results: await query.selectReportList(
-        req.params.id_patient,
-        req.query,
-        req.query.page
-      ),
-    });
+    res.send(await query.selectReportList(req.params.id_patient, req.query));
   } catch (error) {
     res.sendStatus(500);
   }

@@ -3,12 +3,9 @@ const query = require("./queries");
 
 const getPatientDrugsList = async (req, res) => {
   try {
-    res.send({
-      results: await query.selectPatientDrugList(
-        req.params.id_patient,
-        req.query?.page
-      ),
-    });
+    res.send(
+      await query.selectPatientDrugList(req.params.id_patient, req.query)
+    );
   } catch (error) {
     res.sendStatus(500);
   }
@@ -40,7 +37,7 @@ const deleteFromDugList = async (req, res) => {
 
 const getAllDrugs = async (req, res) => {
   try {
-    res.send({ results: await query.selectAllDrugs(req.query?.page) });
+    res.send(await query.selectAllDrugs(req.query));
   } catch (error) {
     res.sendStatus(500);
   }
@@ -94,12 +91,7 @@ const deleteDrug = async (req, res) => {
 
 const getDrugsJournal = async (req, res) => {
   try {
-    res.send({
-      results: await query.selectDrugsJournal(
-        req.params.id_patient,
-        req.query?.page
-      ),
-    });
+    res.send(await query.selectDrugsJournal(req.params.id_patient, req.query));
   } catch (error) {
     res.sendStatus(500);
   }

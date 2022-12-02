@@ -11,7 +11,8 @@ Router.get(
   "/",
   middleware.tokenAuthorization,
   middleware.doctorOnly,
-  middleware.validation(schema.page, "query"),
+  middleware.validation(schema.pagination, "query"),
+  middleware.transformQuery,
   controller.getWaitingList
 );
 

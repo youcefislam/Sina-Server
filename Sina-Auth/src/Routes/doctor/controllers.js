@@ -151,9 +151,10 @@ const validateAccount = async (req, res) => {
   } catch (error) {
     console.log(error);
     if (error.name == "JsonWebTokenError" || error.name == "TokenExpiredError")
-      return res
-        .status(400)
-        .send({ code: "not_valid", message: "invalid token" });
+      return res.status(400).send({
+        code: "invalid_link",
+        message: "Link expired or not valid anymore",
+      });
     res.sendStatus(500);
   }
 };
@@ -162,8 +163,7 @@ const resendValidationLink = async (req, res) => {
   try {
     const doctor = await query.selectDoctor_sensitive(req.body);
 
-    if (doctor == null)
-      return res.status(400).send({ code: "no_account_found" });
+    if (doctor == null) return res.status(400).send({ code: "row_not_found" });
 
     const validation_token = await utility.generateValidationToken(
       { id: doctor.id },
@@ -192,11 +192,11 @@ const sendRestoreLink = async (req, res) => {
   try {
     const doctor = await query.selectDoctor_sensitive(req.body);
 
-    if (!doctor) return res.status(400).send({ code: "no_account_found" });
+    if (!doctor) return res.status(400).send({ code: "row_not_found" });
     const { id, username, mail } = doctor;
     const token = await utility.generateResetToken(
       { id, reset_password: true },
-      { expiresIn: "2h" }
+      { expiresIn: "10m" }
     );
     const url = `http://localhost:4000/doctor/reset_password?token=${token}`;
     const emailBody = `
@@ -224,14 +224,15 @@ const resetPassword = async (req, res) => {
       { id: autData.id }
     );
     if (updateQuery.affectedRows == 0)
-      return res.status(400).send({ code: "no_account_found" });
+      return res.status(400).send({ code: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
     if (error.name == "JsonWebTokenError" || error.name == "TokenExpiredError")
-      return res
-        .status(400)
-        .send({ code: "not_valid", message: "invalid token" });
+      return res.status(400).send({
+        code: "invalid_link",
+        message: "Link expired or not valid anymore.",
+      });
     res.sendStatus(500);
   }
 };

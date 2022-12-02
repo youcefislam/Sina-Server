@@ -13,8 +13,4 @@ const io = require("./socket/socket");
 
 io.attach(httpServer);
 
-const PORT = process.env.MAIN_PORT || 3001;
-
-httpServer.listen(PORT, () => {
-  console.log(`Main server listening on port ${PORT}`);
-});
+httpServer.listen(process.argv[2]);

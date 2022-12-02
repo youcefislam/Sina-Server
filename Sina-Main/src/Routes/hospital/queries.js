@@ -5,38 +5,55 @@ const {
   queryErrorHandler,
 } = require("../../Database/Connection");
 
-const selectHospitals = (options = null, page = 1) =>
+const selectHospitals = (options) =>
   new Promise((resolve, reject) => {
-    let pagination = page * 5 - 5;
-    let statement = "SELECT * FROM hospital";
+    let page = options.page || 1;
+    let limit = options.limit || 10;
+    let pagination = page * limit - limit;
     delete options?.page;
+    delete options?.limit;
+    let statement = "SELECT * FROM hospital";
+    let optionsQuery = "";
     if (Object.keys(options).length > 0) {
-      statement += " WHERE true";
+      optionsQuery += " WHERE true";
       if (options.id_commune) {
-        statement += format(" AND id_commune =?", options.id_commune);
+        optionsQuery += format(" AND id_commune =?", options.id_commune);
         delete options.id_commune;
       }
       if (options.id_daira) {
-        statement += format(
+        optionsQuery += format(
           " AND id_commune = (SELECT id FROM commune WHERE id_daira = ?)",
           options.id_daira
         );
         delete options.id_daira;
       }
       if (options.id_wilaya) {
-        statement += format(
+        optionsQuery += format(
           " AND id_commune IN (SELECT id FROM commune WHERE id_daira IN (SELECT id FROM daira WHERE id_wilaya = ?))",
           options.id_wilaya
         );
         delete options.id_wilaya;
       }
       if (Object.keys(options).length > 0)
-        statement += formulateAndQuery(" AND ?", options);
+        optionsQuery += formulateAndQuery(" AND ?", options);
     }
-    statement += " ORDER BY name LIMIT ?,5;";
-    dbPool.query(statement, pagination, (dbErr, result) => {
+    statement +=
+      optionsQuery +
+      " ORDER BY name LIMIT ?,?;SELECT count(*) as size FROM hospital" +
+      optionsQuery +
+      ";";
+    dbPool.query(statement, [pagination, limit], (dbErr, result) => {
       if (dbErr) return reject(dbErr);
-      resolve(result);
+      const maxPage = Math.ceil(result[1][0].size / limit);
+      resolve({
+        Results: result[0],
+        Pagination: {
+          page,
+          nextPage: page < maxPage ? ++page : -1,
+          limit,
+          maxPage,
+        },
+      });
     });
   });
 const insertHospital = (values) =>

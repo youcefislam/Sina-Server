@@ -2,9 +2,7 @@ const query = require("./queries");
 
 const getAllHospitals = async (req, res) => {
   try {
-    res.send({
-      results: await query.selectHospitals(req.query, req.query?.page),
-    });
+    res.send(await query.selectHospitals(req.query));
   } catch (error) {
     res.sendStatus(500);
   }

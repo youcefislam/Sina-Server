@@ -101,6 +101,15 @@ const validation = (schema, property) => {
   };
 };
 
+const transformQuery = async (req, res, next) => {
+  if (req.query)
+    Object.keys(req.query).forEach((key, index) => {
+      if (key == "page" || key == "limit")
+        req.query[key] = parseInt(req.query[key]);
+    });
+  next();
+};
+
 module.exports = {
   tokenAuthorization,
   socketTokenAuthorization,
@@ -109,4 +118,5 @@ module.exports = {
   patientOnly,
   private,
   validation,
+  transformQuery,
 };

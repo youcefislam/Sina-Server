@@ -11,6 +11,7 @@ Router.get(
   "/",
   middleware.tokenAuthorization,
   middleware.validation(schema.searchHospitalQuery, "query"),
+  middleware.transformQuery,
   controllers.getAllHospitals
 );
 

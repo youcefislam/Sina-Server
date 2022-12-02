@@ -1,12 +1,22 @@
 const { dbPool, queryErrorHandler } = require("../../Database/Connection");
 
-const selectAllIllnessTypes = (page = 1) =>
+const selectAllIllnessTypes = ({ page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    const pagination = page * 5 - 5;
-    let statement = "SELECT * FROM illness_type ORDER BY type LIMIT ?,5;";
-    dbPool.query(statement, pagination, (dbErr, result) => {
+    const pagination = page * limit - limit;
+    let statement =
+      "SELECT * FROM illness_type ORDER BY type LIMIT ?,?; SELECT count(*) as size FROM illness_type;";
+    dbPool.query(statement, [pagination, limit], (dbErr, result) => {
       if (dbErr) return reject(dbErr);
-      resolve(result);
+      const maxPage = Math.ceil(result[1][0].size / limit);
+      resolve({
+        Results: result[0],
+        Pagination: {
+          page,
+          nextPage: page < maxPage ? ++page : -1,
+          limit,
+          maxPage,
+        },
+      });
     });
   });
 const insertIllnessType = (values) =>

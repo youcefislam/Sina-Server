@@ -3,12 +3,7 @@ const query = require("./queries");
 
 const getNotesList = async (req, res) => {
   try {
-    res.send({
-      results: await query.selectNoteList(
-        req.params.id_patient,
-        req.query?.page
-      ),
-    });
+    res.send(await query.selectNoteList(req.params.id_patient, req.query));
   } catch (error) {
     res.sendStatus(500);
   }

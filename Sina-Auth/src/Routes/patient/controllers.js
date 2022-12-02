@@ -145,15 +145,15 @@ const resendValidationCode = async (req, res) => {
   try {
     patient = await query.selectPatient_sensitive(req.body);
 
-    if (patient == null)
-      return res.status(400).send({ code: "no_account_found" });
+    if (patient == null) return res.status(400).send({ code: "no_row_found" });
 
     deleteQuery = await query.deleteValidationCode(patient.id);
 
     if (deleteQuery.affectedRows == 0)
-      return res
-        .status(400)
-        .send({ code: "no_row_found", message: "Account already verified" });
+      return res.status(400).send({
+        code: "account_already_verified",
+        message: "Account already verified",
+      });
 
     const validation_code = utility.createValidationCode();
     await query.insertPatientNotVerified(patient.id, validation_code);
@@ -183,8 +183,7 @@ const validateAccount = async (req, res) => {
     const patient = await query.selectPatient_sensitive({
       mail: req.body.mail,
     });
-    if (patient == null)
-      return res.status(400).send({ code: "no_account_found" });
+    if (patient == null) return res.status(400).send({ code: "row_not_found" });
 
     const correctValidation_code = await query.selectValidationCode(patient.id);
 
@@ -226,11 +225,11 @@ const sendRestoreLink = async (req, res) => {
   try {
     const patient = await query.selectPatient_sensitive(req.body);
 
-    if (!patient) return res.status(400).send({ code: "no_account_found" });
+    if (!patient) return res.status(400).send({ code: "row_not_found" });
     const { id, username, mail } = patient;
     const token = await utility.generateValidationToken(
       { id, reset_password: true },
-      { expiresIn: "2h" }
+      { expiresIn: "10m" }
     );
     console.log(token);
     const url = `http://localhost:4000/doctor/reset_password/?token=${token}`;
@@ -253,7 +252,7 @@ const resetPassword = async (req, res) => {
     const autData = await utility.validateValidationToken(req.query.token);
     const patient = await query.selectPatient_sensitive({ id: autData.id });
 
-    if (!patient) return res.status(400).send({ code: "no_account_found" });
+    if (!patient) return res.status(400).send({ code: "row_not_found" });
 
     const password = await utility.hashValue(req.body.password);
 

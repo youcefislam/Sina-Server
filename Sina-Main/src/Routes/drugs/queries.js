@@ -4,24 +4,42 @@ const {
   formulateAndQuery,
 } = require("../../Database/Connection");
 
-const selectPatientDrugList = (id, page = 1) =>
+const selectPatientDrugList = (id, { page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    const pagination = page * 5 - 5;
+    const pagination = page * limit - limit;
     let statement =
-      "SELECT d.id,d.name,d.company,d.description,d.adult_dosage,children_dosage,d.warnings FROM drug d,drugs_list dl WHERE d.id=dl.id_drug AND dl.id_patient=? ORDER BY d.name LIMIT ?,5;";
-    dbPool.query(statement, [id, pagination], (dbErr, result) => {
+      "SELECT d.id,d.name,d.company,d.description,d.adult_dosage,children_dosage,d.warnings FROM drug d,drugs_list dl WHERE d.id=dl.id_drug AND dl.id_patient=? ORDER BY d.name LIMIT ?,?; SELECT count(*) as size FROM drugs_list WHERE id_patient = ?;";
+    dbPool.query(statement, [id, pagination, limit, id], (dbErr, result) => {
       if (dbErr) return reject(dbErr);
-      resolve(result);
+      const maxPage = Math.ceil(result[1][0].size / limit);
+      resolve({
+        Results: result[0],
+        Pagination: {
+          page,
+          nextPage: page < maxPage ? ++page : -1,
+          limit,
+          maxPage,
+        },
+      });
     });
   });
-const selectAllDrugs = (page = 1) =>
+const selectAllDrugs = ({ page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    const pagination = page * 5 - 5;
-
-    let statement = "SELECT * FROM drug ORDER BY name limit ?,5;";
-    dbPool.query(statement, pagination, (dbErr, result) => {
+    const pagination = page * limit - limit;
+    let statement =
+      "SELECT * FROM drug ORDER BY name limit ?,?;SELECT count(*) as size FROM drug;";
+    dbPool.query(statement, [pagination, limit], (dbErr, result) => {
       if (dbErr) return reject(dbErr);
-      resolve(result);
+      const maxPage = Math.ceil(result[1][0].size / limit);
+      resolve({
+        Results: result[0],
+        Pagination: {
+          page,
+          nextPage: page < maxPage ? ++page : -1,
+          limit,
+          maxPage,
+        },
+      });
     });
   });
 const insertDrug = (query) =>
@@ -107,14 +125,23 @@ const deleteFromDrugList = (query) =>
       resolve(result);
     });
   });
-const selectDrugsJournal = (id, page = 1) =>
+const selectDrugsJournal = (id, { page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    const pagination = page * 20 - 20;
+    const pagination = page * limit - limit;
     let statement =
-      "SELECT * FROM drugs_journal WHERE id_patient=? ORDER BY date LIMIT ?,20;";
-    dbPool.query(statement, [id, pagination], (dbErr, result) => {
+      "SELECT * FROM drugs_journal WHERE id_patient=? ORDER BY date LIMIT ?,?;SELECT count(*) as size FROM drugs_journal WHERE id_patient = ?;";
+    dbPool.query(statement, [id, pagination, limit, id], (dbErr, result) => {
       if (dbErr) return reject(dbErr);
-      resolve(result);
+      const maxPage = Math.ceil(result[1][0].size / limit);
+      resolve({
+        Results: result[0],
+        Pagination: {
+          page,
+          nextPage: page < maxPage ? ++page : -1,
+          limit,
+          maxPage,
+        },
+      });
     });
   });
 const selectDrugsJournalItem = (query) =>

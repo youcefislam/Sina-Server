@@ -2,8 +2,9 @@ const query = require("./queries");
 
 const getIllnessList = async (req, res) => {
   try {
-    res.send({ results: await query.selectAllIllnessTypes(req.query?.page) });
+    res.send(await query.selectAllIllnessTypes(req.query));
   } catch (error) {
+    console.log(error);
     res.sendStatus(500);
   }
 };

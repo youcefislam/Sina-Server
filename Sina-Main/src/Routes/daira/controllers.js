@@ -2,7 +2,7 @@ const query = require("./queries");
 
 const getDairaList = async (req, res) => {
   try {
-    res.send({ results: await query.selectAllDaira(req.query?.page) });
+    res.send(await query.selectAllDaira(req.query));
   } catch (error) {
     res.sendStatus(500);
   }

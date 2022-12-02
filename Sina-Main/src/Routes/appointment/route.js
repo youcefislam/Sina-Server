@@ -44,6 +44,8 @@ Router.get(
   "/list/:id_patient",
   middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
+  middleware.validation(schema.pagination, "query"),
+  middleware.transformQuery,
   controllers.getAppointmentList
 );
 
@@ -52,6 +54,8 @@ Router.get(
   "/journal/:id_patient",
   middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
+  middleware.validation(schema.pagination, "query"),
+  middleware.transformQuery,
   controllers.getAppointmentJournal
 );
 

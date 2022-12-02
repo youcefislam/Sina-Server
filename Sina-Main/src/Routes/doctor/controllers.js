@@ -69,9 +69,7 @@ const modifyPassword = async (req, res) => {
 
 const getPatientList = async (req, res) => {
   try {
-    res.send({
-      results: await query.selectPatientList(req.params.id, req.query?.page),
-    });
+    res.send(await query.selectPatientList(req.params.id, req.query));
   } catch (error) {
     res.sendStatus(500);
   }
@@ -110,7 +108,7 @@ const getDoctorById = async (req, res) => {
 
 const searchDoctor = async (req, res) => {
   try {
-    res.send({ results: await query.searchDoctor(req.query) });
+    res.send(await query.searchDoctor(req.query));
   } catch (error) {
     console.log(error);
     res.sendStatus(500);

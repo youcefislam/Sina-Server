@@ -34,14 +34,11 @@ const downloadECGFile = async (req, res) => {
 
 const getEcgFileList = async (req, res) => {
   try {
-    res.send({
-      results: await query.selectPatientEcgFiles(
-        req.params.id_patient,
-        req.query,
-        req.query?.page
-      ),
-    });
+    res.send(
+      await query.selectPatientEcgFiles(req.params.id_patient, req.query)
+    );
   } catch (error) {
+    console.log(error);
     res.sendStatus(500);
   }
 };

@@ -14,10 +14,10 @@ const updatePatient = async (req, res) => {
     const updatedPatient = await query.updatePatient(req.body, req.params);
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "row_not_found" });
+      return res.status(400).send({ code: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
-    if (error.type == "duplicated_entry_error" || error.type == "invalid_data")
+    if (error.code == "duplicated_entry_error" || error.code == "invalid_data")
       return res.status(400).send(error);
     res.sendStatus(500);
   }
@@ -27,7 +27,7 @@ const deleteAccount = async (req, res) => {
   try {
     const patient = await query.selectPatient_sensitive(req.params);
 
-    if (patient == null) return res.status(400).send({ type: "row_not_found" });
+    if (patient == null) return res.status(400).send({ code: "row_not_found" });
 
     const validPassword = await utility.comparePassword(
       req.body.password,
@@ -37,7 +37,7 @@ const deleteAccount = async (req, res) => {
     if (!validPassword)
       return res
         .status(400)
-        .send({ type: "incorrect_information", path: "password" });
+        .send({ code: "incorrect_information", path: "password" });
 
     await query.deletePatientAccount(req.params.id);
     res.sendStatus(204);
@@ -50,7 +50,7 @@ const modifyPassword = async (req, res) => {
   try {
     const patient = await query.selectPatient_sensitive(req.params);
 
-    if (patient == null) return res.status(400).send({ type: "row_not_found" });
+    if (patient == null) return res.status(400).send({ code: "row_not_found" });
 
     const correctOldPassword = await utility.comparePassword(
       req.body.old_password,
@@ -60,7 +60,7 @@ const modifyPassword = async (req, res) => {
     if (!correctOldPassword)
       return res
         .status(400)
-        .send({ type: "incorrect_information", path: "old_password" });
+        .send({ code: "incorrect_information", path: "old_password" });
 
     const newPassword = await utility.hashPassword(req.body.password);
 
@@ -70,7 +70,7 @@ const modifyPassword = async (req, res) => {
     );
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ type: "row_not_found" });
+      return res.status(400).send({ code: "row_not_found" });
 
     res.sendStatus(204);
   } catch (error) {
@@ -88,7 +88,7 @@ const getPatientInfo = async (req, res) => {
 
 const getAllPatient = async (req, res) => {
   try {
-    res.send({ result: await query.selectAllPatient(req.query?.page) });
+    res.send(await query.selectAllPatient(req.query));
   } catch (error) {
     res.sendStatus(500);
   }

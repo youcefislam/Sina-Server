@@ -4,7 +4,7 @@
   "description": "this is the auth micro service for sina",
   "main": "server.js",
   "scripts": {
-    "serve": "nodemon src/server.js",
+    "serve": "nodemon src/server.js 4000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

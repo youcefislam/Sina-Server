@@ -2,7 +2,7 @@ const query = require("./queries");
 
 const getCommuneList = async (req, res) => {
   try {
-    res.send({ results: await query.selectAllCommune(req.query?.page) });
+    res.send(await query.selectAllCommune(req.query));
   } catch (error) {
     res.sendStatus(500);
   }

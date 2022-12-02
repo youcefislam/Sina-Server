@@ -18,10 +18,11 @@ Router.get(
 Router.get(
   "/search",
   middleware.validation(schema.searchDoctorQuery, "query"),
+  middleware.transformQuery,
   controllers.searchDoctor
 );
 
-// get account endpoint
+// get account information endpoint
 Router.get(
   "/:id",
   middleware.tokenAuthorization,
@@ -29,7 +30,7 @@ Router.get(
   controllers.getDoctorById
 );
 
-// update account endpoint
+// update account information endpoint
 Router.put(
   "/:id",
   middleware.tokenAuthorization,
@@ -56,9 +57,10 @@ Router.get(
   "/:id/patient_list",
   middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
-  middleware.validation(schema.page, "query"),
+  middleware.validation(schema.pagination, "query"),
   middleware.doctorOnly,
   middleware.private,
+  middleware.transformQuery,
   controllers.getPatientList
 );
 

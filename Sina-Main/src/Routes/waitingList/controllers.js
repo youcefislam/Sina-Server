@@ -3,9 +3,7 @@ const patientQuery = require("../patient/queries.js");
 
 const getWaitingList = async (req, res) => {
   try {
-    res.send({
-      results: await query.selectWaitingList(req.autData.id, req.query?.page),
-    });
+    res.send(await query.selectWaitingList(req.autData.id, req.query));
   } catch (error) {
     res.sendStatus(500);
   }

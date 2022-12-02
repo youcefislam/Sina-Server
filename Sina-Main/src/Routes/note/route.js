@@ -44,7 +44,8 @@ Router.get(
   "/list/:id_patient",
   middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
-  middleware.validation(schema.page, "query"),
+  middleware.validation(schema.pagination, "query"),
+  middleware.transformQuery,
   controllers.getNotesList
 );
 

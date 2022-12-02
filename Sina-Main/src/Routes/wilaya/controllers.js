@@ -2,7 +2,7 @@ const query = require("./queries");
 
 const getWilayaList = async (req, res) => {
   try {
-    res.send({ results: await query.selectAllWilaya(req.query?.page) });
+    res.send(await query.selectAllWilaya(req.query));
   } catch (error) {
     res.sendStatus(500);
   }

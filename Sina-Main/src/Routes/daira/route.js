@@ -10,7 +10,8 @@ const Router = express.Router();
 Router.get(
   "/",
   middleware.tokenAuthorization,
-  middleware.validation(schema.page, "query"),
+  middleware.validation(schema.pagination, "query"),
+  middleware.transformQuery,
   controllers.getDairaList
 );
 

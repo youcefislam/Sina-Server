@@ -65,7 +65,7 @@ const getAppointment = async (req, res) => {
 
 const getAppointmentList = async (req, res) => {
   try {
-    res.send({ results: await query.getAppointmentList(req.params) });
+    res.send(await query.getAppointmentList(req.params.id_patient, req.query));
   } catch (error) {
     res.sendStatus(500);
   }
@@ -73,9 +73,9 @@ const getAppointmentList = async (req, res) => {
 
 const getAppointmentJournal = async (req, res) => {
   try {
-    res.send({
-      results: await query.getAppointmentJournal(req.params.id_patient),
-    });
+    res.send(
+      await query.getAppointmentJournal(req.params.id_patient, req.query)
+    );
   } catch (error) {
     res.sendStatus(500);
   }

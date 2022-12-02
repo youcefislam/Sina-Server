@@ -4,14 +4,27 @@ const {
   queryErrorHandler,
 } = require("../../Database/Connection");
 
-const selectWaitingList = (id_doctor, page = 1) =>
+const selectWaitingList = (id_doctor, { page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    const pagination = page * 5 - 5;
-    const statement = `SELECT p.id,p.mail,p.first_name,p.last_name from patient_request rq,patient p WHERE rq.id_doctor = ? AND p.id = rq.id_patient ORDER BY p.first_name,p.last_name LIMIT ?,5;`;
-    dbPool.query(statement, [id_doctor, pagination], (dbErr, result) => {
-      if (dbErr) return reject(dbErr);
-      resolve(result);
-    });
+    const pagination = page * limit - limit;
+    const statement = `SELECT p.id,p.mail,p.first_name,p.last_name from patient_request rq,patient p WHERE rq.id_doctor = ? AND p.id = rq.id_patient ORDER BY p.first_name,p.last_name LIMIT ?,?;SELECT count(*) as size FROM patient_request where id_doctor = ?;`;
+    dbPool.query(
+      statement,
+      [id_doctor, pagination, limit, id_doctor],
+      (dbErr, result) => {
+        if (dbErr) return reject(dbErr);
+        const maxPage = Math.ceil(result[1][0].size / limit);
+        resolve({
+          Results: result[0],
+          Pagination: {
+            page,
+            nextPage: page < maxPage ? ++page : -1,
+            limit,
+            maxPage,
+          },
+        });
+      }
+    );
   });
 const insertRequest = (request) =>
   new Promise((resolve, reject) => {

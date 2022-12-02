@@ -136,6 +136,7 @@ const schema = {
       username: joi.string().alphanum(),
       mail: joi.string().email(),
       page: joi.number().min(1),
+      limit: joi.number().min(10).max(100),
     })
     .or("username", "mail"),
   validPassword: joi.object({
@@ -176,6 +177,7 @@ const schema = {
     id_wilaya: joi.number().min(1),
     id_daira: joi.number().min(1),
     page: joi.number().min(1),
+    limit: joi.number().min(10).max(100),
   }),
   addEcgFile: joi.object({
     created_at: joi.date().required(),
@@ -185,6 +187,7 @@ const schema = {
     month: joi.number().min(1).max(12),
     day: joi.number().min(1).max(31),
     page: joi.number().min(1),
+    limit: joi.number().min(10).max(100),
   }),
   updateDoctor: joi
     .object({
@@ -203,6 +206,7 @@ const schema = {
   getReportOptions: joi.object({
     created_at: joi.date(),
     page: joi.number().min(1),
+    limit: joi.number().min(10).max(100),
   }),
   patientRequest: joi
     .object({
@@ -214,6 +218,10 @@ const schema = {
   addPatientRequest: joi.object({
     id: joi.number().min(1).required(),
     message: joi.string().max(250),
+  }),
+  pagination: joi.object({
+    page: joi.number().min(1),
+    limit: joi.number().min(10).max(100),
   }),
 };
 module.exports = {

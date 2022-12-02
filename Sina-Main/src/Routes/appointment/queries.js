@@ -45,23 +45,46 @@ const deleteAppointment = (id) =>
       resolve(result);
     });
   });
-const getAppointmentList = (query) =>
+const getAppointmentList = (id_patient, { page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    let statement = formulateAndQuery(
-      "SELECT * FROM appointment WHERE ?;",
-      query
+    let pagination = page * limit - limit;
+    let statement =
+      "SELECT * FROM appointment WHERE id_patient = ? ORDER BY date LIMIT ?,?;SELECT count(*) as size FROM appointment WHERE id_patient = ?;";
+    dbPool.query(
+      statement,
+      [id_patient, pagination, limit, id_patient],
+      (dbErr, result) => {
+        if (dbErr) return reject(dbErr);
+        const maxPage = Math.ceil(result[1][0].size / limit);
+        resolve({
+          Results: result[0],
+          Pagination: {
+            page,
+            nextPage: page < maxPage ? ++page : -1,
+            limit,
+            maxPage,
+          },
+        });
+      }
     );
-    dbPool.query(statement, (dbErr, result) => {
-      if (dbErr) return reject(dbErr);
-      resolve(result);
-    });
   });
-const getAppointmentJournal = (id) =>
+const getAppointmentJournal = (id, { page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    let statement = "SELECT * FROM appointment_journal WHERE id_patient=?;";
-    dbPool.query(statement, id, (dbErr, result) => {
+    let pagination = page * limit - limit;
+    let statement =
+      "SELECT * FROM appointment_journal WHERE id_patient = ? ORDER BY date LIMIT ?,?; SELECT count(*) as size FROM appointment_journal WHERE id_patient = ?";
+    dbPool.query(statement, [id, pagination, limit, id], (dbErr, result) => {
       if (dbErr) return reject(dbErr);
-      resolve(result);
+      const maxPage = Math.ceil(result[1][0].size / limit);
+      resolve({
+        Results: result[0],
+        Pagination: {
+          page,
+          nextPage: page < maxPage ? ++page : -1,
+          limit,
+          maxPage,
+        },
+      });
     });
   });
 const insertAppointmentJournal = (values) =>

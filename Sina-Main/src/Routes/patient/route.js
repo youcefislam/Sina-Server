@@ -6,15 +6,16 @@ const { schema } = require("../../Utilities/validations");
 const Router = express.Router();
 
 // patient router
-// patient get patient info endpoint
+// get patient info endpoint
 Router.get(
   "/",
   middleware.tokenAuthorization,
-  middleware.validation(schema.page, "query"),
+  middleware.validation(schema.pagination, "query"),
+  middleware.transformQuery,
   controllers.getAllPatient
 );
 
-// patient get patient info endpoint
+// get patient info endpoint
 Router.get(
   "/:id",
   middleware.tokenAuthorization,
