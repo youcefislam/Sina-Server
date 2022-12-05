@@ -1,4 +1,4 @@
-const { dbPool, queryErrorHandler } = require("../../Database/Connection");
+const { dbPool, errorHandler } = require("../../Database/Connection");
 
 const selectAllIllnessTypes = ({ page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
@@ -26,7 +26,7 @@ const insertIllnessType = (values) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("illness_type.", "")
             )
@@ -52,7 +52,7 @@ const updateIllness = (newValues, options) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("illness_type.", "")
             )

@@ -9,7 +9,6 @@ const Router = express.Router();
 // add a note endpoint
 Router.post(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.addNote, "body"),
   controllers.addNote
 );
@@ -17,7 +16,6 @@ Router.post(
 // Get a note endpoint
 Router.get(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.getNote
 );
@@ -25,7 +23,6 @@ Router.get(
 // update a note endpoint
 Router.put(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.updateNote, "body"),
   controllers.updateNote
@@ -34,7 +31,6 @@ Router.put(
 // Delete a note endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.deleteNote
 );
@@ -42,7 +38,6 @@ Router.delete(
 // Get note list of a patient list endpoint
 Router.get(
   "/list/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,

@@ -1,8 +1,4 @@
-const {
-  dbPool,
-  format,
-  queryErrorHandler,
-} = require("../../Database/Connection");
+const { dbPool, format, errorHandler } = require("../../Database/Connection");
 
 const selectPatientEcgFiles = (id_patient, options) =>
   new Promise((resolve, reject) => {
@@ -48,7 +44,7 @@ const insertEcgFile = (values) =>
       if (dbErr) {
         if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               "The entered data might be incorrect"
             )

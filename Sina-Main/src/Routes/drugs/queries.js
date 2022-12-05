@@ -1,6 +1,6 @@
 const {
   dbPool,
-  queryErrorHandler,
+  errorHandler,
   formulateAndQuery,
 } = require("../../Database/Connection");
 
@@ -49,7 +49,7 @@ const insertDrug = (query) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("drug.", "")
             )
@@ -74,7 +74,7 @@ const updatedDrug = (newValues, options) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("drug.", "")
             )
@@ -99,14 +99,14 @@ const insertIntoDrugList = (values) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("drugs_list.", "")
             )
           );
         if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               "The entered data might be incorrect"
             )
@@ -162,7 +162,7 @@ const insertIntoDrugJournal = (values) =>
       if (dbErr) {
         if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               "The entered data might be incorrect"
             )

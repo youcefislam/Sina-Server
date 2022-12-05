@@ -1,7 +1,7 @@
 const {
   dbPool,
   formulateAndQuery,
-  queryErrorHandler,
+  errorHandler,
 } = require("../../Database/connection");
 
 const selectDoctor_sensitive = (query) =>
@@ -40,14 +40,14 @@ const updateDoctor = (newValue, options) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("doctor.", "")
             )
           );
         else if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               `The entered data might be incorrect`
             )

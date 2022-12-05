@@ -9,7 +9,6 @@ const Router = express.Router();
 // Get the list of daira endpoint
 Router.get(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
   controllers.getDairaList
@@ -18,7 +17,6 @@ Router.get(
 // add daira endpoint
 Router.post(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.addDairaBody, "body"),
   controllers.addDaira
 );
@@ -26,7 +24,6 @@ Router.post(
 // update daira endpoint
 Router.put(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.name, "body"),
   controllers.updateDaira
@@ -35,7 +32,6 @@ Router.put(
 // delete daira endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.deleteDaira
 );

@@ -1,7 +1,7 @@
 const {
   dbPool,
   formulateAndQuery,
-  queryErrorHandler,
+  errorHandler,
 } = require("../../Database/Connection");
 
 const selectWaitingList = (id_doctor, { page = 1, limit = 10 }) =>
@@ -33,14 +33,11 @@ const insertRequest = (request) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
-              "duplicated_entry_error",
-              "request already sent"
-            )
+            new errorHandler("duplicated_entry_error", "request already sent")
           );
         else if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               "The entered data might be incorrect"
             )

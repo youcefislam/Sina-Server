@@ -1,30 +1,32 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
+const express = require("express"),
+  bodyParser = require("body-parser"),
+  cors = require("cors"),
+  path = require("path");
 // const rateLimit = require("express-rate-limit");
 // const apicache = require("apicache");
 
-const alertRouter = require("./Routes/alerts/route");
-const doctorRouter = require("./Routes/doctor/route");
-const patientRouter = require("./Routes/patient/route");
-const waitingListRouter = require("./Routes/waitingList/route");
-const relativeRouter = require("./Routes/relative/route");
-const illnessRouter = require("./Routes/illness/route");
-const wilayaRouter = require("./Routes/wilaya/route");
-const dairaRouter = require("./Routes/daira/route");
-const communeRouter = require("./Routes/commune/route");
-const appointmentRouter = require("./Routes/appointment/route");
-const drugsRouter = require("./Routes/drugs/route");
-const noteRouter = require("./Routes/note/route");
-const hospitalRouter = require("./Routes/hospital/route");
-const medicalReportRouter = require("./Routes/medicalReport/route");
-const ecgRouter = require("./Routes/Ecg/route");
+const alertRouter = require("./Routes/alerts/route"),
+  doctorRouter = require("./Routes/doctor/route"),
+  patientRouter = require("./Routes/patient/route"),
+  waitingListRouter = require("./Routes/waitingList/route"),
+  relativeRouter = require("./Routes/relative/route"),
+  illnessRouter = require("./Routes/illness/route"),
+  wilayaRouter = require("./Routes/wilaya/route"),
+  dairaRouter = require("./Routes/daira/route"),
+  communeRouter = require("./Routes/commune/route"),
+  appointmentRouter = require("./Routes/appointment/route"),
+  drugsRouter = require("./Routes/drugs/route"),
+  noteRouter = require("./Routes/note/route"),
+  hospitalRouter = require("./Routes/hospital/route"),
+  medicalReportRouter = require("./Routes/medicalReport/route"),
+  ecgRouter = require("./Routes/Ecg/route");
+
+const middleware = require("./Middlewares/middlewares");
 
 const app = express();
-// Static files serving Middleware (allow access to these files publicly)
-app.use("/public/views", express.static("public/views"));
-app.use("/public/uploads/Media", express.static("public/uploads/Media"));
-app.use("/public/views", express.static("public/views"));
+
+app.use(express.static(path.resolve(__dirname, "public/views")));
+app.use(express.static(path.resolve(__dirname, "public/uploads/Media")));
 
 app.use(
   cors({
@@ -32,13 +34,16 @@ app.use(
   })
 );
 
-// configure the app to use bodyParser()
 app.use(
   bodyParser.urlencoded({
     extended: true,
   })
 );
-app.use(bodyParser.json());
+app.use(express.json());
+app.use((req, res, next) => {
+  console.log(req.query);
+  next();
+});
 
 // maybe use rate limit later
 // const limiter = rateLimit({
@@ -49,6 +54,9 @@ app.use(bodyParser.json());
 
 // // to cache responses
 // let cache = apicache.middleware;
+
+// authorization middleware
+app.use(middleware.tokenAuthorization);
 
 // Routes
 // doctor route
@@ -88,7 +96,7 @@ app.use("/note", noteRouter);
 app.use("/hospital", hospitalRouter);
 
 // medical report route
-app.use("/medical-report", medicalReportRouter);
+app.use("/medical_report", medicalReportRouter);
 
 // ecg route
 app.use("/ecg", ecgRouter);
@@ -98,9 +106,15 @@ app.use("/alert", alertRouter);
 
 app.use("*", (req, res) => res.sendStatus(404));
 
-// handling unknown errors -- tested
-app.use((err, req, res, next) => {
-  if (err.status == 400) res.status(err.status).send({ code: "Bad_request" });
+// handling errors
+app.use((error, req, res, next) => {
+  if (
+    error.code == "duplicated_entry_error" ||
+    error.code == "invalid_data" ||
+    error.code == "incorrect_information" ||
+    error.code == "raw_not_found"
+  )
+    return res.status(400).send(error);
   res.sendStatus(500);
 });
 

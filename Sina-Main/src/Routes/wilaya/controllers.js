@@ -1,45 +1,42 @@
 const query = require("./queries");
+const { errorHandler } = require("../../Database/Connection");
 
-const getWilayaList = async (req, res) => {
+const getWilayaList = async (req, res, next) => {
   try {
     res.send(await query.selectAllWilaya(req.query));
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const addWilaya = async (req, res) => {
+const addWilaya = async (req, res, next) => {
   try {
     await query.insertWilaya(req.body);
     res.sendStatus(204);
   } catch (error) {
-    if (error.code == "duplicated_entry_error" || error.code == "invalid_data")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const updateWilaya = async (req, res) => {
+const updateWilaya = async (req, res, next) => {
   try {
     const updatedWilaya = await query.updateWilaya(req.body, req.params);
     if (updatedWilaya.affectedRows == 0)
-      return res.status(400).send({ code: "raw_not_found" });
+      return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {
-    if (error.code == "duplicated_entry_error")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const deleteWilaya = async (req, res) => {
+const deleteWilaya = async (req, res, next) => {
   try {
     const deletedWilaya = await query.deleteWilaya(req.params.id);
     if (deletedWilaya.affectedRows == 0)
-      return res.status(400).send({ code: "raw_not_found" });
+      return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 

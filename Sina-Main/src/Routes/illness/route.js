@@ -9,7 +9,6 @@ const Router = express.Router();
 // Get illness list endpoint
 Router.get(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
   controllers.getIllnessList
@@ -18,7 +17,6 @@ Router.get(
 // Add a type of illness endpoint
 Router.post(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.type, "body"),
   controllers.addIllness
 );
@@ -26,7 +24,6 @@ Router.post(
 // Update a type of illness endpoint
 Router.put(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.type, "body"),
   controllers.updateIllness
@@ -35,7 +32,6 @@ Router.put(
 // Delete a type of illness endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.deleteIllness
 );

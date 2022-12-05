@@ -9,7 +9,6 @@ const Router = express.Router();
 // send alert
 Router.post(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.sendAlert, "body"),
   controllers.sendAlert
 );

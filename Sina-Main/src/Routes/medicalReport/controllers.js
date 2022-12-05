@@ -2,28 +2,31 @@ const moment = require("moment");
 const fs = require("mz/fs");
 const path = require("path");
 const query = require("./queries");
+const { errorHandler } = require("../../Database/Connection");
 
-const addMedicalReport = async (req, res) => {
+const addMedicalReport = async (req, res, next) => {
   try {
     if (req.file?.path == null)
-      return res.status(400).send({
-        code: "file_error",
-        message: "File not attached or invalid file extension type",
-      });
+      return next(
+        new errorHandler(
+          "file_error",
+          "File not attached or invalid file extension type"
+        )
+      );
+
     req.params.link = req.file?.path;
     req.params.created_at = moment().format();
     await query.insertReport(req.params);
     res.sendStatus(201);
   } catch (error) {
-    if (error.code == "invalid_data") return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const getMedicalReport = async (req, res) => {
+const getMedicalReport = async (req, res, next) => {
   try {
     const report = await query.selectReportById(req.params.id);
-    if (report == null) return res.status(400).send({ code: "row_not_found" });
+    if (report == null) return next(new errorHandler("raw_not_found"));
 
     const fileName = "file.pdf";
     const fileURL = "./" + path.normalize(report.link);
@@ -34,26 +37,26 @@ const getMedicalReport = async (req, res) => {
     });
     stream.pipe(res);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const getMedicalReportList = async (req, res) => {
+const getMedicalReportList = async (req, res, next) => {
   try {
     res.send(await query.selectReportList(req.params.id_patient, req.query));
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const deleteReport = async (req, res) => {
+const deleteReport = async (req, res, next) => {
   try {
     const deleteQuery = await query.deleteReport(req.params.id);
     if (deleteQuery.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 

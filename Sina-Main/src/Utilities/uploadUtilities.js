@@ -1,6 +1,6 @@
-const path = require("path");
-const fs = require("fs");
-const multer = require("multer");
+const path = require("path"),
+  fs = require("fs"),
+  multer = require("multer");
 
 const checkReportType = (file, cb) => {
   //type of valid extension

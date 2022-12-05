@@ -1,4 +1,4 @@
-const { dbPool, queryErrorHandler } = require("../../Database/Connection");
+const { dbPool, errorHandler } = require("../../Database/Connection");
 
 const insertNote = (values) =>
   new Promise((resolve, reject) => {
@@ -7,7 +7,7 @@ const insertNote = (values) =>
       if (dbErr) {
         if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               "The entered data might be incorrect"
             )

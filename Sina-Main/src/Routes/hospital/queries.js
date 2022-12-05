@@ -2,7 +2,7 @@ const {
   dbPool,
   format,
   formulateAndQuery,
-  queryErrorHandler,
+  errorHandler,
 } = require("../../Database/Connection");
 
 const selectHospitals = (options) =>
@@ -63,14 +63,14 @@ const insertHospital = (values) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("hospital.", "")
             )
           );
         if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               "The entered data might be incorrect"
             )
@@ -87,14 +87,14 @@ const updateHospital = (newValues, query) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("hospital.", "")
             )
           );
         if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               "The entered data might be incorrect"
             )

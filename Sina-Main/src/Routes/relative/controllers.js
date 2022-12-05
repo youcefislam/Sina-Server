@@ -1,7 +1,7 @@
 const query = require("./queries");
 const patientQuery = require("../patient/queries");
 
-const updateRelative = async (req, res) => {
+const updateRelative = async (req, res, next) => {
   try {
     if (req.body.phone_number)
       req.body.phone_number = Number(req.body.phone_number);
@@ -11,31 +11,27 @@ const updateRelative = async (req, res) => {
       return res.status(400).send({ code: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
-    if (error.code == "duplicated_entry_error")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const addRelative = async (req, res) => {
+const addRelative = async (req, res, next) => {
   let relative;
   try {
     relative = await query.insertRelative(req.body);
     res.sendStatus(204);
   } catch (error) {
-    if (error.code == "duplicated_entry_error" || error.code == "invalid_data")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const getRelativeInfo = async (req, res) => {
+const getRelativeInfo = async (req, res, next) => {
   try {
     const relative = await query.selectRelative(req.params.id);
 
     res.send({ result: relative });
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
@@ -47,7 +43,7 @@ const deleteRelative = async (req, res) => {
       return res.status(400).send({ code: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 

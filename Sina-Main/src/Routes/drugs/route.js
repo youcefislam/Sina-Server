@@ -9,15 +9,14 @@ const Router = express.Router();
 // Get drugs list endpoint
 Router.get(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.pagination, "query"),
+  middleware.transformQuery,
   controllers.getAllDrugs
 );
 
 // Add a new drug endpoint
 Router.post(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.addNewDrug, "body"),
   controllers.addNewDrug
 );
@@ -25,7 +24,6 @@ Router.post(
 // Get drug information endpoint
 Router.get(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.getDrugInfo
 );
@@ -33,7 +31,6 @@ Router.get(
 // Update a drug endpoint
 Router.put(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.updateDrug, "body"),
   controllers.updateDrug
@@ -42,7 +39,6 @@ Router.put(
 // Delete a drug endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.deleteDrug
 );
@@ -50,7 +46,6 @@ Router.delete(
 // Get the drugs list of a patient endpoint
 Router.get(
   "/list/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
@@ -60,7 +55,6 @@ Router.get(
 // Add a drug to the list of drugs for a patient endpoint
 Router.post(
   "/list/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   middleware.validation(schema.validIdDrug, "body"),
   controllers.addToDrugsList
@@ -69,7 +63,6 @@ Router.post(
 // Delete a drug from the patient's drugs list endpoint
 Router.delete(
   "/list/:id_patient/:id_drug",
-  middleware.tokenAuthorization,
   middleware.validation(schema.drugListItem, "params"),
   controllers.deleteFromDugList
 );
@@ -77,7 +70,6 @@ Router.delete(
 // Get the drug's journal of a patient endpoint
 Router.get(
   "/journal/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
@@ -87,7 +79,6 @@ Router.get(
 // Take a dose of a drug endpoint
 Router.post(
   "/journal/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   middleware.validation(schema.validIdDrug, "body"),
   controllers.addToDrugsJournal
@@ -96,7 +87,6 @@ Router.post(
 // Get a specific drug's journal of a patient endpoint
 Router.get(
   "/journal/:id_patient/:id_drug",
-  middleware.tokenAuthorization,
   middleware.validation(schema.drugListItem, "params"),
   controllers.getOneDrugJournal
 );
@@ -104,7 +94,6 @@ Router.get(
 // Delete a patient's drug journal record endpoint
 Router.delete(
   "/journal/:id_patient/:id_drug/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.deleteFromDrugJournal, "params"),
   controllers.deleteDrugFromJournal
 );

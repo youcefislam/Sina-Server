@@ -6,10 +6,9 @@ const { schema } = require("../../Utilities/validations");
 const Router = express.Router();
 
 // Endpoints
-// Get doctor's list endpoint
+// Get doctors list endpoint
 Router.get(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.page, "query"),
   controllers.getAllDoctors
 );
@@ -25,7 +24,6 @@ Router.get(
 // get account information endpoint
 Router.get(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.getDoctorById
 );
@@ -33,7 +31,6 @@ Router.get(
 // update account information endpoint
 Router.put(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.updateDoctor, "body"),
   middleware.doctorOnly,
@@ -44,7 +41,6 @@ Router.put(
 // Delete account endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.validPassword, "body"),
   middleware.doctorOnly,
@@ -55,7 +51,6 @@ Router.delete(
 // Get the doctor's patient list endpoint
 Router.get(
   "/:id/patient_list",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.pagination, "query"),
   middleware.doctorOnly,
@@ -67,7 +62,6 @@ Router.get(
 // Delete patient from the patient list endpoint
 Router.delete(
   "/:id/patient_list/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.deleteFromPatientList, "params"),
   middleware.doctorOnly,
   middleware.private,
@@ -77,7 +71,6 @@ Router.delete(
 // Modify doctor's password endpoint
 Router.put(
   "/:id/password",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.validNewPassword, "body"),
   middleware.doctorOnly,

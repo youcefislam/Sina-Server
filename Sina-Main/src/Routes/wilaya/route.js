@@ -9,7 +9,6 @@ const Router = express.Router();
 // Get the list of wilaya endpoint
 Router.get(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
   controllers.getWilayaList
@@ -18,7 +17,6 @@ Router.get(
 // add wilaya endpoint
 Router.post(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.name, "body"),
   controllers.addWilaya
 );
@@ -26,7 +24,6 @@ Router.post(
 // update wilaya endpoint
 Router.put(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.name, "body"),
   controllers.updateWilaya
@@ -35,7 +32,6 @@ Router.put(
 // delete wilaya endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.deleteWilaya
 );

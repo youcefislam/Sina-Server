@@ -9,7 +9,6 @@ const Router = express.Router();
 // Get the list of commune endpoint
 Router.get(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
   controllers.getCommuneList
@@ -18,7 +17,6 @@ Router.get(
 // add commune endpoint
 Router.post(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.addCommuneBody, "body"),
   controllers.addCommune
 );
@@ -26,7 +24,6 @@ Router.post(
 // update commune endpoint
 Router.put(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.name, "body"),
   controllers.updateCommune
@@ -35,7 +32,6 @@ Router.put(
 // delete commune endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.deleteCommune
 );

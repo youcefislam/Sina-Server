@@ -1,6 +1,6 @@
 const {
   dbPool,
-  queryErrorHandler,
+  errorHandler,
   formulateAndQuery,
 } = require("../../Database/Connection");
 
@@ -11,7 +11,7 @@ const insertAppointment = (values) =>
       if (dbErr) {
         if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               "The entered data might be incorrect"
             )
@@ -94,7 +94,7 @@ const insertAppointmentJournal = (values) =>
       if (dbErr) {
         if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               "The entered data might be incorrect"
             )

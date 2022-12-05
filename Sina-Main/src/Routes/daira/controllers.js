@@ -1,45 +1,42 @@
 const query = require("./queries");
+const { errorHandler } = require("../../Database/Connection");
 
-const getDairaList = async (req, res) => {
+const getDairaList = async (req, res, next) => {
   try {
     res.send(await query.selectAllDaira(req.query));
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const addDaira = async (req, res) => {
+const addDaira = async (req, res, next) => {
   try {
     await query.insertDaira(req.body);
     res.sendStatus(204);
   } catch (error) {
-    if (error.code == "duplicated_entry_error" || error.code == "invalid_data")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const updateDaira = async (req, res) => {
+const updateDaira = async (req, res, next) => {
   try {
     const updatedDaira = await query.updateDaira(req.body, req.params);
     if (updatedDaira.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {
-    if (error.code == "duplicated_entry_error")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const deleteDaira = async (req, res) => {
+const deleteDaira = async (req, res, next) => {
   try {
     const deletedDaira = await query.deleteDaira(req.params.id);
     if (deletedDaira.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 

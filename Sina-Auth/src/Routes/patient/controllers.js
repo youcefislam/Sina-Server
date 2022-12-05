@@ -1,8 +1,7 @@
-const validateBody = require("../../Utilities/validations");
 const query = require("./queries");
 const utility = require("../../Utilities/utility");
 
-const signUp = async (req, res) => {
+const signUp = async (req, res, next) => {
   let newPatientId;
   try {
     req.body.password = await utility.hashValue(req.body.password);
@@ -25,15 +24,12 @@ const signUp = async (req, res) => {
 
     res.send({ validation_code });
   } catch (error) {
-    console.log(error);
     if (newPatientId) query.deletePatient(newPatientId);
-    if (error.code == "duplicated_entry_error")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const signIn = async (req, res) => {
+const signIn = async (req, res, next) => {
   try {
     const patient = await query.selectPatient_sensitive({
       username: req.body.username,
@@ -81,11 +77,11 @@ const signIn = async (req, res) => {
 
     return res.send({ ACCESS_TOKEN, REFRESH_TOKEN });
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const refreshAccessToken = async (req, res) => {
+const refreshAccessToken = async (req, res, next) => {
   try {
     const REFRESH_TOKEN = req.token;
 
@@ -111,11 +107,11 @@ const refreshAccessToken = async (req, res) => {
     });
     return res.send({ ACCESS_TOKEN });
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const signOut = async (req, res) => {
+const signOut = async (req, res, next) => {
   try {
     const REFRESH_TOKEN = req.token;
 
@@ -136,11 +132,11 @@ const signOut = async (req, res) => {
 
     return res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const resendValidationCode = async (req, res) => {
+const resendValidationCode = async (req, res, next) => {
   let deleteQuery, patient;
   try {
     patient = await query.selectPatient_sensitive(req.body);
@@ -172,13 +168,12 @@ const resendValidationCode = async (req, res) => {
     );
     res.send({ validation_code });
   } catch (error) {
-    console.log(error);
     if (deleteQuery) query.insertPatientNotVerified(patient.id, null);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const validateAccount = async (req, res) => {
+const validateAccount = async (req, res, next) => {
   try {
     const patient = await query.selectPatient_sensitive({
       mail: req.body.mail,
@@ -217,11 +212,11 @@ const validateAccount = async (req, res) => {
 
     return res.send({ ACCESS_TOKEN, REFRESH_TOKEN });
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const sendRestoreLink = async (req, res) => {
+const sendRestoreLink = async (req, res, next) => {
   try {
     const patient = await query.selectPatient_sensitive(req.body);
 
@@ -243,11 +238,11 @@ const sendRestoreLink = async (req, res) => {
     await utility.sendMail(mail, "Recuperation du mot de passe ✔", emailBody);
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res, next) => {
   try {
     const autData = await utility.validateValidationToken(req.query.token);
     const patient = await query.selectPatient_sensitive({ id: autData.id });
@@ -259,7 +254,7 @@ const resetPassword = async (req, res) => {
     await query.updatePatient({ password }, { id: autData.id });
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 

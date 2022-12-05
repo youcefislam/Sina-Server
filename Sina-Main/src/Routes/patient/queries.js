@@ -1,7 +1,7 @@
 const {
   dbPool,
   formulateAndQuery,
-  queryErrorHandler,
+  errorHandler,
   format,
 } = require("../../Database/connection");
 
@@ -22,14 +22,14 @@ const updatePatient = async (newValues, options) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("doctor.", "")
             )
           );
         if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               `The entered data might be incorrect`
             )

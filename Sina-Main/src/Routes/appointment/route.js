@@ -9,7 +9,6 @@ const Router = express.Router();
 // Add appointment endpoint
 Router.post(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.addAppointment, "body"),
   controllers.addAppointment
 );
@@ -17,7 +16,6 @@ Router.post(
 // get appointment endpoint
 Router.get(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.getAppointment
 );
@@ -25,7 +23,6 @@ Router.get(
 // update an appointment endpoint
 Router.put(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.validDate, "body"),
   controllers.updateAppointment
@@ -34,7 +31,6 @@ Router.put(
 // Cancel an appointment endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.cancelAppointment
 );
@@ -42,7 +38,6 @@ Router.delete(
 // get appointments list endpoint
 Router.get(
   "/list/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
@@ -52,7 +47,6 @@ Router.get(
 // get appointments journal endpoint
 Router.get(
   "/journal/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
@@ -62,7 +56,6 @@ Router.get(
 // archive appointment endpoint
 Router.post(
   "/journal/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   middleware.validation(schema.validId, "body"),
   controllers.archiveAppointment

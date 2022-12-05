@@ -9,7 +9,6 @@ const Router = express.Router();
 // get patient info endpoint
 Router.get(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
   controllers.getAllPatient
@@ -18,7 +17,6 @@ Router.get(
 // get patient info endpoint
 Router.get(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.getPatientInfo
 );
@@ -26,7 +24,6 @@ Router.get(
 // update patient's information endpoint
 Router.put(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.patientOnly,
   middleware.private,
@@ -37,7 +34,6 @@ Router.put(
 // Delete patient account endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.patientOnly,
   middleware.private,
@@ -48,7 +44,6 @@ Router.delete(
 // Modify patient's password endpoint
 Router.put(
   "/:id/password",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.patientOnly,
   middleware.private,

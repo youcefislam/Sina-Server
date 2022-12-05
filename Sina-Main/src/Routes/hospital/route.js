@@ -9,7 +9,6 @@ const Router = express.Router();
 // Get all hospital list endpoint
 Router.get(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.searchHospitalQuery, "query"),
   middleware.transformQuery,
   controllers.getAllHospitals
@@ -18,7 +17,6 @@ Router.get(
 // Add hospital endpoint
 Router.post(
   "/",
-  middleware.tokenAuthorization,
   middleware.validation(schema.addHospitalBody, "body"),
   controllers.addNewHospital
 );
@@ -26,7 +24,6 @@ Router.post(
 // Modify hospital endpoint
 Router.put(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   middleware.validation(schema.updateHospital, "body"),
   controllers.modifyHospital
@@ -35,7 +32,6 @@ Router.put(
 // Delete hospital endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.deleteHospital
 );

@@ -1,8 +1,9 @@
 const moment = require("moment");
 const query = require("./queries");
 const utility = require("../../Utilities/utility");
+const { errorHandler } = require("../../Database/Connection");
 
-const updatePatient = async (req, res) => {
+const updatePatient = async (req, res, next) => {
   try {
     if (req.body.birth_date)
       req.body.birth_date = moment
@@ -14,20 +15,18 @@ const updatePatient = async (req, res) => {
     const updatedPatient = await query.updatePatient(req.body, req.params);
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {
-    if (error.code == "duplicated_entry_error" || error.code == "invalid_data")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const deleteAccount = async (req, res) => {
+const deleteAccount = async (req, res, next) => {
   try {
     const patient = await query.selectPatient_sensitive(req.params);
 
-    if (patient == null) return res.status(400).send({ code: "row_not_found" });
+    if (patient == null) return next(new errorHandler("raw_not_found"));
 
     const validPassword = await utility.comparePassword(
       req.body.password,
@@ -35,32 +34,29 @@ const deleteAccount = async (req, res) => {
     );
 
     if (!validPassword)
-      return res
-        .status(400)
-        .send({ code: "incorrect_information", path: "password" });
+      return next(new errorHandler("incorrect_information", null, "password"));
 
     await query.deletePatientAccount(req.params.id);
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const modifyPassword = async (req, res) => {
+const modifyPassword = async (req, res, next) => {
   try {
     const patient = await query.selectPatient_sensitive(req.params);
 
-    if (patient == null) return res.status(400).send({ code: "row_not_found" });
+    if (patient == null) return next(new errorHandler("raw_not_found"));
 
     const correctOldPassword = await utility.comparePassword(
       req.body.old_password,
       patient.password
     );
-
     if (!correctOldPassword)
-      return res
-        .status(400)
-        .send({ code: "incorrect_information", path: "old_password" });
+      return next(
+        new errorHandler("incorrect_information", null, "old_password")
+      );
 
     const newPassword = await utility.hashPassword(req.body.password);
 
@@ -70,27 +66,27 @@ const modifyPassword = async (req, res) => {
     );
 
     if (updatedPatient.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const getPatientInfo = async (req, res) => {
+const getPatientInfo = async (req, res, next) => {
   try {
     res.send({ result: await query.searchPatient(req.params) });
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const getAllPatient = async (req, res) => {
+const getAllPatient = async (req, res, next) => {
   try {
     res.send(await query.selectAllPatient(req.query));
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 

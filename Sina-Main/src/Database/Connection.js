@@ -19,7 +19,7 @@ const format = (statement, value) => {
   return mysql.format(statement, value);
 };
 
-function queryErrorHandler(code, message, path) {
+function errorHandler(code, message, path) {
   this.code = code;
   this.message = message;
   this.path = path;
@@ -28,6 +28,6 @@ function queryErrorHandler(code, message, path) {
 module.exports = {
   formulateAndQuery,
   dbPool,
-  queryErrorHandler,
+  errorHandler,
   format,
 };

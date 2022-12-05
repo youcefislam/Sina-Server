@@ -1,12 +1,12 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const cookie_parser = require("cookie-parser");
+const express = require("express"),
+  bodyParser = require("body-parser"),
+  cors = require("cors"),
+  cookie_parser = require("cookie-parser");
 
 require("dotenv").config();
 
-const patientAuthRoute = require("./Routes/patient/route");
-const doctorAuthRoute = require("./Routes/doctor/route");
+const patientAuthRoute = require("./Routes/patient/route"),
+  doctorAuthRoute = require("./Routes/doctor/route");
 
 const app = express();
 
@@ -29,7 +29,13 @@ app.use("/doctor", doctorAuthRoute);
 app.use("*", (req, res) => res.sendStatus(404));
 
 app.use((err, req, res, next) => {
-  if (err.status == 400) return res.sendStatus(err.status);
+  if (error.code == "duplicated_entry_error")
+    return res.status(400).send(error);
+  if (error.name == "JsonWebTokenError" || error.name == "TokenExpiredError")
+    return res.status(400).send({
+      code: "invalid_link",
+      message: "Link expired or not valid anymore",
+    });
   res.sendStatus(500);
 });
 

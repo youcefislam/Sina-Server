@@ -1,57 +1,57 @@
 const moment = require("moment");
 const query = require("./queries");
+const { errorHandler } = require("../../Database/Connection");
 
-const getNotesList = async (req, res) => {
+const getNotesList = async (req, res, next) => {
   try {
     res.send(await query.selectNoteList(req.params.id_patient, req.query));
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const addNote = async (req, res) => {
+const addNote = async (req, res, next) => {
   try {
     req.body.created_at = moment().format();
 
     await query.insertNote(req.body);
     res.sendStatus(201);
   } catch (error) {
-    if (error.code == "invalid_data") return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const updateNote = async (req, res) => {
+const updateNote = async (req, res, next) => {
   try {
     const queryResult = await query.updateNote(req.body, req.params);
 
     if (queryResult?.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const deleteNote = async (req, res) => {
+const deleteNote = async (req, res, next) => {
   try {
     const queryResult = await query.deleteNote(req.params.id);
 
     if (queryResult.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const getNote = async (req, res) => {
+const getNote = async (req, res, next) => {
   try {
     res.send({ result: await query.selectNoteById(req.params.id) });
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 

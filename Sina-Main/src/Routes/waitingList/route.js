@@ -9,7 +9,6 @@ const Router = express.Router();
 // Get the waiting list of the doctor endpoint
 Router.get(
   "/",
-  middleware.tokenAuthorization,
   middleware.doctorOnly,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
@@ -19,7 +18,6 @@ Router.get(
 // Insert a patient request to the doctor's waiting list
 Router.post(
   "/",
-  middleware.tokenAuthorization,
   middleware.patientOnly,
   middleware.validation(schema.addPatientRequest, "body"),
   controller.addRequest
@@ -28,7 +26,6 @@ Router.post(
 // Accept/Reject a request endpoint
 Router.delete(
   "/",
-  middleware.tokenAuthorization,
   middleware.doctorOnly,
   middleware.validation(schema.patientRequest, "query"),
   controller.deleteRequest

@@ -1,6 +1,5 @@
-const jwt = require("jsonwebtoken");
-const Joi = require("joi");
 const patientQuery = require("../Routes/patient/queries");
+
 require("dotenv").config();
 
 const { validateAccessToken } = require("../Utilities/utility");
@@ -22,7 +21,7 @@ const tokenAuthorization = async (req, res, next) => {
       const valid = await validateAccessToken(req.token);
       req.autData = valid;
       next();
-    } else res.status(401);
+    } else res.sendStatus(401);
   } catch (error) {
     res.sendStatus(403);
   }

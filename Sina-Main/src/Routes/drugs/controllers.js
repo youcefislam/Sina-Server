@@ -1,113 +1,108 @@
 const moment = require("moment");
 const query = require("./queries");
+const { errorHandler } = require("../../Database/Connection");
 
-const getPatientDrugsList = async (req, res) => {
+const getPatientDrugsList = async (req, res, next) => {
   try {
     res.send(
       await query.selectPatientDrugList(req.params.id_patient, req.query)
     );
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const addToDrugsList = async (req, res) => {
+const addToDrugsList = async (req, res, next) => {
   try {
     await query.insertIntoDrugList({ ...req.params, ...req.body });
     res.sendStatus(201);
   } catch (error) {
-    if (error.code == "invalid_data" || error.code == "duplicated_entry_error")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const deleteFromDugList = async (req, res) => {
+const deleteFromDugList = async (req, res, next) => {
   try {
     const deletedItem = await query.deleteFromDrugList(req.params);
 
     if (deletedItem.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const getAllDrugs = async (req, res) => {
+const getAllDrugs = async (req, res, next) => {
   try {
     res.send(await query.selectAllDrugs(req.query));
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const addNewDrug = async (req, res) => {
+const addNewDrug = async (req, res, next) => {
   try {
     await query.insertDrug(req.body);
     res.sendStatus(201);
   } catch (error) {
-    if (error.code == "duplicated_entry_error")
-      return res.status(400).send(error);
-    res.sentStatus(500);
+    next(error);
   }
 };
 
-const getDrugInfo = async (req, res) => {
+const getDrugInfo = async (req, res, next) => {
   try {
     res.send({ result: await query.selectDrugById(req.params.id) });
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const updateDrug = async (req, res) => {
+const updateDrug = async (req, res, next) => {
   try {
     const updatedDrug = await query.updatedDrug(req.body, req.params);
     if (updatedDrug.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
-    if (error.code == "duplicated_entry_error")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const deleteDrug = async (req, res) => {
+const deleteDrug = async (req, res, next) => {
   try {
     const deletedDrug = await query.deleteDrug(req.params.id);
 
     if (deletedDrug.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const getDrugsJournal = async (req, res) => {
+const getDrugsJournal = async (req, res, next) => {
   try {
     res.send(await query.selectDrugsJournal(req.params.id_patient, req.query));
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const getOneDrugJournal = async (req, res) => {
+const getOneDrugJournal = async (req, res, next) => {
   try {
     res.send({
       results: await query.selectDrugsJournalItem(req.params),
     });
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const addToDrugsJournal = async (req, res) => {
+const addToDrugsJournal = async (req, res, next) => {
   try {
     const insertedItem = await query.insertIntoDrugJournal({
       ...req.params,
@@ -116,21 +111,20 @@ const addToDrugsJournal = async (req, res) => {
     });
     res.status(201).send({ id_drug: insertedItem.insertId });
   } catch (error) {
-    if (error.code == "invalid_data") return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const deleteDrugFromJournal = async (req, res) => {
+const deleteDrugFromJournal = async (req, res, next) => {
   try {
     const deletedItem = await query.deleteFromJournal(req.params);
 
     if (deletedItem.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 

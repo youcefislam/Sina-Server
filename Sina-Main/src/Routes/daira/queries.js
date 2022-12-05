@@ -1,4 +1,4 @@
-const { dbPool, queryErrorHandler } = require("../../Database/Connection");
+const { dbPool, errorHandler } = require("../../Database/Connection");
 
 const selectAllDaira = ({ page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
@@ -34,14 +34,14 @@ const insertDaira = (daira) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("daira.", "")
             )
           );
         else if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               `The entered data might be incorrect`
             )
@@ -58,7 +58,7 @@ const updateDaira = (newValues, options) =>
       if (dbErr) {
         if (dbErr.errno == 1062)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "duplicated_entry_error",
               dbErr.sqlMessage.replace("daira.", "")
             )

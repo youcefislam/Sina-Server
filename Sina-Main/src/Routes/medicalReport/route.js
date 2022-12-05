@@ -11,7 +11,6 @@ const Router = express.Router();
 // get a medical report endpoint
 Router.get(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   cors({
     exposedHeaders: ["Content-Disposition"],
@@ -22,7 +21,6 @@ Router.get(
 // delete medical report endpoint
 Router.delete(
   "/:id",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validId, "params"),
   controllers.deleteReport
 );
@@ -30,7 +28,6 @@ Router.delete(
 // Get medical reports list endpoint
 Router.get(
   "/list/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   middleware.validation(schema.getReportOptions, "query"),
   middleware.transformQuery,
@@ -40,7 +37,6 @@ Router.get(
 // add new medical report endpoint
 Router.post(
   "/list/:id_patient",
-  middleware.tokenAuthorization,
   middleware.validation(schema.validIdPatient, "params"),
   uploadReport.single("file"),
   controllers.addMedicalReport

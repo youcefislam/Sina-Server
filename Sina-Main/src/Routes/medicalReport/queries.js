@@ -1,8 +1,4 @@
-const {
-  dbPool,
-  format,
-  queryErrorHandler,
-} = require("../../Database/Connection");
+const { dbPool, format, errorHandler } = require("../../Database/Connection");
 
 const selectReportById = (id) =>
   new Promise((resolve, reject) => {
@@ -49,7 +45,7 @@ const insertReport = (values) =>
         console.log(dbErr);
         if (dbErr.errno == 1452)
           return reject(
-            new queryErrorHandler(
+            new errorHandler(
               "invalid_data",
               "the entered data might be incorrect"
             )

@@ -2,14 +2,17 @@ const path = require("path");
 const moment = require("moment");
 const { deleteFile } = require("../../Utilities/uploadUtilities");
 const query = require("./queries");
+const { errorHandler } = require("../../Database/Connection");
 
-const addEcgFile = async (req, res) => {
+const addEcgFile = async (req, res, next) => {
   try {
     if (req.file?.path == null)
-      return res.status(400).send({
-        code: "file_error",
-        message: "File not attached or invalid file extension type",
-      });
+      return next(
+        new errorHandler(
+          "file_error",
+          "File not attached or invalid file extension type"
+        )
+      );
     req.body.link = req.file?.path;
     req.params.created_at = moment(req.params.created_at).format();
     await query.insertEcgFile({ ...req.body, ...req.params });
@@ -17,29 +20,27 @@ const addEcgFile = async (req, res) => {
     res.sendStatus(201);
   } catch (error) {
     if (req.file?.path) deleteFile(req.file?.path);
-    if (error.code == "invalid_data") return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const downloadECGFile = async (req, res) => {
+const downloadECGFile = async (req, res, next) => {
   try {
     const file = await query.selectEcgFileById(req.params.id);
 
     res.download("./" + path.normalize(file.link));
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const getEcgFileList = async (req, res) => {
+const getEcgFileList = async (req, res, next) => {
   try {
     res.send(
       await query.selectPatientEcgFiles(req.params.id_patient, req.query)
     );
   } catch (error) {
-    console.log(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 

@@ -1,45 +1,42 @@
 const query = require("./queries");
+const { errorHandler } = require("../../Database/Connection");
 
-const getAllHospitals = async (req, res) => {
+const getAllHospitals = async (req, res, next) => {
   try {
     res.send(await query.selectHospitals(req.query));
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const addNewHospital = async (req, res) => {
+const addNewHospital = async (req, res, next) => {
   try {
     await query.insertHospital(req.body);
     res.sendStatus(201);
   } catch (error) {
-    if (error.code == "duplicated_entry_error" || error.code == "invalid_data")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const modifyHospital = async (req, res) => {
+const modifyHospital = async (req, res, next) => {
   try {
     const updateQuery = await query.updateHospital(req.body, req.params);
     if (updateQuery.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {
-    if (error.code == "duplicated_entry_error" || error.code == "invalid_data")
-      return res.status(400).send(error);
-    res.sendStatus(500);
+    next(error);
   }
 };
 
-const deleteHospital = async (req, res) => {
+const deleteHospital = async (req, res, next) => {
   try {
     const deleteQuery = await query.deleteHospital(req.params.id);
     if (deleteHospital.affectedRows == 0)
-      return res.status(400).send({ code: "row_not_found" });
+      return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {
-    res.sendStatus(500);
+    next(error);
   }
 };
 

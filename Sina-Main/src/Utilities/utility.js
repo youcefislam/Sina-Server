@@ -1,11 +1,11 @@
-const fs = require("fs");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const sendGrid = require("@sendgrid/mail");
-// const client = require("twilio")(
-//   process.env.TWILIO_ACCOUNT_SID,
-//   process.env.TWILIO_AUTH_TOKEN
-// );
+const fs = require("fs"),
+  bcrypt = require("bcrypt"),
+  jwt = require("jsonwebtoken"),
+  sendGrid = require("@sendgrid/mail"),
+  client = require("twilio")(
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN
+  );
 
 sendGrid.setApiKey(process.env.SEND_GRID_KEY);
 
