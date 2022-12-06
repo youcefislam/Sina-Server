@@ -12,9 +12,11 @@ const updatePatient = async (req, res, next) => {
         .split("T")[0];
     if (req.body.phone_number)
       req.body.phone_number = Number(req.body.phone_number);
-    const updatedPatient = await query.updatePatient(req.body, req.params);
+    const updatedPatient = await query.updatePatient(req.body, {
+      id: req.params[0],
+    });
 
-    if (updatedPatient.affectedRows == 0)
+    if (!updatedPatient.affectedRows)
       return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {
@@ -24,9 +26,9 @@ const updatePatient = async (req, res, next) => {
 
 const deleteAccount = async (req, res, next) => {
   try {
-    const patient = await query.selectPatient_sensitive(req.params);
+    const patient = await query.selectPatient_sensitive({ id: req.params[0] });
 
-    if (patient == null) return next(new errorHandler("raw_not_found"));
+    if (!patient) return next(new errorHandler("raw_not_found"));
 
     const validPassword = await utility.comparePassword(
       req.body.password,
@@ -36,7 +38,7 @@ const deleteAccount = async (req, res, next) => {
     if (!validPassword)
       return next(new errorHandler("incorrect_information", null, "password"));
 
-    await query.deletePatientAccount(req.params.id);
+    await query.deletePatientAccount(req.params[0]);
     res.sendStatus(204);
   } catch (error) {
     next(error);
@@ -45,9 +47,9 @@ const deleteAccount = async (req, res, next) => {
 
 const modifyPassword = async (req, res, next) => {
   try {
-    const patient = await query.selectPatient_sensitive(req.params);
+    const patient = await query.selectPatient_sensitive({ id: req.params[0] });
 
-    if (patient == null) return next(new errorHandler("raw_not_found"));
+    if (!patient) return next(new errorHandler("raw_not_found"));
 
     const correctOldPassword = await utility.comparePassword(
       req.body.old_password,
@@ -62,11 +64,8 @@ const modifyPassword = async (req, res, next) => {
 
     const updatedPatient = await query.updatePatient(
       { password: newPassword },
-      req.params
+      { id: req.params[0] }
     );
-
-    if (updatedPatient.affectedRows == 0)
-      return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
@@ -76,7 +75,7 @@ const modifyPassword = async (req, res, next) => {
 
 const getPatientInfo = async (req, res, next) => {
   try {
-    res.send({ result: await query.searchPatient(req.params) });
+    res.send({ result: await query.searchPatient({ id: req.params[0] }) });
   } catch (error) {
     next(error);
   }

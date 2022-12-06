@@ -7,11 +7,7 @@ const Router = express.Router();
 
 // relative route
 // get relative info by patient id endpoint
-Router.get(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.getRelativeInfo
-);
+Router.get(/^\/(\d+)$/, middleware.parseParams, controllers.getRelativeInfo);
 
 // Add patient's relative endpoint
 Router.post(
@@ -23,8 +19,8 @@ Router.post(
 
 // Modify relative info endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.patientOnly,
   middleware.private,
   middleware.validation(schema.updateRelative, "body"),
@@ -33,8 +29,8 @@ Router.put(
 
 // delete patient's relative endpoint
 Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.patientOnly,
   middleware.private,
   controllers.deleteRelative

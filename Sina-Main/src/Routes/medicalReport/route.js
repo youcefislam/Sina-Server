@@ -10,8 +10,8 @@ const Router = express.Router();
 // medical report router
 // get a medical report endpoint
 Router.get(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   cors({
     exposedHeaders: ["Content-Disposition"],
   }),
@@ -19,16 +19,12 @@ Router.get(
 );
 
 // delete medical report endpoint
-Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.deleteReport
-);
+Router.delete(/^\/(\d+)$/, middleware.parseParams, controllers.deleteReport);
 
 // Get medical reports list endpoint
 Router.get(
-  "/list/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/list\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.getReportOptions, "query"),
   middleware.transformQuery,
   controllers.getMedicalReportList
@@ -36,8 +32,8 @@ Router.get(
 
 // add new medical report endpoint
 Router.post(
-  "/list/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/list\/(\d+)$/,
+  middleware.parseParams,
   uploadReport.single("file"),
   controllers.addMedicalReport
 );

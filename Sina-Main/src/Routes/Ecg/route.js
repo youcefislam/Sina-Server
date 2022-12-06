@@ -9,8 +9,8 @@ const Router = express.Router();
 // Ecg router
 // Get all ecg files of patient endpoint
 Router.get(
-  "/list/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/list\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.getEcgListOptions, "query"),
   middleware.transformQuery,
   controllers.getEcgFileList
@@ -18,8 +18,8 @@ Router.get(
 
 // Save ECG file endpoint
 Router.post(
-  "/list/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/list\/(\d+)$/,
+  middleware.parseParams,
   uploadEcg.single("file"),
   middleware.validation(schema.addEcgFile, "body"),
   controllers.addEcgFile
@@ -27,8 +27,8 @@ Router.post(
 
 // Download ECG file endpoint
 Router.get(
-  "/download/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/download\/(\d+)$/,
+  middleware.parseParams,
   controllers.downloadECGFile
 );
 

@@ -23,17 +23,13 @@ Router.post(
 
 // update wilaya endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.name, "body"),
   controllers.updateWilaya
 );
 
 // delete wilaya endpoint
-Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.deleteWilaya
-);
+Router.delete(/^\/(\d+)$/, middleware.parseParams, controllers.deleteWilaya);
 
 module.exports = Router;

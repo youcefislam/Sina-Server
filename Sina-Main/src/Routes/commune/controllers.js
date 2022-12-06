@@ -20,8 +20,10 @@ const addCommune = async (req, res, next) => {
 
 const updateCommune = async (req, res, next) => {
   try {
-    const updatedCommune = await query.updateCommune(req.body, req.params);
-    if (updatedCommune.affectedRows == 0)
+    const updatedCommune = await query.updateCommune(req.body, {
+      id: req.params[0],
+    });
+    if (!updatedCommune.affectedRows)
       return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {
@@ -31,8 +33,8 @@ const updateCommune = async (req, res, next) => {
 
 const deleteCommune = async (req, res, next) => {
   try {
-    const deletedCommune = await query.deleteCommune(req.params.id);
-    if (deletedCommune.affectedRows == 0)
+    const deletedCommune = await query.deleteCommune(req.params[0]);
+    if (!deletedCommune.affectedRows)
       return next(new errorHandler("raw_not_found"));
     res.sendStatus(204);
   } catch (error) {

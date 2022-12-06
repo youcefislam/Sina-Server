@@ -4,9 +4,7 @@ const { errorHandler } = require("../../Database/Connection");
 
 const getPatientDrugsList = async (req, res, next) => {
   try {
-    res.send(
-      await query.selectPatientDrugList(req.params.id_patient, req.query)
-    );
+    res.send(await query.selectPatientDrugList(req.params[0], req.query));
   } catch (error) {
     next(error);
   }
@@ -14,7 +12,7 @@ const getPatientDrugsList = async (req, res, next) => {
 
 const addToDrugsList = async (req, res, next) => {
   try {
-    await query.insertIntoDrugList({ ...req.params, ...req.body });
+    await query.insertIntoDrugList({ id_patient: req.params[0], ...req.body });
     res.sendStatus(201);
   } catch (error) {
     next(error);
@@ -23,9 +21,12 @@ const addToDrugsList = async (req, res, next) => {
 
 const deleteFromDugList = async (req, res, next) => {
   try {
-    const deletedItem = await query.deleteFromDrugList(req.params);
+    const deletedItem = await query.deleteFromDrugList({
+      id_patient: req.params[0],
+      id_drug: req.params[1],
+    });
 
-    if (deletedItem.affectedRows == 0)
+    if (!deletedItem.affectedRows)
       return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
@@ -53,7 +54,7 @@ const addNewDrug = async (req, res, next) => {
 
 const getDrugInfo = async (req, res, next) => {
   try {
-    res.send({ result: await query.selectDrugById(req.params.id) });
+    res.send({ result: await query.selectDrugById(req.params[0]) });
   } catch (error) {
     next(error);
   }
@@ -61,8 +62,10 @@ const getDrugInfo = async (req, res, next) => {
 
 const updateDrug = async (req, res, next) => {
   try {
-    const updatedDrug = await query.updatedDrug(req.body, req.params);
-    if (updatedDrug.affectedRows == 0)
+    const updatedDrug = await query.updatedDrug(req.body, {
+      id: req.params[0],
+    });
+    if (!updatedDrug.affectedRows)
       return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
@@ -73,9 +76,9 @@ const updateDrug = async (req, res, next) => {
 
 const deleteDrug = async (req, res, next) => {
   try {
-    const deletedDrug = await query.deleteDrug(req.params.id);
+    const deletedDrug = await query.deleteDrug(req.params[0]);
 
-    if (deletedDrug.affectedRows == 0)
+    if (!deletedDrug.affectedRows)
       return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
@@ -86,7 +89,7 @@ const deleteDrug = async (req, res, next) => {
 
 const getDrugsJournal = async (req, res, next) => {
   try {
-    res.send(await query.selectDrugsJournal(req.params.id_patient, req.query));
+    res.send(await query.selectDrugsJournal(req.params[0], req.query));
   } catch (error) {
     next(error);
   }
@@ -94,9 +97,12 @@ const getDrugsJournal = async (req, res, next) => {
 
 const getOneDrugJournal = async (req, res, next) => {
   try {
-    res.send({
-      results: await query.selectDrugsJournalItem(req.params),
-    });
+    res.send(
+      await query.selectDrugsJournalItem(
+        { id_patient: req.params[0], id_drug: req.params[1] },
+        req.query
+      )
+    );
   } catch (error) {
     next(error);
   }
@@ -105,7 +111,7 @@ const getOneDrugJournal = async (req, res, next) => {
 const addToDrugsJournal = async (req, res, next) => {
   try {
     const insertedItem = await query.insertIntoDrugJournal({
-      ...req.params,
+      id_patient: req.params[0],
       ...req.body,
       date: moment().format(),
     });
@@ -117,9 +123,13 @@ const addToDrugsJournal = async (req, res, next) => {
 
 const deleteDrugFromJournal = async (req, res, next) => {
   try {
-    const deletedItem = await query.deleteFromJournal(req.params);
+    const deletedItem = await query.deleteFromJournal({
+      id_patient: req.params[0],
+      id_drug: req.params[1],
+      id: req.params[2],
+    });
 
-    if (deletedItem.affectedRows == 0)
+    if (!deletedItem.affectedRows)
       return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);

@@ -144,15 +144,30 @@ const selectDrugsJournal = (id, { page = 1, limit = 10 }) =>
       });
     });
   });
-const selectDrugsJournalItem = (query) =>
+const selectDrugsJournalItem = (query, { page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    let statement = formulateAndQuery(
-      "SELECT * FROM drugs_journal WHERE ?;",
+    const pagination = page * limit - limit;
+    let result = formulateAndQuery(
+      "SELECT * FROM drugs_journal WHERE ?",
       query
     );
-    dbPool.query(statement, (dbErr, result) => {
+    let countResult = formulateAndQuery(
+      "SELECT count(*) as size FROM drugs_journal WHERE ?",
+      query
+    );
+    let statement = result + " ORDER BY date LIMIT ?,?;" + countResult + ";";
+    dbPool.query(statement, [pagination, limit], (dbErr, result) => {
       if (dbErr) return reject(dbErr);
-      resolve(result);
+      const maxPage = Math.ceil(result[1][0].size / limit);
+      resolve({
+        Results: result[0],
+        Pagination: {
+          page,
+          nextPage: page < maxPage ? ++page : -1,
+          limit,
+          maxPage,
+        },
+      });
     });
   });
 const insertIntoDrugJournal = (values) =>

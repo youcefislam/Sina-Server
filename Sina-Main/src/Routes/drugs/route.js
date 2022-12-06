@@ -22,31 +22,23 @@ Router.post(
 );
 
 // Get drug information endpoint
-Router.get(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.getDrugInfo
-);
+Router.get(/^\/(\d+)$/, middleware.parseParams, controllers.getDrugInfo);
 
 // Update a drug endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.updateDrug, "body"),
   controllers.updateDrug
 );
 
 // Delete a drug endpoint
-Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.deleteDrug
-);
+Router.delete(/^\/(\d+)$/, middleware.parseParams, controllers.deleteDrug);
 
 // Get the drugs list of a patient endpoint
 Router.get(
-  "/list/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/list\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
   controllers.getPatientDrugsList
@@ -54,23 +46,23 @@ Router.get(
 
 // Add a drug to the list of drugs for a patient endpoint
 Router.post(
-  "/list/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/list\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.validIdDrug, "body"),
   controllers.addToDrugsList
 );
 
 // Delete a drug from the patient's drugs list endpoint
 Router.delete(
-  "/list/:id_patient/:id_drug",
-  middleware.validation(schema.drugListItem, "params"),
+  /^\/list\/(\d+)\/(\d+)$/,
+  middleware.parseParams,
   controllers.deleteFromDugList
 );
 
 // Get the drug's journal of a patient endpoint
 Router.get(
-  "/journal/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/journal\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
   controllers.getDrugsJournal
@@ -78,23 +70,23 @@ Router.get(
 
 // Take a dose of a drug endpoint
 Router.post(
-  "/journal/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/journal\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.validIdDrug, "body"),
   controllers.addToDrugsJournal
 );
 
 // Get a specific drug's journal of a patient endpoint
 Router.get(
-  "/journal/:id_patient/:id_drug",
-  middleware.validation(schema.drugListItem, "params"),
+  /^\/journal\/(\d+)\/(\d+)$/,
+  middleware.parseParams,
   controllers.getOneDrugJournal
 );
 
 // Delete a patient's drug journal record endpoint
 Router.delete(
-  "/journal/:id_patient/:id_drug/:id",
-  middleware.validation(schema.deleteFromDrugJournal, "params"),
+  /^\/journal\/(\d+)\/(\d+)\/(\d+)$/,
+  middleware.parseParams,
   controllers.deleteDrugFromJournal
 );
 

@@ -23,17 +23,13 @@ Router.post(
 
 // Update a type of illness endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.type, "body"),
   controllers.updateIllness
 );
 
 // Delete a type of illness endpoint
-Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.deleteIllness
-);
+Router.delete(/^\/(\d+)$/, middleware.parseParams, controllers.deleteIllness);
 
 module.exports = Router;

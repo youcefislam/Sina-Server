@@ -23,15 +23,17 @@ Router.get(
 
 // get account information endpoint
 Router.get(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
+  middleware.validation(schema.pagination, "query"),
+  middleware.transformQuery,
   controllers.getDoctorById
 );
 
 // update account information endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.updateDoctor, "body"),
   middleware.doctorOnly,
   middleware.private,
@@ -40,8 +42,8 @@ Router.put(
 
 // Delete account endpoint
 Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.validPassword, "body"),
   middleware.doctorOnly,
   middleware.private,
@@ -50,8 +52,8 @@ Router.delete(
 
 // Get the doctor's patient list endpoint
 Router.get(
-  "/:id/patient_list",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)\/patient_list$/,
+  middleware.parseParams,
   middleware.validation(schema.pagination, "query"),
   middleware.doctorOnly,
   middleware.private,
@@ -61,8 +63,8 @@ Router.get(
 
 // Delete patient from the patient list endpoint
 Router.delete(
-  "/:id/patient_list/:id_patient",
-  middleware.validation(schema.deleteFromPatientList, "params"),
+  /^\/(\d+)\/patient_list\/(\d+)$/,
+  middleware.parseParams,
   middleware.doctorOnly,
   middleware.private,
   controllers.deleteFromPatientList
@@ -70,8 +72,8 @@ Router.delete(
 
 // Modify doctor's password endpoint
 Router.put(
-  "/:id/password",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)\/password$/,
+  middleware.parseParams,
   middleware.validation(schema.validNewPassword, "body"),
   middleware.doctorOnly,
   middleware.private,

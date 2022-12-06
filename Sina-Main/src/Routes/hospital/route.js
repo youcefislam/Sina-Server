@@ -23,17 +23,13 @@ Router.post(
 
 // Modify hospital endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.updateHospital, "body"),
   controllers.modifyHospital
 );
 
 // Delete hospital endpoint
-Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.deleteHospital
-);
+Router.delete(/^\/(\d+)$/, middleware.parseParams, controllers.deleteHospital);
 
 module.exports = Router;

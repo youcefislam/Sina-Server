@@ -15,16 +15,12 @@ Router.get(
 );
 
 // get patient info endpoint
-Router.get(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.getPatientInfo
-);
+Router.get(/^\/(\d+)$/, middleware.parseParams, controllers.getPatientInfo);
 
 // update patient's information endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.patientOnly,
   middleware.private,
   middleware.validation(schema.updatePatientInfo, "body"),
@@ -33,8 +29,8 @@ Router.put(
 
 // Delete patient account endpoint
 Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.patientOnly,
   middleware.private,
   middleware.validation(schema.validPassword, "body"),
@@ -43,8 +39,8 @@ Router.delete(
 
 // Modify patient's password endpoint
 Router.put(
-  "/:id/password",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)\/password$/,
+  middleware.parseParams,
   middleware.patientOnly,
   middleware.private,
   middleware.validation(schema.validNewPassword, "body"),

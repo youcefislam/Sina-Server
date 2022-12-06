@@ -6,9 +6,12 @@ const updateRelative = async (req, res, next) => {
     if (req.body.phone_number)
       req.body.phone_number = Number(req.body.phone_number);
 
-    const updatedRelative = await query.updateRelative(req.body, req.params);
-    if (updatedRelative.affectedRows == 0)
+    const updatedRelative = await query.updateRelative(req.body, {
+      id: req.params[0],
+    });
+    if (!updatedRelative.affectedRows)
       return res.status(400).send({ code: "row_not_found" });
+
     res.sendStatus(204);
   } catch (error) {
     next(error);
@@ -27,7 +30,7 @@ const addRelative = async (req, res, next) => {
 
 const getRelativeInfo = async (req, res, next) => {
   try {
-    const relative = await query.selectRelative(req.params.id);
+    const relative = await query.selectRelative(req.params[0]);
 
     res.send({ result: relative });
   } catch (error) {
@@ -37,9 +40,9 @@ const getRelativeInfo = async (req, res, next) => {
 
 const deleteRelative = async (req, res) => {
   try {
-    const deletedRelative = await query.deleteMyRelative(req.params.id);
+    const deletedRelative = await query.deleteMyRelative(req.params[0]);
 
-    if (deletedRelative.affectedRows == 0)
+    if (!deletedRelative.affectedRows)
       return res.status(400).send({ code: "row_not_found" });
     res.sendStatus(204);
   } catch (error) {

@@ -4,7 +4,7 @@ const { errorHandler } = require("../../Database/Connection");
 
 const getNotesList = async (req, res, next) => {
   try {
-    res.send(await query.selectNoteList(req.params.id_patient, req.query));
+    res.send(await query.selectNoteList(req.params[0], req.query));
   } catch (error) {
     next(error);
   }
@@ -23,9 +23,9 @@ const addNote = async (req, res, next) => {
 
 const updateNote = async (req, res, next) => {
   try {
-    const queryResult = await query.updateNote(req.body, req.params);
+    const queryResult = await query.updateNote(req.body, { id: req.params[0] });
 
-    if (queryResult?.affectedRows == 0)
+    if (!queryResult?.affectedRows)
       return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
@@ -36,9 +36,9 @@ const updateNote = async (req, res, next) => {
 
 const deleteNote = async (req, res, next) => {
   try {
-    const queryResult = await query.deleteNote(req.params.id);
+    const queryResult = await query.deleteNote(req.params[0]);
 
-    if (queryResult.affectedRows == 0)
+    if (!queryResult.affectedRows)
       return next(new errorHandler("raw_not_found"));
 
     res.sendStatus(204);
@@ -49,7 +49,7 @@ const deleteNote = async (req, res, next) => {
 
 const getNote = async (req, res, next) => {
   try {
-    res.send({ result: await query.selectNoteById(req.params.id) });
+    res.send({ result: await query.selectNoteById(req.params[0]) });
   } catch (error) {
     next(error);
   }

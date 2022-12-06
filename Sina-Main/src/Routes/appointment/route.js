@@ -14,31 +14,27 @@ Router.post(
 );
 
 // get appointment endpoint
-Router.get(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.getAppointment
-);
+Router.get(/^\/(\d+)$/, middleware.parseParams, controllers.getAppointment);
 
 // update an appointment endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.validDate, "body"),
   controllers.updateAppointment
 );
 
 // Cancel an appointment endpoint
 Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   controllers.cancelAppointment
 );
 
 // get appointments list endpoint
 Router.get(
-  "/list/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/list\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
   controllers.getAppointmentList
@@ -46,8 +42,8 @@ Router.get(
 
 // get appointments journal endpoint
 Router.get(
-  "/journal/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/journal\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
   controllers.getAppointmentJournal
@@ -55,8 +51,8 @@ Router.get(
 
 // archive appointment endpoint
 Router.post(
-  "/journal/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/journal\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.validId, "body"),
   controllers.archiveAppointment
 );

@@ -23,17 +23,13 @@ Router.post(
 
 // update commune endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.name, "body"),
   controllers.updateCommune
 );
 
 // delete commune endpoint
-Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.deleteCommune
-);
+Router.delete(/^\/(\d+)$/, middleware.parseParams, controllers.deleteCommune);
 
 module.exports = Router;

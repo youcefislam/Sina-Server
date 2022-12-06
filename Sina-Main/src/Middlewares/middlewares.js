@@ -80,7 +80,7 @@ const patientOnly = async (req, res, next) => {
 };
 
 const private = async (req, res, next) => {
-  if (req.autData?.id == req.params?.id) return next();
+  if (req.autData?.id == req.params[0]) return next();
   res.status(400).send({ code: "private_access" });
 };
 
@@ -109,6 +109,13 @@ const transformQuery = async (req, res, next) => {
   next();
 };
 
+const parseParams = async (req, res, next) => {
+  Object.keys(req.params).forEach(
+    (key) => (req.params[key] = parseInt(req.params[key]))
+  );
+  next();
+};
+
 module.exports = {
   tokenAuthorization,
   socketTokenAuthorization,
@@ -118,4 +125,5 @@ module.exports = {
   private,
   validation,
   transformQuery,
+  parseParams,
 };

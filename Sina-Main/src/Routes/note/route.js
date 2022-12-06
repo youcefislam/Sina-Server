@@ -14,31 +14,23 @@ Router.post(
 );
 
 // Get a note endpoint
-Router.get(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.getNote
-);
+Router.get(/^\/(\d+)$/, middleware.parseParams, controllers.getNote);
 
 // update a note endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.updateNote, "body"),
   controllers.updateNote
 );
 
 // Delete a note endpoint
-Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.deleteNote
-);
+Router.delete(/^\/(\d+)$/, middleware.parseParams, controllers.deleteNote);
 
 // Get note list of a patient list endpoint
 Router.get(
-  "/list/:id_patient",
-  middleware.validation(schema.validIdPatient, "params"),
+  /^\/list\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.pagination, "query"),
   middleware.transformQuery,
   controllers.getNotesList

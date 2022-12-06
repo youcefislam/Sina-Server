@@ -29,7 +29,7 @@ const deleteRequest = async (req, res, next) => {
       id_doctor: req.autData.id,
       id_patient: req.query.id_patient,
     });
-    if (patientRequest == null) return next(new errorHandler("raw_not_found"));
+    if (!patientRequest) return next(new errorHandler("raw_not_found"));
 
     if (req.query.severity)
       await patientQuery.updatePatient(

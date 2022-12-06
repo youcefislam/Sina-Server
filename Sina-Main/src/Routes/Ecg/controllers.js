@@ -6,7 +6,7 @@ const { errorHandler } = require("../../Database/Connection");
 
 const addEcgFile = async (req, res, next) => {
   try {
-    if (req.file?.path == null)
+    if (!req.file?.path)
       return next(
         new errorHandler(
           "file_error",
@@ -14,8 +14,8 @@ const addEcgFile = async (req, res, next) => {
         )
       );
     req.body.link = req.file?.path;
-    req.params.created_at = moment(req.params.created_at).format();
-    await query.insertEcgFile({ ...req.body, ...req.params });
+    req.body.created_at = moment(req.body.created_at).format();
+    await query.insertEcgFile({ ...req.body, id_patient: req.params[0] });
 
     res.sendStatus(201);
   } catch (error) {
@@ -26,7 +26,7 @@ const addEcgFile = async (req, res, next) => {
 
 const downloadECGFile = async (req, res, next) => {
   try {
-    const file = await query.selectEcgFileById(req.params.id);
+    const file = await query.selectEcgFileById(req.params[0]);
 
     res.download("./" + path.normalize(file.link));
   } catch (error) {
@@ -36,9 +36,7 @@ const downloadECGFile = async (req, res, next) => {
 
 const getEcgFileList = async (req, res, next) => {
   try {
-    res.send(
-      await query.selectPatientEcgFiles(req.params.id_patient, req.query)
-    );
+    res.send(await query.selectPatientEcgFiles(req.params[0], req.query));
   } catch (error) {
     next(error);
   }

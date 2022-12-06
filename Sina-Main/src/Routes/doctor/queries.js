@@ -13,14 +13,23 @@ const selectDoctor_sensitive = (query) =>
     });
   });
 
-const selectAllDoctor = (page = 1) =>
+const selectAllDoctor = ({ page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {
-    const pagination = page * 5 - 5;
+    const pagination = page * limit - limit;
     let statement =
-      "SELECT * FROM doctorView ORDER BY first_name, last_name LIMIT ?,5;";
-    dbPool.query(statement, pagination, (dbErr, result) => {
+      "SELECT * FROM doctorView ORDER BY first_name, last_name LIMIT ?,?;SELECT count(*) as size FROM doctorView;";
+    dbPool.query(statement, { pagination, limit }, (dbErr, result) => {
       if (dbErr) reject(dbErr);
-      else resolve(result);
+      const maxPage = Math.ceil(result[1][0].size / limit);
+      resolve({
+        Results: result[0],
+        Pagination: {
+          page,
+          nextPage: page < maxPage ? ++page : -1,
+          limit,
+          maxPage,
+        },
+      });
     });
   });
 
@@ -83,8 +92,8 @@ const selectPatientList = (id_doctor, { page = 1, limit = 10 }) =>
 
 const searchDoctor = (query) =>
   new Promise((resolve, reject) => {
-    let page = options.page || 1;
-    let limit = options.limit || 10;
+    let page = query.page || 1;
+    let limit = query.limit || 10;
     let pagination = page * limit - limit;
     delete query.page;
     delete query.limit;

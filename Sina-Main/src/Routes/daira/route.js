@@ -23,17 +23,13 @@ Router.post(
 
 // update daira endpoint
 Router.put(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
+  /^\/(\d+)$/,
+  middleware.parseParams,
   middleware.validation(schema.name, "body"),
   controllers.updateDaira
 );
 
 // delete daira endpoint
-Router.delete(
-  "/:id",
-  middleware.validation(schema.validId, "params"),
-  controllers.deleteDaira
-);
+Router.delete(/^\/(\d+)$/, middleware.parseParams, controllers.deleteDaira);
 
 module.exports = Router;

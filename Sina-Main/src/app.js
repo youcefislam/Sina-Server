@@ -40,10 +40,6 @@ app.use(
   })
 );
 app.use(express.json());
-app.use((req, res, next) => {
-  console.log(req.query);
-  next();
-});
 
 // maybe use rate limit later
 // const limiter = rateLimit({
@@ -104,10 +100,11 @@ app.use("/ecg", ecgRouter);
 // alert route
 app.use("/alert", alertRouter);
 
-app.use("*", (req, res) => res.sendStatus(404));
+app.use((req, res) => res.sendStatus(404));
 
 // handling errors
 app.use((error, req, res, next) => {
+  console.log(error);
   if (
     error.code == "duplicated_entry_error" ||
     error.code == "invalid_data" ||
