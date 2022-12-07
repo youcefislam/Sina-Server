@@ -28,8 +28,9 @@ const downloadECGFile = async (req, res, next) => {
   try {
     const file = await query.selectEcgFileById(req.params[0]);
 
-    res.download("./" + path.normalize(file.link));
+    res.sendFile(path.resolve(file.link));
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };

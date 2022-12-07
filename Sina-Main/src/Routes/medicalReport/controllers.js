@@ -1,5 +1,4 @@
 const moment = require("moment");
-const fs = require("mz/fs");
 const path = require("path");
 const query = require("./queries");
 const { errorHandler } = require("../../Database/Connection");
@@ -30,14 +29,7 @@ const getMedicalReport = async (req, res, next) => {
     const report = await query.selectReportById(req.params[0]);
     if (!report) return next(new errorHandler("raw_not_found"));
 
-    const fileName = "file.pdf";
-    const fileURL = "./" + path.normalize(report.link);
-    const stream = fs.createReadStream(fileURL);
-    res.set({
-      "Content-Disposition": `attachment; filename='${fileName}'`,
-      "Content-Type": "application/pdf",
-    });
-    stream.pipe(res);
+    res.sendFile(path.resolve(report.link));
   } catch (error) {
     next(error);
   }

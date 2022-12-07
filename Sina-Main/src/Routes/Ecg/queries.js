@@ -7,7 +7,7 @@ const selectPatientEcgFiles = (id_patient, options) =>
     delete options?.page;
     delete options?.limit;
     let pagination = page * limit - limit;
-    let statement = "SELECT * FROM ecg_file WHERE id_patient = ?";
+    let statement = "SELECT id, created_at FROM ecg_file WHERE id_patient = ?";
 
     if (Object.keys(options).length > 0) {
       if (options.year)
