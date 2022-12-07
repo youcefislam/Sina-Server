@@ -12,6 +12,15 @@ const dbPool = mysql.createPool({
   multipleStatements: true,
 });
 
+const dbPoolV1 = mysql.createPool({
+  connectionLimit: 30,
+  host: "localhost",
+  user: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_V1,
+  multipleStatements: true,
+});
+
 const formulateAndQuery = (statement, query) => {
   return mysql.format(statement, query).replace(/,/g, ` AND`);
 };
@@ -30,4 +39,5 @@ module.exports = {
   dbPool,
   errorHandler,
   format,
+  dbPoolV1,
 };

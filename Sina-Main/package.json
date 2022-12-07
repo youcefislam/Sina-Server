@@ -4,8 +4,7 @@
   "description": "Server side of Sina's app",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "nodemon src/server.js 3000",
+    "start": "nodemon src/server.js 3000",
     "stop": "taskkill -f -im node.exe"
   },
   "repository": {

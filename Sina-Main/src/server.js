@@ -1,7 +1,7 @@
 const { createServer } = require("http"),
   path = require("path");
 
-const env = path.resolve("../.env");
+require("dotenv").config({ path: path.resolve("../.env") });
 
 require("./database/connection");
 require("./database/Initialize");

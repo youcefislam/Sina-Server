@@ -63,8 +63,8 @@ const schema = {
     name: joi.string().max(50).required(),
     company: joi.string().max(100).required(),
     description: joi.string().max(1000),
-    adult_dosage: joi.string().max(300),
-    children_dosage: joi.string().max(300),
+    adult_dosage: joi.string().max(300).required(),
+    children_dosage: joi.string().max(300).required(),
     warnings: joi.string().max(1000),
   }),
   validIdDrug: joi.object({

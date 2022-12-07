@@ -1,11 +1,10 @@
 {
   "name": "sina-auth",
   "version": "1.0.0",
-  "description": "this is the auth micro service for sina",
+  "description": "This is the auth micro service for sina",
   "main": "server.js",
   "scripts": {
-    "serve": "nodemon src/server.js 4000",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon src/server.js 4000"
   },
   "author": "",
   "license": "ISC",

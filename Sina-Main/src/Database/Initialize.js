@@ -1,48 +1,65 @@
-const { dbPool } = require("./Connection");
+const { dbPool, dbPoolV1 } = require("./Connection");
 const fs = require("fs");
 const path = require("path");
-
 const schema = path.resolve("./src/Model/Schema.sql");
 const data = path.resolve("./src/Model/data.sql");
+const schemaV1 = path.resolve("./src/Model/SchemaV1.sql");
+const dataV1 = path.resolve("./src/Model/dataV1.sql");
 
-const dropDatabase = () =>
+const dropDatabase = (V1) =>
   new Promise((resolve, reject) => {
-    const statement = `DROP DATABASE sina; CREATE SCHEMA IF NOT EXISTS sina; USE sina;`;
+    const statement = `DROP DATABASE sina; CREATE SCHEMA IF NOT EXISTS sina;`;
+    const statement2 = `DROP DATABASE sinaV1; CREATE SCHEMA IF NOT EXISTS sinaV1;`;
     dbPool.query(statement, (dbErr, result) => {
-      if (dbErr) reject(dbErr);
-      else resolve(result);
+      if (dbErr) return reject(dbErr);
+      if (!V1) return resolve(result);
+      dbPoolV1.query(statement2, (dbErr, result) => {
+        console.log(result);
+        if (dbErr) return reject(dbErr);
+        resolve(result);
+      });
     });
   });
-const implementSchema = () =>
+const implementSchema = (V1) =>
   new Promise((resolve, reject) => {
     let statement = fs.readFileSync(schema).toString();
+    let statementV1 = fs.readFileSync(schemaV1).toString();
     // console.log(statement.replace(/(\r\n|\n|\r)/gm, " ").replace(/\s+/g, " "));
     dbPool.query(statement, (dbErr, result) => {
-      if (dbErr) reject(dbErr);
-      else resolve(result);
+      if (dbErr) return reject(dbErr);
+      if (!V1) return resolve(result);
+      dbPoolV1.query(statementV1, (dbErr, result) => {
+        if (dbErr) return reject(dbErr);
+        resolve(result);
+      });
     });
   });
-const insertDefaultData = () =>
+const insertDefaultData = (V1) =>
   new Promise((resolve, reject) => {
     let statement = fs.readFileSync(data).toString();
+    let statementV1 = fs.readFileSync(dataV1).toString();
     dbPool.query(statement, (dbErr, result) => {
-      if (dbErr) reject(dbErr);
-      else resolve(result);
+      if (dbErr) return reject(dbErr);
+      if (!V1) return resolve(result);
+      dbPoolV1.query(statementV1, (dbErr, result) => {
+        if (dbErr) return reject(dbErr);
+        resolve(result);
+      });
     });
   });
 
-async function initializeDatabase({ force = false }) {
+async function initializeDatabase({ force = false, old = false }) {
   try {
     console.log("DATABASE INITIALIZATION");
     if (force) {
       console.log("Force Mode : ACTIVE");
-      await dropDatabase();
+      await dropDatabase(old);
       console.log("DATABASE DROPPED");
     }
-    await implementSchema();
+    await implementSchema(old);
     console.log("SCHEMA IMPLEMENTED");
     if (force) {
-      await insertDefaultData();
+      await insertDefaultData(old);
       console.log("DEFAULT DATA INSERTED TO THE DATABASE");
     }
     console.log("DATABASE IS READY");
@@ -53,4 +70,4 @@ async function initializeDatabase({ force = false }) {
   }
 }
 
-initializeDatabase({ force: false });
+initializeDatabase({ force: false, old: false });

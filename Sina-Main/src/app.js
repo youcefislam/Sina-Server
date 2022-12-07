@@ -5,7 +5,8 @@ const express = require("express"),
 // const rateLimit = require("express-rate-limit");
 // const apicache = require("apicache");
 
-const apiRouter = require("./apiRouter");
+const apiRouterV1 = require("./apiRouterV1");
+const apiRouterV2 = require("./apiRouterV2");
 
 const app = express();
 
@@ -37,9 +38,10 @@ app.use(
 );
 app.use(express.json());
 
-app.use("/api", apiRouter);
+app.use("/api/v1", apiRouterV1);
+app.use("/api/v2", apiRouterV2);
 
 // not found
-apiRouter.use((req, res) => res.sendStatus(404));
+app.use((req, res) => res.sendStatus(404));
 
 module.exports = app;

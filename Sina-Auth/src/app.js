@@ -16,7 +16,7 @@ app.set("trust-proxy", true);
 app.use(cookie_parser(process.env.COOKIE_SECRET));
 app.use(bodyParser.json());
 
-app.use("/api", apiRouter);
+app.use("/api/v2", apiRouter);
 
 app.use((req, res) => res.sendStatus(404));
 
