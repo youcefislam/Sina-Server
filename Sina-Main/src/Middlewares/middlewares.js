@@ -1,8 +1,12 @@
+const doctorQuery = require("../Routes/doctor/queries");
 const patientQuery = require("../Routes/patient/queries");
 
 require("dotenv").config();
 
-const { validateAccessToken } = require("../Utilities/utility");
+const {
+  validateAccessToken,
+  comparePassword,
+} = require("../Utilities/utility");
 
 function socketError(err, code, message) {
   const error = new Error(err);
@@ -16,14 +20,41 @@ function socketError(err, code, message) {
 const tokenAuthorization = async (req, res, next) => {
   try {
     const bearerHeader = req.headers["authorization"];
-    if (bearerHeader) {
-      req.token = bearerHeader.split(" ")[1];
-      const valid = await validateAccessToken(req.token);
-      req.autData = valid;
-      next();
-    } else res.sendStatus(401);
+    if (!bearerHeader) return res.sendStatus(403);
+    req.token = bearerHeader.split(" ")[1];
+    const valid = await validateAccessToken(req.token);
+    if (valid.patient) {
+      const patient = await patientQuery.selectPatient_sensitive({
+        username: valid.username,
+      });
+      if (!patient)
+        return res.status(401).send({ code: "unauthorized", path: "username" });
+
+      const correctPassword = await comparePassword(
+        valid.password,
+        patient.password
+      );
+      if (!correctPassword)
+        return res.status(401).send({ code: "unauthorized", path: "password" });
+    } else {
+      const doctor = await doctorQuery.selectDoctor_sensitive({
+        username: valid.username,
+      });
+      if (!doctor)
+        return res.status(401).send({ code: "unauthorized", path: "username" });
+
+      const correctPassword = await comparePassword(
+        valid.password,
+        doctor.password
+      );
+      if (!correctPassword)
+        return res.status(401).send({ code: "unauthorized", path: "password" });
+    }
+    req.autData = valid;
+    next();
   } catch (error) {
-    res.sendStatus(403);
+    console.log(error);
+    res.sendStatus(401);
   }
 };
 const socketTokenAuthorization = async (socket, next) => {

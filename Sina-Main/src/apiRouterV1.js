@@ -11,10 +11,10 @@ const joi = require("joi"); // Used to validate the form of the received data. F
 const moment = require("moment"); // for better date and time treatment For more detail check:https://momentjs.com/
 const { v4: uuidV4 } = require("uuid");
 const sgMail = require("@sendgrid/mail");
-const client = require("twilio")(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+// const client = require("twilio")(
+//   process.env.TWILIO_ACCOUNT_SID,
+//   process.env.TWILIO_AUTH_TOKEN
+// );
 const { dbPoolV1 } = require("./Database/Connection");
 const dbPool = dbPoolV1;
 const cors = require("cors");

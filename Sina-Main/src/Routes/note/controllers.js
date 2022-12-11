@@ -26,7 +26,7 @@ const updateNote = async (req, res, next) => {
     const queryResult = await query.updateNote(req.body, { id: req.params[0] });
 
     if (!queryResult?.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
@@ -39,7 +39,7 @@ const deleteNote = async (req, res, next) => {
     const queryResult = await query.deleteNote(req.params[0]);
 
     if (!queryResult.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
 
     res.sendStatus(204);
   } catch (error) {

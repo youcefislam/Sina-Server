@@ -21,7 +21,7 @@ const updateAppointment = async (req, res, next) => {
       id: req.params[0],
     });
     if (!updateQuery.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
@@ -33,7 +33,7 @@ const cancelAppointment = async (req, res, next) => {
   try {
     const deleteQuery = await query.deleteAppointment(req.params[0]);
     if (!deleteQuery.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
@@ -44,7 +44,7 @@ const cancelAppointment = async (req, res, next) => {
 const archiveAppointment = async (req, res, next) => {
   try {
     const appointment = await query.selectAppointmentById(req.body.id);
-    if (!appointment) return next(new errorHandler("raw_not_found"));
+    if (!appointment) return next(new errorHandler("row_not_found"));
 
     await query.insertAppointmentJournal({
       id_patient: req.params[0],

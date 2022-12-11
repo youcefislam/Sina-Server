@@ -24,7 +24,7 @@ const updateCommune = async (req, res, next) => {
       id: req.params[0],
     });
     if (!updatedCommune.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
     res.sendStatus(204);
   } catch (error) {
     next(error);
@@ -35,7 +35,7 @@ const deleteCommune = async (req, res, next) => {
   try {
     const deletedCommune = await query.deleteCommune(req.params[0]);
     if (!deletedCommune.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
     res.sendStatus(204);
   } catch (error) {
     next(error);

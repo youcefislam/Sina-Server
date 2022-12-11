@@ -56,7 +56,6 @@ const schema = {
     .with("password", "repeat_password"),
   validId: joi.object({ id: joi.number().min(1).required() }),
   validValidationCode: joi.object({
-    mail: joi.string().email().required(),
     validation_code: joi.number().min(100000).max(999999).required(),
   }),
   validToken: joi.object({

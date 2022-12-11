@@ -24,7 +24,7 @@ const updateDaira = async (req, res, next) => {
       id: req.params[0],
     });
     if (!updatedDaira.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
     res.sendStatus(204);
   } catch (error) {
     next(error);
@@ -35,7 +35,7 @@ const deleteDaira = async (req, res, next) => {
   try {
     const deletedDaira = await query.deleteDaira(req.params[0]);
     if (!deletedDaira.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
     res.sendStatus(204);
   } catch (error) {
     next(error);

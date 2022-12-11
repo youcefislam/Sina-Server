@@ -23,7 +23,7 @@ Router.post(
 // sign out endpoint
 Router.delete(
   "/token",
-  middleware.headerTokenAuthorization,
+  middleware.headerTokenAuthorization(),
   middleware.patientOnly,
   controllers.signOut
 );
@@ -31,7 +31,7 @@ Router.delete(
 // refresh access token endpoint
 Router.post(
   "/refresh_token",
-  middleware.headerTokenAuthorization,
+  middleware.headerTokenAuthorization(),
   middleware.patientOnly,
   controllers.refreshAccessToken
 );
@@ -39,6 +39,7 @@ Router.post(
 // validate account endpoint
 Router.post(
   "/verify_account/",
+  middleware.headerTokenAuthorization(true),
   middleware.validation(schema.validValidationCode, "body"),
   controllers.validateAccount
 );

@@ -3,30 +3,41 @@ require("dotenv").config();
 const {
   validateRefreshToken,
   validateValidationToken,
+  compareHashedValues,
 } = require("../Utilities/utility");
+const doctorQuery = require("../Routes/doctor/queries");
+const patientQuery = require("../Routes/patient/queries");
 
 const cookieTokenAuthorization = async (req, res, next) => {
   try {
     const REFRESH_TOKEN = req.signedCookies.REFRESH_TOKEN;
     if (REFRESH_TOKEN) {
       const valid = await validateRefreshToken(REFRESH_TOKEN);
-      req.autData = valid;
-      next();
-    } else {
-      res.sendStatus(401);
-    }
-  } catch (error) {
-    res.sendStatus(403);
-  }
-};
 
-const headerTokenAuthorization = async (req, res, next) => {
-  try {
-    const bearerHeader = req.headers["authorization"];
-    if (bearerHeader) {
-      req.token = bearerHeader.split(" ")[1];
-      const valid = await validateRefreshToken(req.token);
-      req.autData = valid;
+      const doctor = await doctorQuery.selectDoctor_sensitive({
+        username: valid.username,
+      });
+      if (!doctor)
+        return res.status(401).send({ code: "unauthorized", path: "username" });
+
+      const correctPassword = await compareHashedValues(
+        valid.password,
+        doctor.password
+      );
+      if (!correctPassword)
+        return res.status(401).send({ code: "unauthorized", path: "password" });
+
+      const logInInfo = await doctorQuery.selectDoctorLoginInfo({
+        id_doctor: valid.id,
+      });
+
+      const logged = logInInfo.find(
+        async (info) => await compareHashedValues(REFRESH_TOKEN, info.token)
+      );
+
+      if (!logged) return res.sendStatus(403);
+
+      req.autData = { ...valid, logId: logged.id };
       next();
     } else res.sendStatus(401);
   } catch (error) {
@@ -34,6 +45,51 @@ const headerTokenAuthorization = async (req, res, next) => {
     res.sendStatus(403);
   }
 };
+
+const headerTokenAuthorization =
+  (type = false) =>
+  async (req, res, next) => {
+    try {
+      const bearerHeader = req.headers["authorization"];
+      if (!bearerHeader) res.sendStatus(401);
+
+      req.token = bearerHeader.split(" ")[1];
+      const valid = await validateRefreshToken(req.token);
+
+      if (!type && valid.notVerified)
+        return res.status(401).send({ code: "account_not_verified" });
+
+      const patient = await patientQuery.selectPatient_sensitive({
+        username: valid.username,
+      });
+      if (!patient)
+        return res.status(401).send({ code: "unauthorized", path: "username" });
+
+      const correctPassword = await compareHashedValues(
+        valid.password,
+        patient.password
+      );
+      if (!correctPassword)
+        return res.status(401).send({ code: "unauthorized", path: "password" });
+
+      const logInfo = await patientQuery.selectPatientLogInfo({
+        id_patient: valid.id,
+      });
+
+      const logged = logInfo.find(
+        async (info) => await compareHashedValues(req.token, info.token)
+      );
+
+      if (!type && !logged)
+        return res.status(401).send({ code: "suspicious_token" });
+
+      req.autData = { ...valid, logId: logged?.id };
+      next();
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(403);
+    }
+  };
 
 const validationTokenAuthorization = async (req, res, next) => {
   try {

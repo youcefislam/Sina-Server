@@ -4,11 +4,24 @@ const utility = require("../../Utilities/utility");
 const signUp = async (req, res, next) => {
   let newPatientId;
   try {
+    const password = req.body.password;
     req.body.password = await utility.hashValue(req.body.password);
     newPatientId = await query.insertPatient(req.body);
 
     const validation_code = utility.createValidationCode();
     await query.insertPatientNotVerified(newPatientId, validation_code);
+
+    const tokenData = {
+      id: newPatientId,
+      username: req.body.username,
+      password: req.body.password,
+      notVerified: 1,
+      password,
+    };
+
+    const REFRESH_TOKEN = await utility.generateRefreshToken(tokenData, {
+      expiresIn: "30m",
+    });
 
     const emailBody = `
     <h3>Cher ${req.body.username}!</h3>
@@ -22,7 +35,7 @@ const signUp = async (req, res, next) => {
       emailBody
     );
 
-    res.send({ validation_code });
+    res.send({ validation_code, REFRESH_TOKEN });
   } catch (error) {
     if (newPatientId) query.deletePatient(newPatientId);
     next(error);
@@ -58,6 +71,8 @@ const signIn = async (req, res, next) => {
 
     const tokenData = {
       id: patient.id,
+      username: req.body.username,
+      password: req.body.password,
       patient: 1,
     };
     const ACCESS_TOKEN = await utility.generateAccessToken(tokenData, {
@@ -75,7 +90,7 @@ const signIn = async (req, res, next) => {
     };
     await query.insertPatientLogInfo(logInfo);
 
-    return res.send({ ACCESS_TOKEN, REFRESH_TOKEN });
+    res.send({ ACCESS_TOKEN, REFRESH_TOKEN });
   } catch (error) {
     next(error);
   }
@@ -83,23 +98,11 @@ const signIn = async (req, res, next) => {
 
 const refreshAccessToken = async (req, res, next) => {
   try {
-    const REFRESH_TOKEN = req.token;
-
-    const logInfo = await query.selectPatientLogInfo({
-      id_patient: req.autData.id,
-    });
-
-    if (!logInfo.length) return res.sendStatus(403);
-
-    const logged = logInfo.find(
-      async (info) =>
-        await utility.compareHashedValues(REFRESH_TOKEN, info.token)
-    );
-
-    if (!logged) return res.sendStatus(403);
-
+    console.log("sfsdfs");
     const tokenData = {
       id: req.autData.id,
+      username: req.autData.username,
+      password: req.autData.password,
       patient: 1,
     };
     const ACCESS_TOKEN = await utility.generateAccessToken(tokenData, {
@@ -113,22 +116,7 @@ const refreshAccessToken = async (req, res, next) => {
 
 const signOut = async (req, res, next) => {
   try {
-    const REFRESH_TOKEN = req.token;
-
-    const logInfo = await query.selectPatientLogInfo({
-      id_patient: req.autData.id,
-    });
-
-    if (!logInfo.length) return res.sendStatus(403);
-
-    const logged = logInfo.find(
-      async (info) =>
-        await utility.compareHashedValues(REFRESH_TOKEN, info.token)
-    );
-
-    if (!logged) return res.sendStatus(403);
-
-    await query.deletePatientLogInfo(logged.id);
+    await query.deletePatientLogInfo(req.autData.logId);
 
     return res.sendStatus(204);
   } catch (error) {
@@ -175,24 +163,23 @@ const resendValidationCode = async (req, res, next) => {
 
 const validateAccount = async (req, res, next) => {
   try {
-    const patient = await query.selectPatient_sensitive({
-      mail: req.body.mail,
-    });
-    if (patient == null) return res.status(400).send({ code: "row_not_found" });
-
-    const correctValidation_code = await query.selectValidationCode(patient.id);
-
+    const correctValidation_code = await query.selectValidationCode(
+      req.autData.id
+    );
     if (!correctValidation_code) return res.sendStatus(403);
-    if (correctValidation_code != req.body.validation_code)
+
+    if (correctValidation_code !== req.body.validation_code)
       return res.status(400).send({
         code: "incorrect_information",
         message: "incorrect validation_code",
       });
 
-    await query.deleteValidationCode(patient.id);
+    await query.deleteValidationCode(req.autData.id);
 
     const tokenData = {
-      id: patient.id,
+      id: req.autData.id,
+      username: req.autData.username,
+      password: req.autData.password,
       patient: 1,
     };
     const ACCESS_TOKEN = await utility.generateAccessToken(tokenData, {
@@ -206,11 +193,11 @@ const validateAccount = async (req, res, next) => {
       token: await utility.hashValue(REFRESH_TOKEN),
       platform: req.header("user-agent"),
       ip: req.ip,
-      id_patient: patient.id,
+      id_patient: req.autData.id,
     };
     await query.insertPatientLogInfo(logInfo);
 
-    return res.send({ ACCESS_TOKEN, REFRESH_TOKEN });
+    res.send({ ACCESS_TOKEN, REFRESH_TOKEN });
   } catch (error) {
     next(error);
   }

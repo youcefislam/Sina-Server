@@ -64,4 +64,9 @@ Router.post(
   controllers.validateAccount
 );
 
+Router.get("/", (req, res) => {
+  res.locals.hello = "world";
+  res.send({});
+});
+
 module.exports = Router;

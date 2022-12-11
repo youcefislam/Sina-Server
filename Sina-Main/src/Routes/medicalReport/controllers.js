@@ -27,7 +27,7 @@ const addMedicalReport = async (req, res, next) => {
 const getMedicalReport = async (req, res, next) => {
   try {
     const report = await query.selectReportById(req.params[0]);
-    if (!report) return next(new errorHandler("raw_not_found"));
+    if (!report) return next(new errorHandler("row_not_found"));
 
     res.sendFile(path.resolve(report.link));
   } catch (error) {
@@ -47,7 +47,7 @@ const deleteReport = async (req, res, next) => {
   try {
     const deleteQuery = await query.deleteReport(req.params[0]);
     if (deleteQuery.affectedRows == 0)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
     res.sendStatus(204);
   } catch (error) {
     next(error);

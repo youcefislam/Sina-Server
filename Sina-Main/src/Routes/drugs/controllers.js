@@ -27,7 +27,7 @@ const deleteFromDugList = async (req, res, next) => {
     });
 
     if (!deletedItem.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
@@ -66,7 +66,7 @@ const updateDrug = async (req, res, next) => {
       id: req.params[0],
     });
     if (!updatedDrug.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
@@ -79,7 +79,7 @@ const deleteDrug = async (req, res, next) => {
     const deletedDrug = await query.deleteDrug(req.params[0]);
 
     if (!deletedDrug.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
 
     res.sendStatus(204);
   } catch (error) {
@@ -130,7 +130,7 @@ const deleteDrugFromJournal = async (req, res, next) => {
     });
 
     if (!deletedItem.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
 
     res.sendStatus(204);
   } catch (error) {

@@ -14,8 +14,8 @@ const signUp = async (req, res, next) => {
       { id: newDoctorId },
       { expiresIn: "2h" }
     );
+    const url = `http://localhost:4000/doctor/verify_account?token=${validation_token}`;
     console.log(validation_token);
-    const url = `http://localhost:4000/doctor/verify_account?token${validation_token}`;
     const emailBody = `
                 <h3>Cher ${req.body.username}!</h3>
                 <p>TVeuillez cliquer sur le lien de confirmation ci-dessous pour vérifier votre adresse e-mail et créer votre compte:</p>
@@ -65,6 +65,8 @@ const signIn = async (req, res, next) => {
 
     const tokenData = {
       id: doctor.id,
+      username: req.body.username,
+      password: req.body.password,
     };
     const ACCESS_TOKEN = await utility.generateAccessToken(tokenData, {
       expiresIn: "30m",
@@ -92,22 +94,12 @@ const signIn = async (req, res, next) => {
 
 const refreshAccessToken = async (req, res, next) => {
   try {
-    const REFRESH_TOKEN = req.signedCookies.REFRESH_TOKEN;
-    const logInInfo = await query.selectDoctorLoginInfo({
-      id_doctor: req.autData.id,
-    });
-
-    if (!logInInfo.length) return res.sendStatus(403);
-
-    const logged = logInInfo.find(
-      async (info) =>
-        await utility.compareHashedValues(REFRESH_TOKEN, info.token)
-    );
-
-    if (!logged) return res.sendStatus(403);
-
     const ACCESS_TOKEN = await utility.generateAccessToken(
-      { id: req.autData.id },
+      {
+        id: req.autData.id,
+        username: req.autData.username,
+        password: req.autData.password,
+      },
       { expiresIn: "30m" }
     );
     return res.send({ ACCESS_TOKEN });
@@ -118,21 +110,8 @@ const refreshAccessToken = async (req, res, next) => {
 
 const signOut = async (req, res, next) => {
   try {
-    const REFRESH_TOKEN = req.signedCookies.REFRESH_TOKEN;
-    const logInInfo = await query.selectDoctorLoginInfo({
-      id_doctor: req.autData.id,
-    });
+    await query.deleteDoctorLogInInfo(req.autData.logId);
 
-    if (!logInInfo.length) return res.sendStatus(403);
-
-    const logged = logInInfo.find(
-      async (info) =>
-        await utility.compareHashedValues(REFRESH_TOKEN, info.token)
-    );
-
-    if (!logged) return res.sendStatus(403);
-
-    await query.deleteDoctorLogInInfo(logged.id);
     res.clearCookie("REFRESH_TOKEN");
     res.sendStatus(204);
   } catch (error) {
@@ -197,7 +176,6 @@ const sendRestoreLink = async (req, res, next) => {
                               <p> ce lien ne fonctionne que pendant les 2 prochaines heures </p>
                               <p>Cordialement,</p>
                               <p>L'équipe de Sina.</p>`;
-    console.log(token);
     await utility.sendMail(mail, "Recuperation du mot de passe ✔", emailBody);
     res.sendStatus(204);
   } catch (error) {

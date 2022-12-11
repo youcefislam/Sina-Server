@@ -17,7 +17,7 @@ const updatePatient = async (req, res, next) => {
     });
 
     if (!updatedPatient.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
     res.sendStatus(204);
   } catch (error) {
     next(error);
@@ -26,13 +26,9 @@ const updatePatient = async (req, res, next) => {
 
 const deleteAccount = async (req, res, next) => {
   try {
-    const patient = await query.selectPatient_sensitive({ id: req.params[0] });
-
-    if (!patient) return next(new errorHandler("raw_not_found"));
-
     const validPassword = await utility.comparePassword(
       req.body.password,
-      patient.password
+      req.autData.password
     );
 
     if (!validPassword)
@@ -47,13 +43,9 @@ const deleteAccount = async (req, res, next) => {
 
 const modifyPassword = async (req, res, next) => {
   try {
-    const patient = await query.selectPatient_sensitive({ id: req.params[0] });
-
-    if (!patient) return next(new errorHandler("raw_not_found"));
-
     const correctOldPassword = await utility.comparePassword(
       req.body.old_password,
-      patient.password
+      req.autData.password
     );
     if (!correctOldPassword)
       return next(

@@ -24,7 +24,7 @@ const updateWilaya = async (req, res, next) => {
       id: req.params[0],
     });
     if (!updatedWilaya.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
     res.sendStatus(204);
   } catch (error) {
     next(error);
@@ -35,7 +35,7 @@ const deleteWilaya = async (req, res, next) => {
   try {
     const deletedWilaya = await query.deleteWilaya(req.params[0]);
     if (!deletedWilaya.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
     res.sendStatus(204);
   } catch (error) {
     next(error);

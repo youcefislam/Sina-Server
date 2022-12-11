@@ -24,7 +24,7 @@ const updateIllness = async (req, res, next) => {
       id: req.params[0],
     });
     if (!updatedIllness.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
     res.sendStatus(204);
   } catch (error) {
     next(error);
@@ -35,7 +35,7 @@ const deleteIllness = async (req, res, next) => {
   try {
     const deletedIllness = await query.deleteIllness(req.params[0]);
     if (!deletedIllness.affectedRows)
-      return next(new errorHandler("raw_not_found"));
+      return next(new errorHandler("row_not_found"));
     res.sendStatus(204);
   } catch (error) {
     next(error);
