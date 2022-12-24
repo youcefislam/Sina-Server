@@ -1,4 +1,4 @@
-const { dbPool, errorHandler } = require("../../Database/Connection");
+const { dbPool, errorHandler } = require("../../database/connection");
 
 const insertNote = (values) =>
   new Promise((resolve, reject) => {

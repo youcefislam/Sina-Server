@@ -1,10 +1,10 @@
 const { dbPool, dbPoolV1 } = require("./Connection");
 const fs = require("fs");
 const path = require("path");
-const schema = path.resolve("./src/Model/Schema.sql");
-const data = path.resolve("./src/Model/data.sql");
-const schemaV1 = path.resolve("./src/Model/SchemaV1.sql");
-const dataV1 = path.resolve("./src/Model/dataV1.sql");
+const schema = path.resolve("./src/model/Schema.sql");
+const data = path.resolve("./model/data.sql");
+const schemaV1 = path.resolve("./src/model/SchemaV1.sql");
+const dataV1 = path.resolve("./model/dataV1.sql");
 
 const dropDatabase = (V1) =>
   new Promise((resolve, reject) => {

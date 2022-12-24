@@ -2,7 +2,7 @@ const {
   dbPool,
   formulateAndQuery,
   errorHandler,
-} = require("../../Database/connection");
+} = require("../../database/connection");
 
 const selectDoctor_sensitive = (query) =>
   new Promise((resolve, reject) => {

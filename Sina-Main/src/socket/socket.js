@@ -1,6 +1,6 @@
 const { Server } = require("socket.io");
-const utility = require("../Utilities/utility");
-const middleware = require("../Middlewares/middlewares");
+const utility = require("../utilities/utility");
+const middleware = require("../middlewares/middlewares");
 const io = new Server();
 
 const logOutRoomsNotification = (socket, event) => {

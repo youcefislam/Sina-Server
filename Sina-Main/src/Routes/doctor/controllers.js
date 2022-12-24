@@ -1,7 +1,7 @@
-const utility = require("../../Utilities/utility");
+const utility = require("../../utilities/utility");
 const query = require("./queries.js");
 const patientQuery = require("../patient/queries.js");
-const { errorHandler } = require("../../Database/Connection");
+const { errorHandler } = require("../../database/connection");
 
 const deleteDoctor = async (req, res, next) => {
   try {

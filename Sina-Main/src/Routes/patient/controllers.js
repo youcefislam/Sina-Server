@@ -1,7 +1,7 @@
 const moment = require("moment");
 const query = require("./queries");
-const utility = require("../../Utilities/utility");
-const { errorHandler } = require("../../Database/Connection");
+const utility = require("../../utilities/utility");
+const { errorHandler } = require("../../database/connection");
 
 const updatePatient = async (req, res, next) => {
   try {

@@ -1,5 +1,5 @@
 const query = require("./queries");
-const utility = require("../../Utilities/utility");
+const utility = require("../../utilities/utility");
 
 const signUp = async (req, res, next) => {
   let newDoctorId;

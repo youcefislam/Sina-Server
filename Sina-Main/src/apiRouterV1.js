@@ -15,7 +15,7 @@ const sgMail = require("@sendgrid/mail");
 //   process.env.TWILIO_ACCOUNT_SID,
 //   process.env.TWILIO_AUTH_TOKEN
 // );
-const { dbPoolV1 } = require("./Database/Connection");
+const { dbPoolV1 } = require("./database/connection");
 const dbPool = dbPoolV1;
 const cors = require("cors");
 

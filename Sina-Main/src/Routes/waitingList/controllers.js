@@ -1,6 +1,6 @@
 const query = require("./queries");
 const patientQuery = require("../patient/queries.js");
-const { errorHandler } = require("../../Database/Connection");
+const { errorHandler } = require("../../database/connection");
 
 const getWaitingList = async (req, res, next) => {
   try {

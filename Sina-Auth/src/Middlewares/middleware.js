@@ -4,9 +4,9 @@ const {
   validateRefreshToken,
   validateValidationToken,
   compareHashedValues,
-} = require("../Utilities/utility");
-const doctorQuery = require("../Routes/doctor/queries");
-const patientQuery = require("../Routes/patient/queries");
+} = require("../utilities/utility");
+const doctorQuery = require("../routes/doctor/queries");
+const patientQuery = require("../routes/patient/queries");
 
 const cookieTokenAuthorization = async (req, res, next) => {
   try {

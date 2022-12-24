@@ -2,7 +2,7 @@ const {
   dbPool,
   formulateAndQuery,
   errorHandler,
-} = require("../../Database/Connection");
+} = require("../../database/connection");
 
 const selectWaitingList = (id_doctor, { page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {

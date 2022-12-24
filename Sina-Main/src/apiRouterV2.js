@@ -1,21 +1,21 @@
 const express = require("express"),
   bodyParser = require("body-parser");
 
-const alertSubRouter = require("./Routes/alerts/route"),
-  doctorSubRouter = require("./Routes/doctor/route"),
-  patientSubRouter = require("./Routes/patient/route"),
-  waitingListSubRouter = require("./Routes/waitingList/route"),
-  relativeSubRouter = require("./Routes/relative/route"),
-  illnessSubRouter = require("./Routes/illness/route"),
-  wilayaSubRouter = require("./Routes/wilaya/route"),
-  dairaSubRouter = require("./Routes/daira/route"),
-  communeSubRouter = require("./Routes/commune/route"),
-  appointmentSubRouter = require("./Routes/appointment/route"),
-  drugsSubRouter = require("./Routes/drugs/route"),
-  noteSubRouter = require("./Routes/note/route"),
-  hospitalSubRouter = require("./Routes/hospital/route"),
-  medicalReportSubRouter = require("./Routes/medicalReport/route"),
-  ecgSubRouter = require("./Routes/Ecg/route");
+const alertSubRouter = require("./routes/alerts/route"),
+  doctorSubRouter = require("./routes/doctor/route"),
+  patientSubRouter = require("./routes/patient/route"),
+  waitingListSubRouter = require("./routes/waitingList/route"),
+  relativeSubRouter = require("./routes/relative/route"),
+  illnessSubRouter = require("./routes/illness/route"),
+  wilayaSubRouter = require("./routes/wilaya/route"),
+  dairaSubRouter = require("./routes/daira/route"),
+  communeSubRouter = require("./routes/commune/route"),
+  appointmentSubRouter = require("./routes/appointment/route"),
+  drugsSubRouter = require("./routes/drugs/route"),
+  noteSubRouter = require("./routes/note/route"),
+  hospitalSubRouter = require("./routes/hospital/route"),
+  medicalReportSubRouter = require("./routes/medicalReport/route"),
+  ecgSubRouter = require("./routes/ecg/route");
 
 const middleware = require("./Middlewares/middlewares");
 

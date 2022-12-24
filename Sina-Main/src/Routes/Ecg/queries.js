@@ -1,4 +1,4 @@
-const { dbPool, format, errorHandler } = require("../../Database/Connection");
+const { dbPool, format, errorHandler } = require("../../database/connection");
 
 const selectPatientEcgFiles = (id_patient, options) =>
   new Promise((resolve, reject) => {

@@ -22,7 +22,7 @@ const app = express();
 
 app.use(
   "/uploads",
-  express.static(path.resolve(__dirname, "public/uploads/Media"))
+  express.static(path.resolve(__dirname, "public/uploads/media"))
 );
 
 app.use(

@@ -3,7 +3,7 @@ const {
   format,
   formulateAndQuery,
   errorHandler,
-} = require("../../Database/Connection");
+} = require("../../database/connection");
 
 const selectHospitals = (options) =>
   new Promise((resolve, reject) => {

@@ -2,7 +2,7 @@ const {
   dbPool,
   errorHandler,
   formulateAndQuery,
-} = require("../../Database/Connection");
+} = require("../../database/connection");
 
 const selectPatientDrugList = (id, { page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {

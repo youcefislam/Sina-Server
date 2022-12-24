@@ -1,8 +1,8 @@
 const express = require("express");
 const controllers = require("./controllers");
-const middleware = require("../../Middlewares/middlewares");
-const { uploadEcg } = require("../../Utilities/uploadUtilities");
-const { schema } = require("../../Utilities/validations");
+const middleware = require("../../middlewares/middlewares");
+const { uploadEcg } = require("../../utilities/uploadUtilities");
+const { schema } = require("../../utilities/validations");
 
 const Router = express.Router();
 

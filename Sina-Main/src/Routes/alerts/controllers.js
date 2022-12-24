@@ -1,6 +1,6 @@
-const { sendTwilioMessage } = require("../../Utilities/utility");
+const { sendTwilioMessage } = require("../../utilities/utility");
 const patientQuery = require("../patient/queries");
-const { errorHandler } = require("../../Database/Connection");
+const { errorHandler } = require("../../database/connection");
 
 const sendAlert = async (req, res, next) => {
   try {

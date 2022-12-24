@@ -1,4 +1,4 @@
-const { dbPool, format, errorHandler } = require("../../Database/Connection");
+const { dbPool, format, errorHandler } = require("../../database/connection");
 
 const selectReportById = (id) =>
   new Promise((resolve, reject) => {

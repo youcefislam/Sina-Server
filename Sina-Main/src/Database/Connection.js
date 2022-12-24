@@ -2,7 +2,7 @@ const mysql = require("mysql");
 
 require("dotenv").config();
 
-// ### Connection with the database ### -- tested
+// ### Connection with the database ###
 const dbPool = mysql.createPool({
   connectionLimit: 30,
   host: "localhost",

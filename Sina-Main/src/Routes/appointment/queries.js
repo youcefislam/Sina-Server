@@ -2,7 +2,7 @@ const {
   dbPool,
   errorHandler,
   formulateAndQuery,
-} = require("../../Database/Connection");
+} = require("../../database/connection");
 
 const insertAppointment = (values) =>
   new Promise((resolve, reject) => {

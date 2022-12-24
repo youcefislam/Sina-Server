@@ -1,5 +1,5 @@
 const query = require("./queries");
-const { errorHandler } = require("../../Database/Connection");
+const { errorHandler } = require("../../database/connection");
 
 const getAllHospitals = async (req, res, next) => {
   try {

@@ -1,8 +1,8 @@
 const path = require("path");
 const moment = require("moment");
-const { deleteFile } = require("../../Utilities/uploadUtilities");
+const { deleteFile } = require("../../utilities/uploadUtilities");
 const query = require("./queries");
-const { errorHandler } = require("../../Database/Connection");
+const { errorHandler } = require("../../database/connection");
 
 const addEcgFile = async (req, res, next) => {
   try {

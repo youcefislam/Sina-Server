@@ -31,7 +31,7 @@ const checkEcgType = (file, cb, res) => {
 
 const reportStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./Public/uploads/reportFiles");
+    cb(null, "./public/uploads/reportFiles");
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -41,7 +41,7 @@ const reportStorage = multer.diskStorage({
 
 const ecgFileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./Public/uploads/ECGfiles");
+    cb(null, "./public/uploads/ecgfiles");
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);

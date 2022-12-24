@@ -1,4 +1,4 @@
-const { dbPool, errorHandler } = require("../../Database/Connection");
+const { dbPool, errorHandler } = require("../../database/connection");
 
 const selectAllCommune = ({ page = 1, limit = 10 }) =>
   new Promise((resolve, reject) => {

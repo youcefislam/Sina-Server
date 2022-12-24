@@ -1,7 +1,7 @@
 const moment = require("moment");
 const path = require("path");
 const query = require("./queries");
-const { errorHandler } = require("../../Database/Connection");
+const { errorHandler } = require("../../database/connection");
 
 const addMedicalReport = async (req, res, next) => {
   try {

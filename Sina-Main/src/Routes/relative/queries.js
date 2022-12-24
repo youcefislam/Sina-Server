@@ -1,4 +1,4 @@
-const { dbPool, errorHandler } = require("../../Database/connection");
+const { dbPool, errorHandler } = require("../../database/connection");
 
 const selectRelative = (id) =>
   new Promise((resolve, reject) => {

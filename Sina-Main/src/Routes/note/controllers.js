@@ -1,6 +1,6 @@
 const moment = require("moment");
 const query = require("./queries");
-const { errorHandler } = require("../../Database/Connection");
+const { errorHandler } = require("../../database/connection");
 
 const getNotesList = async (req, res, next) => {
   try {

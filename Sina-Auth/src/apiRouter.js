@@ -1,7 +1,7 @@
 const express = require("express");
 
-const patientAuthSubRoute = require("./Routes/patient/route"),
-  doctorAuthSubRoute = require("./Routes/doctor/route");
+const patientAuthSubRoute = require("./routes/patient/route"),
+  doctorAuthSubRoute = require("./routes/doctor/route");
 
 const apiRouter = express.Router();
 

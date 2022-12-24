@@ -3,7 +3,7 @@ const {
   formulateAndQuery,
   errorHandler,
   format,
-} = require("../../Database/connection");
+} = require("../../database/connection");
 
 const deletePatientAccount = (id) =>
   new Promise((resolve, reject) => {
